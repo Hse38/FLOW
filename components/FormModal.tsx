@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Plus, Trash2 } from 'lucide-react'
 
@@ -21,10 +21,16 @@ export default function FormModal({
   initialData,
   onSave,
 }: FormModalProps) {
-  const [formData, setFormData] = useState<any>(initialData || {})
-  const [responsibilities, setResponsibilities] = useState<string[]>(
-    initialData?.responsibilities || ['']
-  )
+  const [formData, setFormData] = useState<any>({})
+  const [responsibilities, setResponsibilities] = useState<string[]>([''])
+
+  // Reset form when modal opens with new data
+  useEffect(() => {
+    if (isOpen) {
+      setFormData(initialData || {})
+      setResponsibilities(initialData?.responsibilities || [''])
+    }
+  }, [isOpen, initialData])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()

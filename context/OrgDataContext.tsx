@@ -452,29 +452,19 @@ const initialData: OrgData = {
 export function OrgDataProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<OrgData>(initialData)
 
-  // Load from localStorage on mount
+  // Clear old localStorage on mount to prevent corruption
   useEffect(() => {
-    const saved = localStorage.getItem('orgData')
-    if (saved) {
-      try {
-        setData(JSON.parse(saved))
-      } catch (e) {
-        console.error('Failed to load org data:', e)
-      }
-    }
+    localStorage.removeItem('orgData')
   }, [])
 
-  // Save to localStorage
+  // Save to localStorage - disabled
   const saveData = () => {
-    localStorage.setItem('orgData', JSON.stringify(data))
+    // localStorage.setItem('orgData', JSON.stringify(data))
   }
 
-  // Load from localStorage
+  // Load from localStorage - disabled
   const loadData = () => {
-    const saved = localStorage.getItem('orgData')
-    if (saved) {
-      setData(JSON.parse(saved))
-    }
+    setData(initialData)
   }
 
   // Generate unique ID

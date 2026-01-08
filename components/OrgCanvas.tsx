@@ -20,7 +20,6 @@ import MainCoordinatorNode from './nodes/MainCoordinatorNode'
 import SubCoordinatorNode from './nodes/SubCoordinatorNode'
 import UnitNode from './nodes/UnitNode'
 import DetailNode from './nodes/DetailNode'
-import UnitDrawer from './UnitDrawer'
 import ContextMenu from './ContextMenu'
 import FormModal from './FormModal'
 import { useOrgData } from '@/context/OrgDataContext'
@@ -39,10 +38,8 @@ interface OrgCanvasProps {
 }
 
 const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
-  const { data, addSubUnit, addDeputy, addResponsibility, addCoordinator, deleteCoordinator } = useOrgData()
+  const { data, addSubUnit, addDeputy, addResponsibility, addCoordinator, deleteCoordinator, updateCoordinator } = useOrgData()
   
-  const [selectedUnit, setSelectedUnit] = useState<any>(null)
-  const [isUnitDrawerOpen, setIsUnitDrawerOpen] = useState(false)
   const [expandedCoordinator, setExpandedCoordinator] = useState<string | null>(null)
   
   // Context menu state
@@ -59,6 +56,7 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
     type: 'subunit' | 'deputy' | 'responsibility' | 'person' | 'edit'
     title: string
     nodeId: string
+    initialData?: any
   } | null>(null)
 
   // Handler using ref to avoid stale closures
@@ -73,9 +71,6 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
       // Check if has detail - toggle expand
       if (coordinator && (coordinator.deputies?.length > 0 || coordinator.subUnits?.length > 0 || coordinator.hasDetailPage)) {
         setExpandedCoordinator(prev => prev === unitId ? null : unitId)
-      } else {
-        setSelectedUnit(item)
-        setIsUnitDrawerOpen(true)
       }
       onNodeClick?.(unitId, 'unit')
     }
@@ -352,11 +347,6 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
     setFlowEdges(edges)
   }, [nodes, edges, setFlowNodes, setFlowEdges])
 
-  const handleCloseUnitDrawer = useCallback(() => {
-    setIsUnitDrawerOpen(false)
-    setTimeout(() => setSelectedUnit(null), 300)
-  }, [])
-
   // Form handlers
   const handleAddSubUnit = () => {
     if (contextMenu) {
@@ -405,11 +395,18 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
   const handleEdit = () => {
     if (contextMenu) {
       const coord = data.coordinators.find(c => c.id === contextMenu.nodeId)
+      const mainCoord = data.mainCoordinators.find(m => m.id === contextMenu.nodeId)
+      const item = coord || mainCoord
+      
       setFormModal({
         isOpen: true,
         type: 'edit',
         title: 'Düzenle',
         nodeId: contextMenu.nodeId,
+        initialData: item ? {
+          title: coord?.title || mainCoord?.title || '',
+          description: coord?.description || mainCoord?.description || '',
+        } : undefined
       })
     }
   }
@@ -424,6 +421,12 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
     if (!formModal) return
 
     switch (formModal.type) {
+      case 'edit':
+        updateCoordinator(formModal.nodeId, {
+          title: formData.title,
+          description: formData.description,
+        })
+        break
       case 'subunit':
         addSubUnit(formModal.nodeId, {
           title: formData.title,
@@ -503,13 +506,11 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
 
       {/* Logo */}
       <div className="absolute top-4 right-4 z-10">
-        <div className="bg-white/80 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200">
-          <div className="text-right">
-            <div className="text-xs font-bold text-rose-600"># MİLLİ</div>
-            <div className="text-xs font-bold text-rose-600">TEKNOLOJİ</div>
-            <div className="text-xs font-bold text-rose-600">HAMLESİ</div>
-          </div>
-        </div>
+        <img 
+          src="/images/mth-logo.png" 
+          alt="Milli Teknoloji Hamlesi" 
+          className="h-12 w-auto"
+        />
       </div>
 
       {/* Context Menu */}
@@ -535,18 +536,10 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
           onClose={() => setFormModal(null)}
           title={formModal.title}
           type={formModal.type}
+          initialData={formModal.initialData}
           onSave={handleFormSave}
         />
       )}
-
-      {/* Unit Drawer */}
-      <UnitDrawer
-        unit={selectedUnit}
-        isOpen={isUnitDrawerOpen}
-        onClose={handleCloseUnitDrawer}
-        people={[]}
-        onPersonClick={() => {}}
-      />
     </div>
   )
 }
