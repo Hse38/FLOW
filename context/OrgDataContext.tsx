@@ -26,6 +26,7 @@ export interface SubUnit {
   title: string
   people: Person[]
   responsibilities: string[]
+  normKadro?: number  // Olması gereken kişi sayısı
 }
 
 export interface Deputy {
@@ -47,6 +48,7 @@ export interface Coordinator {
   deputies: Deputy[]
   subUnits: SubUnit[]
   linkedSchemaId?: string
+  normKadro?: number  // Koordinatörlük düzeyinde olması gereken kişi sayısı
 }
 
 export interface MainCoordinator {
@@ -115,6 +117,7 @@ interface OrgDataContextType {
   linkSchemaToCoordinator: (schemaId: string, coordinatorId: string) => void
   unlinkSchemaFromCoordinator: (coordinatorId: string) => void
   getLinkedSchemaData: (schemaId: string) => OrgData | null
+  updateSubUnit: (coordinatorId: string, subUnitId: string, updates: Partial<SubUnit>) => void
   resetToEmpty: () => void
   saveData: () => void
   loadData: () => void
@@ -850,6 +853,27 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     })
   }, [saveToFirebase])
 
+  // Update sub unit (normKadro, responsibilities vb.)
+  const updateSubUnit = useCallback((coordinatorId: string, subUnitId: string, updates: Partial<SubUnit>) => {
+    setData(prev => {
+      const newData = {
+        ...prev,
+        coordinators: prev.coordinators.map(c => 
+          c.id === coordinatorId 
+            ? {
+                ...c,
+                subUnits: (c.subUnits || []).map(su =>
+                  su.id === subUnitId ? { ...su, ...updates } : su
+                )
+              }
+            : c
+        )
+      }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [saveToFirebase])
+
   // Delete deputy
   const deleteDeputy = useCallback((coordinatorId: string, deputyId: string) => {
     setData(prev => {
@@ -1037,6 +1061,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       updatePerson,
       deletePerson,
       deleteSubUnit,
+      updateSubUnit,
       deleteDeputy,
       deleteCoordinator,
       deleteNode,

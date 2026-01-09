@@ -27,6 +27,7 @@ import FormModal from './FormModal'
 import PersonDetailModal from './PersonDetailModal'
 import LinkToMainSchemaModal from './LinkToMainSchemaModal'
 import RightDetailPanel from './RightDetailPanel'
+import NormKadroModal from './NormKadroModal'
 import { useOrgData, Person } from '@/context/OrgDataContext'
 
 const nodeTypes = {
@@ -60,6 +61,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
     updatePerson, 
     addPerson,
     deletePerson,
+    updateSubUnit,
     linkSchemaToCoordinator,
     // Firebase senkronizasyon
     isLocked: firebaseLocked,
@@ -77,6 +79,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
   
   // Sağ panel için seçili koordinatör
   const [rightPanelCoordinatorId, setRightPanelCoordinatorId] = useState<string | null>(null)
+
+  // Norm Kadro Modal
+  const [normKadroModal, setNormKadroModal] = useState<boolean>(false)
   
   // Kilitleme durumu - Firebase'den geliyor
   const isLocked = firebaseLocked
@@ -371,6 +376,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
             responsibilities: subUnit.responsibilities,
             coordinatorId: expandedCoordinatorData.id,
             subUnitId: subUnit.id,
+            normKadro: subUnit.normKadro,  // Norm kadro bilgisi
             onPersonClick: (person: Person) => {
               // Şema üzerinden tıklayınca sağda görüntüleme kartı aç
               setViewPersonCard({
@@ -922,6 +928,18 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
             </button>
           )}
 
+          {/* Norm Kadro Butonu - Her zaman görünür */}
+          <button
+            onClick={() => setNormKadroModal(true)}
+            className="backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform bg-indigo-600 border-indigo-700 flex items-center gap-2"
+            title="Norm Kadro Yönetimi"
+          >
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span className="text-sm font-bold text-white">Norm</span>
+          </button>
+
           {/* Detayları Kapat butonu */}
           {expandedCoordinator && (
             <button
@@ -969,6 +987,15 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
         onAddPerson={addPerson}
         onUpdatePerson={updatePerson}
         onDeletePerson={deletePerson}
+      />
+
+      {/* Norm Kadro Modal */}
+      <NormKadroModal
+        isOpen={normKadroModal}
+        onClose={() => setNormKadroModal(false)}
+        coordinators={data.coordinators}
+        onUpdateCoordinator={updateCoordinator}
+        onUpdateSubUnit={updateSubUnit}
       />
 
       {/* Logo */}

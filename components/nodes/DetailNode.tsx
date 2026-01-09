@@ -25,6 +25,7 @@ interface DetailNodeProps {
     onContextMenu?: (e: React.MouseEvent) => void
     coordinatorId?: string
     subUnitId?: string
+    normKadro?: number  // Norm kadro sayısı
   }
 }
 
@@ -62,11 +63,32 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
       }
     }
 
+    const currentCount = data.people?.length || 0
+    const normKadro = data.normKadro || 0
+    
+    // Badge rengi belirleme
+    const getBadgeColor = () => {
+      if (normKadro === 0) return 'bg-gray-400'
+      if (currentCount === normKadro) return 'bg-green-500'
+      if (currentCount > normKadro) return 'bg-red-500'
+      return 'bg-amber-500'
+    }
+
     return (
       <div 
-        className="bg-white border-l-4 border-[#3b82a0] rounded-lg px-4 py-3 shadow-md min-w-[140px] max-w-[180px] nodrag"
+        className="bg-white border-l-4 border-[#3b82a0] rounded-lg px-4 py-3 shadow-md min-w-[140px] max-w-[180px] nodrag relative"
         onContextMenu={data.onContextMenu}
       >
+        {/* Norm Kadro Badge - Sol üst köşe */}
+        {normKadro > 0 && (
+          <div 
+            className={`absolute -top-2 -left-2 w-8 h-8 rounded-full ${getBadgeColor()} text-white text-[10px] font-bold flex items-center justify-center shadow-lg border-2 border-white`}
+            title={`${currentCount}/${normKadro} kişi`}
+          >
+            {currentCount}/{normKadro}
+          </div>
+        )}
+        
         <Handle type="target" position={Position.Top} className="!bg-gray-400" />
         <h4 className="font-bold text-[#3b82a0] text-sm text-center mb-2">{data.label}</h4>
         
