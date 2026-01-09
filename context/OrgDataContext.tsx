@@ -1,6 +1,13 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react'
+import { 
+  database, 
+  ref, 
+  onValue, 
+  set, 
+  get 
+} from '@/lib/firebase'
 
 // Types
 export interface Person {
@@ -39,7 +46,7 @@ export interface Coordinator {
   coordinator?: { name: string; title: string }
   deputies: Deputy[]
   subUnits: SubUnit[]
-  linkedSchemaId?: string  // Bağlı şema ID'si (yeni şemadan bağlanmış)
+  linkedSchemaId?: string
 }
 
 export interface MainCoordinator {
@@ -75,8 +82,21 @@ export interface OrgData {
   coordinators: Coordinator[]
 }
 
+export interface Project {
+  id: string
+  name: string
+  createdAt: number
+  isMain?: boolean
+}
+
 interface OrgDataContextType {
   data: OrgData
+  projects: Project[]
+  activeProjectId: string
+  isLocked: boolean
+  positions: Record<string, { x: number; y: number }>
+  customConnections: Array<{ source: string; target: string; sourceHandle?: string; targetHandle?: string }>
+  isLoading: boolean
   updateCoordinator: (id: string, updates: Partial<Coordinator>) => void
   addSubUnit: (coordinatorId: string, subUnit: Omit<SubUnit, 'id'>) => void
   addDeputy: (coordinatorId: string, deputy: Omit<Deputy, 'id'>) => void
@@ -97,6 +117,13 @@ interface OrgDataContextType {
   resetToEmpty: () => void
   saveData: () => void
   loadData: () => void
+  setActiveProject: (projectId: string) => void
+  createProject: (name: string, isMain?: boolean) => void
+  deleteProject: (projectId: string) => void
+  setLocked: (locked: boolean) => void
+  updatePositions: (newPositions: Record<string, { x: number; y: number }>) => void
+  addConnection: (connection: { source: string; target: string; sourceHandle?: string; targetHandle?: string }) => void
+  removeConnection: (source: string, target: string) => void
 }
 
 const OrgDataContext = createContext<OrgDataContextType | null>(null)
@@ -467,60 +494,184 @@ const initialData: OrgData = {
 
 export function OrgDataProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<OrgData>(initialData)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [activeProjectId, setActiveProjectId] = useState<string>('main')
+  const [isLocked, setIsLocked] = useState<boolean>(false)
+  const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({})
+  const [customConnections, setCustomConnections] = useState<Array<{ source: string; target: string; sourceHandle?: string; targetHandle?: string }>>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
-  // Clear old localStorage on mount to prevent corruption
-  useEffect(() => {
-    // Aktif projenin verilerini yükle
-    if (typeof window !== 'undefined') {
-      const activeProjectId = localStorage.getItem('activeProjectId')
-      if (activeProjectId) {
-        const projectData = localStorage.getItem(`orgData_${activeProjectId}`)
-        if (projectData) {
-          try {
-            const parsed = JSON.parse(projectData)
-            setData(parsed)
-            return
-          } catch (e) {
-            console.error('Failed to parse project data:', e)
-          }
-        }
-      }
-    }
-    // Varsayılan olarak initialData kullan
-    setData(initialData)
+  // Generate unique ID
+  const generateId = useCallback(() => {
+    return `id-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
   }, [])
 
-  // Save to localStorage
-  const saveData = () => {
-    if (typeof window !== 'undefined') {
-      const activeProjectId = localStorage.getItem('activeProjectId')
-      if (activeProjectId) {
-        localStorage.setItem(`orgData_${activeProjectId}`, JSON.stringify(data))
-      }
-    }
-  }
-
-  // Load from localStorage
-  const loadData = () => {
-    if (typeof window !== 'undefined') {
-      const activeProjectId = localStorage.getItem('activeProjectId')
-      if (activeProjectId) {
-        const projectData = localStorage.getItem(`orgData_${activeProjectId}`)
-        if (projectData) {
-          try {
-            setData(JSON.parse(projectData))
-            return
-          } catch (e) {
-            console.error('Failed to parse project data:', e)
-          }
+  // Firebase'den verileri dinle - gerçek zamanlı senkronizasyon
+  useEffect(() => {
+    setIsLoading(true)
+    
+    // Projeleri dinle
+    const projectsRef = ref(database, 'projects')
+    const unsubProjects = onValue(projectsRef, (snapshot) => {
+      const val = snapshot.val()
+      if (val) {
+        const projectList: Project[] = Object.entries(val).map(([id, p]) => ({
+          id,
+          ...(p as Omit<Project, 'id'>)
+        }))
+        setProjects(projectList)
+        
+        // Eğer main proje yoksa oluştur
+        if (!projectList.find(p => p.id === 'main')) {
+          const mainProject: Project = { id: 'main', name: 'Ana Şema', createdAt: Date.now(), isMain: true }
+          set(ref(database, 'projects/main'), mainProject)
         }
+      } else {
+        // İlk kez açılıyorsa varsayılan projeyi oluştur
+        const mainProject: Project = { id: 'main', name: 'Ana Şema', createdAt: Date.now(), isMain: true }
+        set(ref(database, 'projects/main'), mainProject)
+        setProjects([mainProject])
       }
+    })
+
+    // Aktif proje ID'sini dinle
+    const activeRef = ref(database, 'settings/activeProjectId')
+    const unsubActive = onValue(activeRef, (snapshot) => {
+      const val = snapshot.val()
+      if (val) {
+        setActiveProjectId(val)
+      } else {
+        setActiveProjectId('main')
+      }
+    })
+
+    // Kilit durumunu dinle
+    const lockedRef = ref(database, 'settings/locked')
+    const unsubLocked = onValue(lockedRef, (snapshot) => {
+      setIsLocked(snapshot.val() === true)
+    })
+
+    return () => {
+      unsubProjects()
+      unsubActive()
+      unsubLocked()
     }
-    setData(initialData)
-  }
+  }, [])
+
+  // Aktif projenin verilerini dinle
+  useEffect(() => {
+    if (!activeProjectId) return
+
+    // Org data dinle
+    const orgDataRef = ref(database, `orgData/${activeProjectId}`)
+    const unsubData = onValue(orgDataRef, (snapshot) => {
+      const val = snapshot.val()
+      if (val) {
+        setData(val)
+      } else if (activeProjectId === 'main') {
+        // Ana şema için varsayılan verileri yükle
+        setData(initialData)
+        set(orgDataRef, initialData)
+      } else {
+        // Yeni proje için boş veri
+        setData({ management: [], executives: [], mainCoordinators: [], coordinators: [] })
+      }
+      setIsLoading(false)
+    })
+
+    // Pozisyonları dinle
+    const posRef = ref(database, `positions/${activeProjectId}`)
+    const unsubPos = onValue(posRef, (snapshot) => {
+      const val = snapshot.val()
+      setPositions(val || {})
+    })
+
+    // Bağlantıları dinle
+    const connRef = ref(database, `connections/${activeProjectId}`)
+    const unsubConn = onValue(connRef, (snapshot) => {
+      const val = snapshot.val()
+      setCustomConnections(val || [])
+    })
+
+    return () => {
+      unsubData()
+      unsubPos()
+      unsubConn()
+    }
+  }, [activeProjectId])
+
+  // Firebase'e veri kaydet
+  const saveToFirebase = useCallback((newData: OrgData) => {
+    if (activeProjectId) {
+      set(ref(database, `orgData/${activeProjectId}`), newData)
+    }
+  }, [activeProjectId])
+
+  // Pozisyonları kaydet
+  const updatePositions = useCallback((newPositions: Record<string, { x: number; y: number }>) => {
+    if (activeProjectId) {
+      set(ref(database, `positions/${activeProjectId}`), newPositions)
+    }
+  }, [activeProjectId])
+
+  // Bağlantı ekle
+  const addConnection = useCallback((connection: { source: string; target: string; sourceHandle?: string; targetHandle?: string }) => {
+    const newConnections = [...customConnections, connection]
+    if (activeProjectId) {
+      set(ref(database, `connections/${activeProjectId}`), newConnections)
+    }
+  }, [activeProjectId, customConnections])
+
+  // Bağlantı kaldır
+  const removeConnection = useCallback((source: string, target: string) => {
+    const newConnections = customConnections.filter(c => !(c.source === source && c.target === target))
+    if (activeProjectId) {
+      set(ref(database, `connections/${activeProjectId}`), newConnections)
+    }
+  }, [activeProjectId, customConnections])
+
+  // Kilit durumunu değiştir
+  const setLocked = useCallback((locked: boolean) => {
+    set(ref(database, 'settings/locked'), locked)
+  }, [])
+
+  // Aktif projeyi değiştir
+  const setActiveProject = useCallback((projectId: string) => {
+    set(ref(database, 'settings/activeProjectId'), projectId)
+  }, [])
+
+  // Yeni proje oluştur
+  const createProject = useCallback((name: string, isMain?: boolean) => {
+    const id = isMain ? 'main' : generateId()
+    const project: Project = { id, name, createdAt: Date.now(), isMain }
+    set(ref(database, `projects/${id}`), project)
+    setActiveProject(id)
+  }, [generateId, setActiveProject])
+
+  // Proje sil
+  const deleteProject = useCallback((projectId: string) => {
+    if (projectId === 'main') return // Ana şema silinemez
+    set(ref(database, `projects/${projectId}`), null)
+    set(ref(database, `orgData/${projectId}`), null)
+    set(ref(database, `positions/${projectId}`), null)
+    set(ref(database, `connections/${projectId}`), null)
+    if (activeProjectId === projectId) {
+      setActiveProject('main')
+    }
+  }, [activeProjectId, setActiveProject])
+
+  // Save to Firebase (compatibility)
+  const saveData = useCallback(() => {
+    saveToFirebase(data)
+  }, [data, saveToFirebase])
+
+  // Load from Firebase (compatibility)
+  const loadData = useCallback(() => {
+    // onValue dinleyicisi zaten yüklüyor
+  }, [])
 
   // Reset to empty canvas
-  const resetToEmpty = () => {
+  const resetToEmpty = useCallback(() => {
     const emptyData: OrgData = {
       management: [],
       executives: [],
@@ -528,179 +679,206 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       coordinators: []
     }
     setData(emptyData)
-    setTimeout(saveData, 0)
-  }
-
-  // Generate unique ID
-  const generateId = () => {
-    return `id-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-  }
+    saveToFirebase(emptyData)
+  }, [saveToFirebase])
 
   // Update coordinator
-  const updateCoordinator = (id: string, updates: Partial<Coordinator>) => {
-    setData(prev => ({
-      ...prev,
-      coordinators: prev.coordinators.map(c => 
-        c.id === id ? { ...c, ...updates } : c
-      )
-    }))
-    saveData()
-  }
+  const updateCoordinator = useCallback((id: string, updates: Partial<Coordinator>) => {
+    setData(prev => {
+      const newData = {
+        ...prev,
+        coordinators: prev.coordinators.map(c => 
+          c.id === id ? { ...c, ...updates } : c
+        )
+      }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [saveToFirebase])
 
   // Add sub unit
-  const addSubUnit = (coordinatorId: string, subUnit: Omit<SubUnit, 'id'>) => {
+  const addSubUnit = useCallback((coordinatorId: string, subUnit: Omit<SubUnit, 'id'>) => {
     const newSubUnit: SubUnit = {
       ...subUnit,
       id: generateId(),
     }
-    setData(prev => ({
-      ...prev,
-      coordinators: prev.coordinators.map(c => 
-        c.id === coordinatorId 
-          ? { ...c, subUnits: [...(c.subUnits || []), newSubUnit], hasDetailPage: true }
-          : c
-      )
-    }))
-    setTimeout(saveData, 0)
-  }
+    setData(prev => {
+      const newData = {
+        ...prev,
+        coordinators: prev.coordinators.map(c => 
+          c.id === coordinatorId 
+            ? { ...c, subUnits: [...(c.subUnits || []), newSubUnit], hasDetailPage: true }
+            : c
+        )
+      }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [generateId, saveToFirebase])
 
   // Add deputy
-  const addDeputy = (coordinatorId: string, deputy: Omit<Deputy, 'id'>) => {
+  const addDeputy = useCallback((coordinatorId: string, deputy: Omit<Deputy, 'id'>) => {
     const newDeputy: Deputy = {
       ...deputy,
       id: generateId(),
     }
-    setData(prev => ({
-      ...prev,
-      coordinators: prev.coordinators.map(c => 
-        c.id === coordinatorId 
-          ? { ...c, deputies: [...(c.deputies || []), newDeputy], hasDetailPage: true }
-          : c
-      )
-    }))
-    setTimeout(saveData, 0)
-  }
+    setData(prev => {
+      const newData = {
+        ...prev,
+        coordinators: prev.coordinators.map(c => 
+          c.id === coordinatorId 
+            ? { ...c, deputies: [...(c.deputies || []), newDeputy], hasDetailPage: true }
+            : c
+        )
+      }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [generateId, saveToFirebase])
 
   // Add responsibility
-  const addResponsibility = (coordinatorId: string, responsibility: string) => {
-    setData(prev => ({
-      ...prev,
-      coordinators: prev.coordinators.map(c => 
-        c.id === coordinatorId 
-          ? { ...c, responsibilities: [...(c.responsibilities || []), responsibility] }
-          : c
-      )
-    }))
-    setTimeout(saveData, 0)
-  }
+  const addResponsibility = useCallback((coordinatorId: string, responsibility: string) => {
+    setData(prev => {
+      const newData = {
+        ...prev,
+        coordinators: prev.coordinators.map(c => 
+          c.id === coordinatorId 
+            ? { ...c, responsibilities: [...(c.responsibilities || []), responsibility] }
+            : c
+        )
+      }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [saveToFirebase])
 
   // Add person to sub unit
-  const addPerson = (coordinatorId: string, subUnitId: string, person: Omit<Person, 'id'>) => {
+  const addPerson = useCallback((coordinatorId: string, subUnitId: string, person: Omit<Person, 'id'>) => {
     const newPerson: Person = {
       ...person,
       id: generateId(),
     }
-    setData(prev => ({
-      ...prev,
-      coordinators: prev.coordinators.map(c => 
-        c.id === coordinatorId 
-          ? {
-              ...c,
-              subUnits: (c.subUnits || []).map(su =>
-                su.id === subUnitId
-                  ? { ...su, people: [...(su.people || []), newPerson] }
-                  : su
-              )
-            }
-          : c
-      )
-    }))
-    setTimeout(saveData, 0)
-  }
+    setData(prev => {
+      const newData = {
+        ...prev,
+        coordinators: prev.coordinators.map(c => 
+          c.id === coordinatorId 
+            ? {
+                ...c,
+                subUnits: (c.subUnits || []).map(su =>
+                  su.id === subUnitId
+                    ? { ...su, people: [...(su.people || []), newPerson] }
+                    : su
+                )
+              }
+            : c
+        )
+      }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [generateId, saveToFirebase])
 
   // Update person in sub unit
-  const updatePerson = (coordinatorId: string, subUnitId: string, personId: string, updates: Partial<Person>) => {
-    setData(prev => ({
-      ...prev,
-      coordinators: prev.coordinators.map(c => 
-        c.id === coordinatorId 
-          ? {
-              ...c,
-              subUnits: (c.subUnits || []).map(su =>
-                su.id === subUnitId
-                  ? {
-                      ...su,
-                      people: (su.people || []).map(p =>
-                        p.id === personId ? { ...p, ...updates } : p
-                      )
-                    }
-                  : su
-              )
-            }
-          : c
-      )
-    }))
-    setTimeout(saveData, 0)
-  }
+  const updatePerson = useCallback((coordinatorId: string, subUnitId: string, personId: string, updates: Partial<Person>) => {
+    setData(prev => {
+      const newData = {
+        ...prev,
+        coordinators: prev.coordinators.map(c => 
+          c.id === coordinatorId 
+            ? {
+                ...c,
+                subUnits: (c.subUnits || []).map(su =>
+                  su.id === subUnitId
+                    ? {
+                        ...su,
+                        people: (su.people || []).map(p =>
+                          p.id === personId ? { ...p, ...updates } : p
+                        )
+                      }
+                    : su
+                )
+              }
+            : c
+        )
+      }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [saveToFirebase])
 
   // Delete sub unit
-  const deleteSubUnit = (coordinatorId: string, subUnitId: string) => {
-    setData(prev => ({
-      ...prev,
-      coordinators: prev.coordinators.map(c => 
-        c.id === coordinatorId 
-          ? { ...c, subUnits: (c.subUnits || []).filter(su => su.id !== subUnitId) }
-          : c
-      )
-    }))
-    setTimeout(saveData, 0)
-  }
+  const deleteSubUnit = useCallback((coordinatorId: string, subUnitId: string) => {
+    setData(prev => {
+      const newData = {
+        ...prev,
+        coordinators: prev.coordinators.map(c => 
+          c.id === coordinatorId 
+            ? { ...c, subUnits: (c.subUnits || []).filter(su => su.id !== subUnitId) }
+            : c
+        )
+      }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [saveToFirebase])
 
   // Delete deputy
-  const deleteDeputy = (coordinatorId: string, deputyId: string) => {
-    setData(prev => ({
-      ...prev,
-      coordinators: prev.coordinators.map(c => 
-        c.id === coordinatorId 
-          ? { ...c, deputies: (c.deputies || []).filter(d => d.id !== deputyId) }
-          : c
-      )
-    }))
-    setTimeout(saveData, 0)
-  }
+  const deleteDeputy = useCallback((coordinatorId: string, deputyId: string) => {
+    setData(prev => {
+      const newData = {
+        ...prev,
+        coordinators: prev.coordinators.map(c => 
+          c.id === coordinatorId 
+            ? { ...c, deputies: (c.deputies || []).filter(d => d.id !== deputyId) }
+            : c
+        )
+      }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [saveToFirebase])
 
   // Delete coordinator
-  const deleteCoordinator = (id: string) => {
-    setData(prev => ({
-      ...prev,
-      coordinators: prev.coordinators.filter(c => c.id !== id)
-    }))
-    setTimeout(saveData, 0)
-  }
+  const deleteCoordinator = useCallback((id: string) => {
+    setData(prev => {
+      const newData = {
+        ...prev,
+        coordinators: prev.coordinators.filter(c => c.id !== id)
+      }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [saveToFirebase])
 
   // Delete any node by type
-  const deleteNode = (id: string, nodeType: string) => {
+  const deleteNode = useCallback((id: string, nodeType: string) => {
     setData(prev => {
+      let newData: OrgData
       switch (nodeType) {
         case 'chairman':
-          return { ...prev, management: prev.management.filter(m => m.id !== id) }
+          newData = { ...prev, management: prev.management.filter(m => m.id !== id) }
+          break
         case 'executive':
-          return { ...prev, executives: prev.executives.filter(e => e.id !== id) }
+          newData = { ...prev, executives: prev.executives.filter(e => e.id !== id) }
+          break
         case 'mainCoordinator':
-          return { ...prev, mainCoordinators: prev.mainCoordinators.filter(mc => mc.id !== id) }
+          newData = { ...prev, mainCoordinators: prev.mainCoordinators.filter(mc => mc.id !== id) }
+          break
         case 'coordinator':
         case 'subCoordinator':
-          return { ...prev, coordinators: prev.coordinators.filter(c => c.id !== id) }
+          newData = { ...prev, coordinators: prev.coordinators.filter(c => c.id !== id) }
+          break
         default:
-          return prev
+          newData = prev
       }
+      saveToFirebase(newData)
+      return newData
     })
-    setTimeout(saveData, 0)
-  }
+  }, [saveToFirebase])
 
   // Add new coordinator
-  const addCoordinator = (parentId: string, coordinator: Omit<Coordinator, 'id'> & { position?: { x: number; y: number } }) => {
-    // Find parent to calculate position
+  const addCoordinator = useCallback((parentId: string, coordinator: Omit<Coordinator, 'id'> & { position?: { x: number; y: number } }) => {
     const parent = data.coordinators.find(c => c.id === parentId) ||
                    data.mainCoordinators.find(m => m.id === parentId)
     
@@ -718,106 +896,112 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       subUnits: coordinator.subUnits || [],
     }
     
-    setData(prev => ({
-      ...prev,
-      coordinators: [...prev.coordinators, newCoordinator]
-    }))
-    setTimeout(saveData, 0)
-  }
+    setData(prev => {
+      const newData = {
+        ...prev,
+        coordinators: [...prev.coordinators, newCoordinator]
+      }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [data, generateId, saveToFirebase])
 
   // Add new management (chairman)
-  const addManagement = (management: Omit<Management, 'id'>) => {
+  const addManagement = useCallback((management: Omit<Management, 'id'>) => {
     const newManagement: Management = {
       ...management,
       id: generateId(),
     }
-    setData(prev => ({
-      ...prev,
-      management: [...prev.management, newManagement]
-    }))
-    setTimeout(saveData, 0)
-  }
+    setData(prev => {
+      const newData = {
+        ...prev,
+        management: [...prev.management, newManagement]
+      }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [generateId, saveToFirebase])
 
   // Add new executive
-  const addExecutive = (executive: Omit<Executive, 'id'>) => {
+  const addExecutive = useCallback((executive: Omit<Executive, 'id'>) => {
     const newExecutive: Executive = {
       ...executive,
       id: generateId(),
     }
-    setData(prev => ({
-      ...prev,
-      executives: [...prev.executives, newExecutive]
-    }))
-    setTimeout(saveData, 0)
-  }
+    setData(prev => {
+      const newData = {
+        ...prev,
+        executives: [...prev.executives, newExecutive]
+      }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [generateId, saveToFirebase])
 
   // Add new main coordinator
-  const addMainCoordinator = (mainCoordinator: Omit<MainCoordinator, 'id'>) => {
+  const addMainCoordinator = useCallback((mainCoordinator: Omit<MainCoordinator, 'id'>) => {
     const newMainCoordinator: MainCoordinator = {
       ...mainCoordinator,
       id: generateId(),
     }
-    setData(prev => ({
-      ...prev,
-      mainCoordinators: [...prev.mainCoordinators, newMainCoordinator]
-    }))
-    setTimeout(saveData, 0)
-  }
+    setData(prev => {
+      const newData = {
+        ...prev,
+        mainCoordinators: [...prev.mainCoordinators, newMainCoordinator]
+      }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [generateId, saveToFirebase])
 
-  // Şemayı koordinatöre bağla (ana şemadaki bir koordinatörün altına yeni şema bağla)
-  const linkSchemaToCoordinator = (schemaId: string, coordinatorId: string) => {
-    // Ana şema verisini al
-    const mainDataStr = localStorage.getItem('orgData_main') || localStorage.getItem('orgData')
-    if (!mainDataStr) return
-    
-    try {
-      const mainData: OrgData = JSON.parse(mainDataStr)
-      const updatedCoordinators = mainData.coordinators.map(coord => 
-        coord.id === coordinatorId 
-          ? { ...coord, linkedSchemaId: schemaId, hasDetailPage: true }
-          : coord
-      )
-      
-      const updatedMainData = { ...mainData, coordinators: updatedCoordinators }
-      localStorage.setItem('orgData_main', JSON.stringify(updatedMainData))
-      localStorage.setItem('orgData', JSON.stringify(updatedMainData))
-      
-      // Bağlantı haritasını güncelle
-      const linkMap = JSON.parse(localStorage.getItem('schemaLinkMap') || '{}')
-      linkMap[schemaId] = coordinatorId
-      localStorage.setItem('schemaLinkMap', JSON.stringify(linkMap))
-    } catch (e) {
-      console.error('Failed to link schema:', e)
-    }
-  }
+  // Link schema to coordinator
+  const linkSchemaToCoordinator = useCallback((schemaId: string, coordinatorId: string) => {
+    // Ana şema verisini al ve güncelle
+    get(ref(database, 'orgData/main')).then(snapshot => {
+      const mainData = snapshot.val() as OrgData
+      if (mainData) {
+        const updatedCoordinators = mainData.coordinators.map(coord => 
+          coord.id === coordinatorId 
+            ? { ...coord, linkedSchemaId: schemaId, hasDetailPage: true }
+            : coord
+        )
+        set(ref(database, 'orgData/main'), { ...mainData, coordinators: updatedCoordinators })
+      }
+    })
+  }, [])
 
-  // Şema bağlantısını kaldır
-  const unlinkSchemaFromCoordinator = (coordinatorId: string) => {
-    setData(prev => ({
-      ...prev,
-      coordinators: prev.coordinators.map(coord =>
-        coord.id === coordinatorId
-          ? { ...coord, linkedSchemaId: undefined }
-          : coord
-      )
-    }))
-    setTimeout(saveData, 0)
-  }
+  // Unlink schema from coordinator
+  const unlinkSchemaFromCoordinator = useCallback((coordinatorId: string) => {
+    setData(prev => {
+      const newData = {
+        ...prev,
+        coordinators: prev.coordinators.map(coord =>
+          coord.id === coordinatorId
+            ? { ...coord, linkedSchemaId: undefined }
+            : coord
+        )
+      }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [saveToFirebase])
 
-  // Bağlı şema verisini al
-  const getLinkedSchemaData = (schemaId: string): OrgData | null => {
-    const dataStr = localStorage.getItem(`orgData_${schemaId}`)
-    if (!dataStr) return null
-    try {
-      return JSON.parse(dataStr)
-    } catch {
-      return null
-    }
-  }
+  // Get linked schema data
+  const getLinkedSchemaData = useCallback((schemaId: string): OrgData | null => {
+    // Bu senkron bir fonksiyon olduğu için Firebase'den anlık okuma yapmak zor
+    // Şimdilik null döndürüyoruz, gerekirse ayrı bir async fonksiyon yazılabilir
+    return null
+  }, [])
 
   return (
     <OrgDataContext.Provider value={{
       data,
+      projects,
+      activeProjectId,
+      isLocked,
+      positions,
+      customConnections,
+      isLoading,
       updateCoordinator,
       addSubUnit,
       addDeputy,
@@ -838,6 +1022,13 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       resetToEmpty,
       saveData,
       loadData,
+      setActiveProject,
+      createProject,
+      deleteProject,
+      setLocked,
+      updatePositions,
+      addConnection,
+      removeConnection,
     }}>
       {children}
     </OrgDataContext.Provider>

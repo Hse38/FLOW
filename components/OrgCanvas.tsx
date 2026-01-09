@@ -44,33 +44,43 @@ interface OrgCanvasProps {
 }
 
 const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: OrgCanvasProps) => {
-  const { data, addSubUnit, addDeputy, addResponsibility, addCoordinator, deleteCoordinator, deleteNode, updateCoordinator, addManagement, addExecutive, addMainCoordinator, updatePerson, addPerson, linkSchemaToCoordinator } = useOrgData()
+  const { 
+    data, 
+    addSubUnit, 
+    addDeputy, 
+    addResponsibility, 
+    addCoordinator, 
+    deleteCoordinator, 
+    deleteNode, 
+    updateCoordinator, 
+    addManagement, 
+    addExecutive, 
+    addMainCoordinator, 
+    updatePerson, 
+    addPerson, 
+    linkSchemaToCoordinator,
+    // Firebase senkronizasyon
+    isLocked: firebaseLocked,
+    setLocked: setFirebaseLocked,
+    positions: firebasePositions,
+    updatePositions: updateFirebasePositions,
+    customConnections: firebaseConnections,
+    addConnection: addFirebaseConnection,
+    removeConnection: removeFirebaseConnection,
+    isLoading
+  } = useOrgData()
   const reactFlowInstance = useReactFlow()
   
   const [expandedCoordinator, setExpandedCoordinator] = useState<string | null>(null)
   
-  // Kilitleme durumu
-  const [isLocked, setIsLocked] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('orgChartLocked') === 'true'
-    }
-    return false
-  })
+  // Kilitleme durumu - Firebase'den geliyor
+  const isLocked = firebaseLocked
 
-  // Özel pozisyonlar (kullanıcı tarafından ayarlanmış)
-  const [customPositions, setCustomPositions] = useState<Record<string, { x: number; y: number }>>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('orgChartPositions')
-      if (saved) {
-        try {
-          return JSON.parse(saved)
-        } catch {
-          return {}
-        }
-      }
-    }
-    return {}
-  })
+  // Özel pozisyonlar - Firebase'den geliyor
+  const customPositions = firebasePositions
+  
+  // Pozisyonları güncellemek için local state (drag sırasında)
+  const [localPositions, setLocalPositions] = useState<Record<string, { x: number; y: number }>>({})
 
   // Boş alan context menu state - now includes position for adding nodes
   const [paneContextMenu, setPaneContextMenu] = useState<{ x: number; y: number; flowPosition?: { x: number; y: number } } | null>(null)
@@ -116,20 +126,13 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
     nodeId: string
   } | null>(null)
 
-  // Custom connections (ip çekme) state - sourceHandle/targetHandle: 'top' veya 'bottom'
-  const [customConnections, setCustomConnections] = useState<Array<{ source: string; target: string; id: string; sourceHandle?: string; targetHandle?: string }>>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('orgCustomConnections')
-      if (saved) {
-        try {
-          return JSON.parse(saved)
-        } catch {
-          return []
-        }
-      }
-    }
-    return []
-  })
+  // Custom connections (ip çekme) - Firebase'den geliyor
+  const customConnections = useMemo(() => {
+    return (firebaseConnections || []).map((conn, idx) => ({
+      ...conn,
+      id: `custom-${conn.source}-${conn.target}-${idx}`
+    }))
+  }, [firebaseConnections])
 
   // Connection mode state (bağlantı oluşturma modu)
   const [connectionMode, setConnectionMode] = useState<{ active: boolean; sourceId: string | null; sourceName: string | null; sourceHandle: 'top' | 'bottom' }>({
@@ -473,7 +476,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState(nodes)
   const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState(edges)
 
-  // Node sürüklendiğinde pozisyonu kaydet
+  // Node sürüklendiğinde pozisyonu Firebase'e kaydet
   const handleNodesChange = useCallback((changes: NodeChange[]) => {
     onNodesChange(changes)
     
@@ -483,35 +486,27 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
         const nodeId = change.id
         // Detail node'ları kaydetme
         if (!nodeId.startsWith('detail-')) {
-          setCustomPositions((prev) => {
-            const updated = {
-              ...prev,
-              [nodeId]: { x: change.position!.x, y: change.position!.y }
-            }
-            localStorage.setItem('orgChartPositions', JSON.stringify(updated))
-            return updated
-          })
+          const updated = {
+            ...customPositions,
+            [nodeId]: { x: change.position!.x, y: change.position!.y }
+          }
+          updateFirebasePositions(updated)
         }
       }
     })
-  }, [onNodesChange])
+  }, [onNodesChange, customPositions, updateFirebasePositions])
 
-  // Kilitleme toggle
+  // Kilitleme toggle - Firebase'e kaydet
   const toggleLock = useCallback(() => {
-    setIsLocked((prev) => {
-      const newValue = !prev
-      localStorage.setItem('orgChartLocked', String(newValue))
-      return newValue
-    })
+    setFirebaseLocked(!isLocked)
     setPaneContextMenu(null)
-  }, [])
+  }, [isLocked, setFirebaseLocked])
 
-  // Pozisyonları sıfırla
+  // Pozisyonları sıfırla - Firebase'den sil
   const resetPositions = useCallback(() => {
-    setCustomPositions({})
-    localStorage.removeItem('orgChartPositions')
+    updateFirebasePositions({})
     setPaneContextMenu(null)
-  }, [])
+  }, [updateFirebasePositions])
 
   // Custom connection (bağlantı) oluşturma - önce yön seçimi modal açılır
   const startConnection = useCallback((nodeId: string, nodeName: string, sourceHandle: 'top' | 'bottom') => {
@@ -525,31 +520,26 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
 
   const completeConnection = useCallback((targetId: string, targetHandle: 'top' | 'bottom') => {
     if (connectionMode.sourceId && connectionMode.sourceId !== targetId) {
-      const newConnection = {
-        id: `custom-${connectionMode.sourceId}-${targetId}-${Date.now()}`,
+      addFirebaseConnection({
         source: connectionMode.sourceId,
         target: targetId,
         sourceHandle: connectionMode.sourceHandle,
         targetHandle: targetHandle
-      }
-      const updatedConnections = [...customConnections, newConnection]
-      setCustomConnections(updatedConnections)
-      localStorage.setItem('orgCustomConnections', JSON.stringify(updatedConnections))
+      })
     }
     setConnectionMode({ active: false, sourceId: null, sourceName: null, sourceHandle: 'bottom' })
     setPendingTarget(null)
-  }, [connectionMode, customConnections])
+  }, [connectionMode, addFirebaseConnection])
 
   const cancelConnection = useCallback(() => {
     setConnectionMode({ active: false, sourceId: null, sourceName: null, sourceHandle: 'bottom' })
     setPendingTarget(null)
   }, [])
 
-  const removeConnection = useCallback((connectionId: string) => {
-    const updatedConnections = customConnections.filter(c => c.id !== connectionId)
-    setCustomConnections(updatedConnections)
-    localStorage.setItem('orgCustomConnections', JSON.stringify(updatedConnections))
-  }, [customConnections])
+  // Bağlantı kaldır - Firebase'den sil
+  const handleRemoveConnection = useCallback((source: string, target: string) => {
+    removeFirebaseConnection(source, target)
+  }, [removeFirebaseConnection])
 
   // Boş alana sağ tıklama
   const handlePaneContextMenu = useCallback((event: React.MouseEvent) => {
@@ -1396,7 +1386,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
                       </div>
                     </div>
                     <button
-                      onClick={() => removeConnection(conn.id)}
+                      onClick={() => handleRemoveConnection(conn.source, conn.target)}
                       className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors"
                       title="Bağlantıyı Kaldır"
                     >
