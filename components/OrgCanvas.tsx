@@ -28,6 +28,7 @@ import PersonDetailModal from './PersonDetailModal'
 import LinkToMainSchemaModal from './LinkToMainSchemaModal'
 import RightDetailPanel from './RightDetailPanel'
 import NormKadroModal from './NormKadroModal'
+import TurkeyMapModal from './TurkeyMapModal'
 import { useOrgData, Person } from '@/context/OrgDataContext'
 
 const nodeTypes = {
@@ -62,6 +63,10 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
     addPerson,
     deletePerson,
     updateSubUnit,
+    addCityPerson,
+    updateCityPerson,
+    deleteCityPerson,
+    getCityPersonnel,
     linkSchemaToCoordinator,
     // Firebase senkronizasyon
     isLocked: firebaseLocked,
@@ -82,6 +87,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
 
   // Norm Kadro Modal
   const [normKadroModal, setNormKadroModal] = useState<boolean>(false)
+
+  // Türkiye Haritası Modal (Toplumsal Çalışmalar için)
+  const [turkeyMapModal, setTurkeyMapModal] = useState<boolean>(false)
   
   // Kilitleme durumu - Firebase'den geliyor
   const isLocked = firebaseLocked
@@ -860,6 +868,11 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
         onNodeContextMenu={handleNodeContextMenu}
         onPaneContextMenu={handlePaneContextMenu}
         onNodeClick={(_, node) => {
+          // Toplumsal Çalışmalar Koordinatörlüğü'ne tıklandığında harita aç
+          if (node.id === 'toplumsal-calismalar') {
+            setTurkeyMapModal(true)
+            return
+          }
           // Bağlantı modundaysa hedef yönü seçimi için modal aç
           if (connectionMode.active && node.id !== connectionMode.sourceId) {
             setPendingTarget({ targetId: node.id })
@@ -996,6 +1009,17 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
         coordinators={data.coordinators}
         onUpdateCoordinator={updateCoordinator}
         onUpdateSubUnit={updateSubUnit}
+      />
+
+      {/* Türkiye Haritası Modal - Toplumsal Çalışmalar */}
+      <TurkeyMapModal
+        isOpen={turkeyMapModal}
+        onClose={() => setTurkeyMapModal(false)}
+        cityPersonnel={getCityPersonnel()}
+        onUpdateCityPersonnel={() => {}}
+        onAddPerson={addCityPerson}
+        onUpdatePerson={updateCityPerson}
+        onDeletePerson={deleteCityPerson}
       />
 
       {/* Logo */}

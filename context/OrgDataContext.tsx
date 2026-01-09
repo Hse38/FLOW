@@ -77,11 +77,18 @@ export interface Management {
   position: { x: number; y: number }
 }
 
+export interface CityPersonnel {
+  id: string
+  city: string
+  people: Person[]
+}
+
 export interface OrgData {
   management: Management[]
   executives: Executive[]
   mainCoordinators: MainCoordinator[]
   coordinators: Coordinator[]
+  cityPersonnel?: CityPersonnel[]  // Toplumsal Çalışmalar şehir bazlı personel
 }
 
 export interface Project {
@@ -118,6 +125,11 @@ interface OrgDataContextType {
   unlinkSchemaFromCoordinator: (coordinatorId: string) => void
   getLinkedSchemaData: (schemaId: string) => OrgData | null
   updateSubUnit: (coordinatorId: string, subUnitId: string, updates: Partial<SubUnit>) => void
+  // Şehir personel fonksiyonları
+  addCityPerson: (city: string, person: Omit<Person, 'id'>) => void
+  updateCityPerson: (city: string, personId: string, updates: Partial<Person>) => void
+  deleteCityPerson: (city: string, personId: string) => void
+  getCityPersonnel: () => CityPersonnel[]
   resetToEmpty: () => void
   saveData: () => void
   loadData: () => void
@@ -874,6 +886,77 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     })
   }, [saveToFirebase])
 
+  // Şehir bazlı personel ekleme (Toplumsal Çalışmalar için)
+  const addCityPerson = useCallback((city: string, person: Omit<Person, 'id'>) => {
+    setData(prev => {
+      const cityPersonnel = prev.cityPersonnel || []
+      const existingCity = cityPersonnel.find(cp => cp.city === city)
+      
+      const newPerson: Person = {
+        ...person,
+        id: `person-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      }
+
+      let newCityPersonnel: CityPersonnel[]
+      if (existingCity) {
+        newCityPersonnel = cityPersonnel.map(cp =>
+          cp.city === city
+            ? { ...cp, people: [...cp.people, newPerson] }
+            : cp
+        )
+      } else {
+        newCityPersonnel = [
+          ...cityPersonnel,
+          { id: `city-${Date.now()}`, city, people: [newPerson] }
+        ]
+      }
+
+      const newData = { ...prev, cityPersonnel: newCityPersonnel }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [saveToFirebase])
+
+  // Şehir bazlı personel güncelleme
+  const updateCityPerson = useCallback((city: string, personId: string, updates: Partial<Person>) => {
+    setData(prev => {
+      const newCityPersonnel = (prev.cityPersonnel || []).map(cp =>
+        cp.city === city
+          ? {
+              ...cp,
+              people: cp.people.map(p =>
+                p.id === personId ? { ...p, ...updates } : p
+              )
+            }
+          : cp
+      )
+
+      const newData = { ...prev, cityPersonnel: newCityPersonnel }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [saveToFirebase])
+
+  // Şehir bazlı personel silme
+  const deleteCityPerson = useCallback((city: string, personId: string) => {
+    setData(prev => {
+      const newCityPersonnel = (prev.cityPersonnel || []).map(cp =>
+        cp.city === city
+          ? { ...cp, people: cp.people.filter(p => p.id !== personId) }
+          : cp
+      ).filter(cp => cp.people.length > 0) // Boş şehirleri kaldır
+
+      const newData = { ...prev, cityPersonnel: newCityPersonnel }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [saveToFirebase])
+
+  // Tüm şehir personelini getir
+  const getCityPersonnel = useCallback((): CityPersonnel[] => {
+    return data.cityPersonnel || []
+  }, [data.cityPersonnel])
+
   // Delete deputy
   const deleteDeputy = useCallback((coordinatorId: string, deputyId: string) => {
     setData(prev => {
@@ -1062,6 +1145,10 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       deletePerson,
       deleteSubUnit,
       updateSubUnit,
+      addCityPerson,
+      updateCityPerson,
+      deleteCityPerson,
+      getCityPersonnel,
       deleteDeputy,
       deleteCoordinator,
       deleteNode,
