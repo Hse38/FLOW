@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Person, Coordinator, Deputy, SubUnit } from '@/context/OrgDataContext'
 
 interface RightDetailPanelProps {
@@ -459,7 +459,29 @@ function PersonMiniCard({ person, type, onClose, onUpdate }: PersonMiniCardProps
     email: person.email || '',
     phone: person.phone || '',
     notes: person.notes || '',
+    cvFileName: person.cvFileName || '',
+    cvData: person.cvData || '',
   })
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Dosya boyutu 5MB\'dan küçük olmalıdır.')
+        return
+      }
+      const reader = new FileReader()
+      reader.onload = () => {
+        setEditData({
+          ...editData,
+          cvData: reader.result as string,
+          cvFileName: file.name,
+        })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
 
   const handleSave = () => {
     onUpdate(editData)
@@ -580,6 +602,45 @@ function PersonMiniCard({ person, type, onClose, onUpdate }: PersonMiniCardProps
               rows={3}
               className="w-full px-3 py-2 border rounded-lg text-sm"
             />
+            
+            {/* CV Yükleme */}
+            <div className="border-t pt-2">
+              <p className="text-xs text-gray-500 mb-2">CV / Özgeçmiş</p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              {editData.cvFileName ? (
+                <div className="flex items-center gap-2 bg-green-50 p-2 rounded-lg">
+                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span className="text-xs text-green-700 flex-1 truncate">{editData.cvFileName}</span>
+                  <button
+                    type="button"
+                    onClick={() => setEditData({ ...editData, cvFileName: '', cvData: '' })}
+                    className="text-red-500 hover:text-red-700 text-xs"
+                  >
+                    Sil
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full px-3 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-500 text-xs flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  CV Yükle (Max 5MB)
+                </button>
+              )}
+            </div>
+
             <div className="flex gap-2">
               <button
                 onClick={handleSave}

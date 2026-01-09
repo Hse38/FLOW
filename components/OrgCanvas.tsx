@@ -117,12 +117,21 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
   // Video modal state
   const [videoModal, setVideoModal] = useState<boolean>(false)
 
-  // Personel detay modal state
+  // Personel detay modal state (düzenleme için)
   const [personDetailModal, setPersonDetailModal] = useState<{
     isOpen: boolean
     person: Person
     coordinatorId: string
     subUnitId: string
+  } | null>(null)
+
+  // Sağ tarafta kişi görüntüleme kartı (şema üzerinden tıklayınca)
+  const [viewPersonCard, setViewPersonCard] = useState<{
+    person: Person
+    coordinatorId: string
+    subUnitId: string
+    coordinatorTitle: string
+    subUnitTitle: string
   } | null>(null)
 
   // Alt birim context menu (kişi ekle/sil için)
@@ -363,11 +372,13 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
             coordinatorId: expandedCoordinatorData.id,
             subUnitId: subUnit.id,
             onPersonClick: (person: Person) => {
-              setPersonDetailModal({
-                isOpen: true,
+              // Şema üzerinden tıklayınca sağda görüntüleme kartı aç
+              setViewPersonCard({
                 person,
                 coordinatorId: expandedCoordinatorData.id,
                 subUnitId: subUnit.id,
+                coordinatorTitle: expandedCoordinatorData.title,
+                subUnitTitle: subUnit.title,
               })
             },
             onContextMenu: (e: React.MouseEvent) => {
@@ -1061,6 +1072,144 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
             )
           }}
         />
+      )}
+
+      {/* Şema Üzerinden Kişi Görüntüleme Kartı */}
+      {viewPersonCard && (
+        <div className="fixed right-4 top-1/2 -translate-y-1/2 w-[320px] bg-white rounded-2xl shadow-2xl z-50 overflow-hidden border border-gray-200">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">Personel Bilgisi</span>
+              <button 
+                onClick={() => setViewPersonCard(null)} 
+                className="hover:bg-white/20 p-1.5 rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-2xl font-bold border-2 border-white/30">
+                {viewPersonCard.person.name.charAt(0)}
+              </div>
+              <div>
+                <h4 className="font-bold text-lg">{viewPersonCard.person.name}</h4>
+                <p className="text-blue-200 text-sm">{viewPersonCard.person.title || 'Personel'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Birim Bilgisi */}
+          <div className="bg-gray-50 px-4 py-2 border-b flex items-center gap-2 text-xs text-gray-600">
+            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            <span>{viewPersonCard.coordinatorTitle}</span>
+            <span className="text-gray-300">›</span>
+            <span className="text-blue-600 font-medium">{viewPersonCard.subUnitTitle}</span>
+          </div>
+
+          {/* Content */}
+          <div className="p-4 space-y-4">
+            {/* İletişim Bilgileri */}
+            {(viewPersonCard.person.email || viewPersonCard.person.phone) && (
+              <div className="space-y-2">
+                <h5 className="text-xs font-semibold text-gray-400 uppercase">İletişim</h5>
+                {viewPersonCard.person.email && (
+                  <div className="flex items-center gap-2 text-sm bg-gray-50 px-3 py-2 rounded-lg">
+                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-gray-700">{viewPersonCard.person.email}</span>
+                  </div>
+                )}
+                {viewPersonCard.person.phone && (
+                  <div className="flex items-center gap-2 text-sm bg-gray-50 px-3 py-2 rounded-lg">
+                    <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    <span className="text-gray-700">{viewPersonCard.person.phone}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Görevler / Notlar */}
+            {viewPersonCard.person.notes && (
+              <div className="space-y-2">
+                <h5 className="text-xs font-semibold text-gray-400 uppercase">Görevler</h5>
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-3 border border-amber-200">
+                  <p className="text-sm text-gray-700 whitespace-pre-line">{viewPersonCard.person.notes}</p>
+                </div>
+              </div>
+            )}
+
+            {/* CV */}
+            {viewPersonCard.person.cvFileName ? (
+              <div className="space-y-2">
+                <h5 className="text-xs font-semibold text-gray-400 uppercase">Özgeçmiş (CV)</h5>
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border border-green-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-700 truncate">{viewPersonCard.person.cvFileName}</p>
+                      <p className="text-xs text-gray-500">CV Dosyası</p>
+                    </div>
+                    {viewPersonCard.person.cvData && (
+                      <button
+                        onClick={() => {
+                          // Base64 veriyi indir
+                          const link = document.createElement('a')
+                          link.href = viewPersonCard.person.cvData!
+                          link.download = viewPersonCard.person.cvFileName!
+                          link.click()
+                        }}
+                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                      >
+                        İndir
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <h5 className="text-xs font-semibold text-gray-400 uppercase">Özgeçmiş (CV)</h5>
+                <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">
+                  <svg className="w-8 h-8 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <p className="text-xs text-gray-400">CV yüklenmemiş</p>
+                </div>
+              </div>
+            )}
+
+            {/* Düzenle Butonu */}
+            <button
+              onClick={() => {
+                setPersonDetailModal({
+                  isOpen: true,
+                  person: viewPersonCard.person,
+                  coordinatorId: viewPersonCard.coordinatorId,
+                  subUnitId: viewPersonCard.subUnitId,
+                })
+                setViewPersonCard(null)
+              }}
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Düzenle
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Link to Main Schema Modal */}
