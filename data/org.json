@@ -5,7 +5,7 @@
       "name": "Selçuk Bayraktar",
       "title": "Yönetim Kurulu Başkanı",
       "type": "chairman",
-      "position": { "x": 600, "y": 50 }
+      "position": { "x": 1000, "y": 50 }
     }
   ],
   "executives": [
@@ -22,7 +22,7 @@
       "name": "Elvan Kuzucu Hıdır",
       "title": "Genel Müdür Yardımcısı",
       "type": "executive",
-      "position": { "x": 400, "y": 150 },
+      "position": { "x": 500, "y": 200 },
       "parent": "selcuk-bayraktar"
     },
     {
@@ -30,7 +30,7 @@
       "name": "Muhammet Saymaz",
       "title": "Genel Müdür Yardımcısı",
       "type": "executive",
-      "position": { "x": 800, "y": 150 },
+      "position": { "x": 1600, "y": 200 },
       "parent": "selcuk-bayraktar"
     }
   ],
@@ -40,7 +40,7 @@
       "title": "T3 Vakfı Koordinatörlükleri",
       "description": "T3 Vakfı bünyesindeki tüm koordinatörlükler",
       "type": "main-coordinator",
-      "position": { "x": 250, "y": 280 },
+      "position": { "x": 500, "y": 380 },
       "parent": "elvan-kuzucu"
     },
     {
@@ -48,7 +48,7 @@
       "title": "Teknofest Koordinatörlükleri",
       "description": "Teknofest etkinlikleri koordinatörlükleri",
       "type": "main-coordinator",
-      "position": { "x": 950, "y": 280 },
+      "position": { "x": 1600, "y": 380 },
       "parent": "muhammet-saymaz"
     },
     {
@@ -56,7 +56,7 @@
       "title": "T3 Vakfı / Teknofest Koordinatörlükleri",
       "description": "Her iki yapıya da hizmet veren koordinatörlükler",
       "type": "main-coordinator",
-      "position": { "x": 600, "y": 750 },
+      "position": { "x": 1000, "y": 1600 },
       "parent": null
     }
   ],
@@ -71,7 +71,7 @@
         "Fiyat müzakereleri",
         "Sözleşme yönetimi"
       ],
-      "position": { "x": 30, "y": 400 },
+      "position": { "x": 50, "y": 580 },
       "parent": "t3-vakfi-koordinatorlukleri"
     },
     {
@@ -84,7 +84,7 @@
         "Mentorluk programları",
         "Kariyer rehberliği"
       ],
-      "position": { "x": 200, "y": 400 },
+      "position": { "x": 450, "y": 580 },
       "parent": "t3-vakfi-koordinatorlukleri"
     },
     {
@@ -97,7 +97,7 @@
         "İnşaat koordinasyonu",
         "Teknik çizimler"
       ],
-      "position": { "x": 370, "y": 400 },
+      "position": { "x": 850, "y": 580 },
       "parent": "t3-vakfi-koordinatorlukleri"
     },
     {
@@ -110,7 +110,7 @@
         "Eğitim ve gelişim",
         "Özlük işleri"
       ],
-      "position": { "x": 30, "y": 490 },
+      "position": { "x": 50, "y": 780 },
       "parent": "t3-vakfi-koordinatorlukleri"
     },
     {
@@ -123,7 +123,7 @@
         "Mentor ağı koordinasyonu",
         "Demo Day organizasyonları"
       ],
-      "position": { "x": 200, "y": 490 },
+      "position": { "x": 450, "y": 780 },
       "parent": "t3-vakfi-koordinatorlukleri"
     },
     {
@@ -136,7 +136,7 @@
         "Akademik işbirlikleri",
         "İnovasyon araştırmaları"
       ],
-      "position": { "x": 370, "y": 490 },
+      "position": { "x": 850, "y": 780 },
       "parent": "t3-vakfi-koordinatorlukleri"
     },
     {
@@ -149,7 +149,7 @@
         "Bütçe takibi",
         "Vergi işlemleri"
       ],
-      "position": { "x": 30, "y": 580 },
+      "position": { "x": 50, "y": 980 },
       "parent": "t3-vakfi-koordinatorlukleri"
     },
     {
@@ -162,7 +162,7 @@
         "Siber güvenlik",
         "Teknik destek"
       ],
-      "position": { "x": 200, "y": 580 },
+      "position": { "x": 450, "y": 980 },
       "parent": "t3-vakfi-koordinatorlukleri"
     },
     {
@@ -175,7 +175,7 @@
         "Başvuru yönetimi",
         "Ödül törenleri"
       ],
-      "position": { "x": 370, "y": 580 },
+      "position": { "x": 850, "y": 980 },
       "parent": "t3-vakfi-koordinatorlukleri"
     },
     {
@@ -188,7 +188,7 @@
         "Öğrenci takibi",
         "Teknoloji eğitimleri"
       ],
-      "position": { "x": 120, "y": 670 },
+      "position": { "x": 250, "y": 1180 },
       "parent": "t3-vakfi-koordinatorlukleri"
     },
     {
@@ -201,7 +201,7 @@
         "Stok yönetimi",
         "Kalite kontrol"
       ],
-      "position": { "x": 290, "y": 670 },
+      "position": { "x": 650, "y": 1180 },
       "parent": "t3-vakfi-koordinatorlukleri"
     },
     {
@@ -214,7 +214,7 @@
         "Katılımcı transferleri",
         "Lojistik yönetimi"
       ],
-      "position": { "x": 800, "y": 400 },
+      "position": { "x": 1250, "y": 580 },
       "parent": "teknofest-koordinatorlukleri"
     },
     {
@@ -227,7 +227,7 @@
         "Marka yönetimi",
         "Satış operasyonları"
       ],
-      "position": { "x": 970, "y": 400 },
+      "position": { "x": 1650, "y": 580 },
       "parent": "teknofest-koordinatorlukleri"
     },
     {
@@ -240,7 +240,7 @@
         "Sergi düzenlemesi",
         "Katılımcı ilişkileri"
       ],
-      "position": { "x": 1140, "y": 400 },
+      "position": { "x": 2050, "y": 580 },
       "parent": "teknofest-koordinatorlukleri"
     },
     {
@@ -253,7 +253,7 @@
         "Başvuru yönetimi",
         "Ödül törenleri"
       ],
-      "position": { "x": 850, "y": 490 },
+      "position": { "x": 1450, "y": 780 },
       "parent": "teknofest-koordinatorlukleri"
     },
     {
@@ -266,7 +266,7 @@
         "Teknik altyapı",
         "Acil durum yönetimi"
       ],
-      "position": { "x": 1050, "y": 490 },
+      "position": { "x": 1850, "y": 780 },
       "parent": "teknofest-koordinatorlukleri"
     },
     {
@@ -279,7 +279,7 @@
         "Tedarik süreçleri",
         "Tesis yönetimi"
       ],
-      "position": { "x": 500, "y": 870 },
+      "position": { "x": 700, "y": 1800 },
       "parent": "t3-teknofest-koordinatorlukleri"
     },
     {
@@ -292,7 +292,7 @@
         "İletişim ekipleri ve süreçlerinin koordinasyonu",
         "Medya, kriz ve paydaş iletişiminin yürütülmesi"
       ],
-      "position": { "x": 700, "y": 870 },
+      "position": { "x": 1200, "y": 1800 },
       "parent": "t3-teknofest-koordinatorlukleri",
       "hasDetailPage": true,
       "coordinator": {

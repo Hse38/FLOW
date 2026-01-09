@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Users, ListChecks, UserPlus, Trash2, Edit, ChevronRight } from 'lucide-react'
+import { Plus, Users, ListChecks, UserPlus, Trash2, Edit, Link2 } from 'lucide-react'
 
 interface ContextMenuProps {
   x: number
@@ -16,6 +16,8 @@ interface ContextMenuProps {
   onAddPerson: () => void
   onEdit: () => void
   onDelete: () => void
+  onLinkToMainSchema?: () => void
+  isInNewSchema?: boolean
 }
 
 export default function ContextMenu({
@@ -31,6 +33,8 @@ export default function ContextMenu({
   onAddPerson,
   onEdit,
   onDelete,
+  onLinkToMainSchema,
+  isInNewSchema = false,
 }: ContextMenuProps) {
   if (!isOpen) return null
 
@@ -65,6 +69,13 @@ export default function ContextMenu({
       icon: Edit,
       onClick: onEdit,
       show: true,
+    },
+    {
+      label: 'Ana Şemaya Bağla',
+      icon: Link2,
+      onClick: onLinkToMainSchema,
+      show: isInNewSchema && ['coordinator', 'subCoordinator', 'mainCoordinator'].includes(nodeType),
+      special: true,
     },
     {
       label: 'Sil',
@@ -109,7 +120,9 @@ export default function ContextMenu({
                   onClose()
                 }}
                 className={`w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors ${
-                  item.danger ? 'text-red-600 hover:bg-red-50' : 'text-gray-700'
+                  item.danger ? 'text-red-600 hover:bg-red-50' : 
+                  item.special ? 'text-indigo-600 hover:bg-indigo-50' : 
+                  'text-gray-700'
                 }`}
               >
                 {Icon && <Icon className="w-4 h-4" />}

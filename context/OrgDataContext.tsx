@@ -6,6 +6,12 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 export interface Person {
   id: string
   name: string
+  title?: string
+  email?: string
+  phone?: string
+  notes?: string
+  cvFileName?: string
+  cvData?: string  // Base64 encoded file
 }
 
 export interface SubUnit {
@@ -33,6 +39,7 @@ export interface Coordinator {
   coordinator?: { name: string; title: string }
   deputies: Deputy[]
   subUnits: SubUnit[]
+  linkedSchemaId?: string  // Bağlı şema ID'si (yeni şemadan bağlanmış)
 }
 
 export interface MainCoordinator {
@@ -75,10 +82,18 @@ interface OrgDataContextType {
   addDeputy: (coordinatorId: string, deputy: Omit<Deputy, 'id'>) => void
   addResponsibility: (coordinatorId: string, responsibility: string) => void
   addPerson: (coordinatorId: string, subUnitId: string, person: Omit<Person, 'id'>) => void
+  updatePerson: (coordinatorId: string, subUnitId: string, personId: string, updates: Partial<Person>) => void
   deleteSubUnit: (coordinatorId: string, subUnitId: string) => void
   deleteDeputy: (coordinatorId: string, deputyId: string) => void
   deleteCoordinator: (id: string) => void
   addCoordinator: (parentId: string, coordinator: Omit<Coordinator, 'id' | 'position'>) => void
+  addManagement: (management: Omit<Management, 'id'>) => void
+  addExecutive: (executive: Omit<Executive, 'id'>) => void
+  addMainCoordinator: (mainCoordinator: Omit<MainCoordinator, 'id'>) => void
+  linkSchemaToCoordinator: (schemaId: string, coordinatorId: string) => void
+  unlinkSchemaFromCoordinator: (coordinatorId: string) => void
+  getLinkedSchemaData: (schemaId: string) => OrgData | null
+  resetToEmpty: () => void
   saveData: () => void
   loadData: () => void
 }
@@ -454,17 +469,65 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
   // Clear old localStorage on mount to prevent corruption
   useEffect(() => {
-    localStorage.removeItem('orgData')
+    // Aktif projenin verilerini yükle
+    if (typeof window !== 'undefined') {
+      const activeProjectId = localStorage.getItem('activeProjectId')
+      if (activeProjectId) {
+        const projectData = localStorage.getItem(`orgData_${activeProjectId}`)
+        if (projectData) {
+          try {
+            const parsed = JSON.parse(projectData)
+            setData(parsed)
+            return
+          } catch (e) {
+            console.error('Failed to parse project data:', e)
+          }
+        }
+      }
+    }
+    // Varsayılan olarak initialData kullan
+    setData(initialData)
   }, [])
 
-  // Save to localStorage - disabled
+  // Save to localStorage
   const saveData = () => {
-    // localStorage.setItem('orgData', JSON.stringify(data))
+    if (typeof window !== 'undefined') {
+      const activeProjectId = localStorage.getItem('activeProjectId')
+      if (activeProjectId) {
+        localStorage.setItem(`orgData_${activeProjectId}`, JSON.stringify(data))
+      }
+    }
   }
 
-  // Load from localStorage - disabled
+  // Load from localStorage
   const loadData = () => {
+    if (typeof window !== 'undefined') {
+      const activeProjectId = localStorage.getItem('activeProjectId')
+      if (activeProjectId) {
+        const projectData = localStorage.getItem(`orgData_${activeProjectId}`)
+        if (projectData) {
+          try {
+            setData(JSON.parse(projectData))
+            return
+          } catch (e) {
+            console.error('Failed to parse project data:', e)
+          }
+        }
+      }
+    }
     setData(initialData)
+  }
+
+  // Reset to empty canvas
+  const resetToEmpty = () => {
+    const emptyData: OrgData = {
+      management: [],
+      executives: [],
+      mainCoordinators: [],
+      coordinators: []
+    }
+    setData(emptyData)
+    setTimeout(saveData, 0)
   }
 
   // Generate unique ID
@@ -554,6 +617,31 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     setTimeout(saveData, 0)
   }
 
+  // Update person in sub unit
+  const updatePerson = (coordinatorId: string, subUnitId: string, personId: string, updates: Partial<Person>) => {
+    setData(prev => ({
+      ...prev,
+      coordinators: prev.coordinators.map(c => 
+        c.id === coordinatorId 
+          ? {
+              ...c,
+              subUnits: (c.subUnits || []).map(su =>
+                su.id === subUnitId
+                  ? {
+                      ...su,
+                      people: (su.people || []).map(p =>
+                        p.id === personId ? { ...p, ...updates } : p
+                      )
+                    }
+                  : su
+              )
+            }
+          : c
+      )
+    }))
+    setTimeout(saveData, 0)
+  }
+
   // Delete sub unit
   const deleteSubUnit = (coordinatorId: string, subUnitId: string) => {
     setData(prev => ({
@@ -616,6 +704,96 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     setTimeout(saveData, 0)
   }
 
+  // Add new management (chairman)
+  const addManagement = (management: Omit<Management, 'id'>) => {
+    const newManagement: Management = {
+      ...management,
+      id: generateId(),
+    }
+    setData(prev => ({
+      ...prev,
+      management: [...prev.management, newManagement]
+    }))
+    setTimeout(saveData, 0)
+  }
+
+  // Add new executive
+  const addExecutive = (executive: Omit<Executive, 'id'>) => {
+    const newExecutive: Executive = {
+      ...executive,
+      id: generateId(),
+    }
+    setData(prev => ({
+      ...prev,
+      executives: [...prev.executives, newExecutive]
+    }))
+    setTimeout(saveData, 0)
+  }
+
+  // Add new main coordinator
+  const addMainCoordinator = (mainCoordinator: Omit<MainCoordinator, 'id'>) => {
+    const newMainCoordinator: MainCoordinator = {
+      ...mainCoordinator,
+      id: generateId(),
+    }
+    setData(prev => ({
+      ...prev,
+      mainCoordinators: [...prev.mainCoordinators, newMainCoordinator]
+    }))
+    setTimeout(saveData, 0)
+  }
+
+  // Şemayı koordinatöre bağla (ana şemadaki bir koordinatörün altına yeni şema bağla)
+  const linkSchemaToCoordinator = (schemaId: string, coordinatorId: string) => {
+    // Ana şema verisini al
+    const mainDataStr = localStorage.getItem('orgData_main') || localStorage.getItem('orgData')
+    if (!mainDataStr) return
+    
+    try {
+      const mainData: OrgData = JSON.parse(mainDataStr)
+      const updatedCoordinators = mainData.coordinators.map(coord => 
+        coord.id === coordinatorId 
+          ? { ...coord, linkedSchemaId: schemaId, hasDetailPage: true }
+          : coord
+      )
+      
+      const updatedMainData = { ...mainData, coordinators: updatedCoordinators }
+      localStorage.setItem('orgData_main', JSON.stringify(updatedMainData))
+      localStorage.setItem('orgData', JSON.stringify(updatedMainData))
+      
+      // Bağlantı haritasını güncelle
+      const linkMap = JSON.parse(localStorage.getItem('schemaLinkMap') || '{}')
+      linkMap[schemaId] = coordinatorId
+      localStorage.setItem('schemaLinkMap', JSON.stringify(linkMap))
+    } catch (e) {
+      console.error('Failed to link schema:', e)
+    }
+  }
+
+  // Şema bağlantısını kaldır
+  const unlinkSchemaFromCoordinator = (coordinatorId: string) => {
+    setData(prev => ({
+      ...prev,
+      coordinators: prev.coordinators.map(coord =>
+        coord.id === coordinatorId
+          ? { ...coord, linkedSchemaId: undefined }
+          : coord
+      )
+    }))
+    setTimeout(saveData, 0)
+  }
+
+  // Bağlı şema verisini al
+  const getLinkedSchemaData = (schemaId: string): OrgData | null => {
+    const dataStr = localStorage.getItem(`orgData_${schemaId}`)
+    if (!dataStr) return null
+    try {
+      return JSON.parse(dataStr)
+    } catch {
+      return null
+    }
+  }
+
   return (
     <OrgDataContext.Provider value={{
       data,
@@ -624,10 +802,18 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       addDeputy,
       addResponsibility,
       addPerson,
+      updatePerson,
       deleteSubUnit,
       deleteDeputy,
       deleteCoordinator,
       addCoordinator,
+      addManagement,
+      addExecutive,
+      addMainCoordinator,
+      linkSchemaToCoordinator,
+      unlinkSchemaFromCoordinator,
+      getLinkedSchemaData,
+      resetToEmpty,
       saveData,
       loadData,
     }}>

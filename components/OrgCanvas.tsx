@@ -11,6 +11,8 @@ import ReactFlow, {
   BackgroundVariant,
   ConnectionMode,
   ReactFlowProvider,
+  NodeChange,
+  useReactFlow,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 
@@ -22,7 +24,9 @@ import UnitNode from './nodes/UnitNode'
 import DetailNode from './nodes/DetailNode'
 import ContextMenu from './ContextMenu'
 import FormModal from './FormModal'
-import { useOrgData } from '@/context/OrgDataContext'
+import PersonDetailModal from './PersonDetailModal'
+import LinkToMainSchemaModal from './LinkToMainSchemaModal'
+import { useOrgData, Person } from '@/context/OrgDataContext'
 
 const nodeTypes = {
   chairman: ChairmanNode,
@@ -35,12 +39,41 @@ const nodeTypes = {
 
 interface OrgCanvasProps {
   onNodeClick?: (nodeId: string, nodeType: string) => void
+  currentProjectId?: string | null
+  currentProjectName?: string
 }
 
-const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
-  const { data, addSubUnit, addDeputy, addResponsibility, addCoordinator, deleteCoordinator, updateCoordinator } = useOrgData()
+const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: OrgCanvasProps) => {
+  const { data, addSubUnit, addDeputy, addResponsibility, addCoordinator, deleteCoordinator, updateCoordinator, addManagement, addExecutive, addMainCoordinator, updatePerson, addPerson, linkSchemaToCoordinator } = useOrgData()
+  const reactFlowInstance = useReactFlow()
   
   const [expandedCoordinator, setExpandedCoordinator] = useState<string | null>(null)
+  
+  // Kilitleme durumu
+  const [isLocked, setIsLocked] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('orgChartLocked') === 'true'
+    }
+    return false
+  })
+
+  // Özel pozisyonlar (kullanıcı tarafından ayarlanmış)
+  const [customPositions, setCustomPositions] = useState<Record<string, { x: number; y: number }>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('orgChartPositions')
+      if (saved) {
+        try {
+          return JSON.parse(saved)
+        } catch {
+          return {}
+        }
+      }
+    }
+    return {}
+  })
+
+  // Boş alan context menu state - now includes position for adding nodes
+  const [paneContextMenu, setPaneContextMenu] = useState<{ x: number; y: number; flowPosition?: { x: number; y: number } } | null>(null)
   
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
@@ -48,6 +81,13 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
     y: number
     nodeId: string
     nodeType: string
+  } | null>(null)
+  
+  // New node form modal
+  const [newNodeModal, setNewNodeModal] = useState<{
+    isOpen: boolean
+    type: 'management' | 'executive' | 'mainCoordinator' | 'coordinator'
+    position: { x: number; y: number }
   } | null>(null)
   
   // Form modal state
@@ -58,6 +98,23 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
     nodeId: string
     initialData?: any
   } | null>(null)
+
+  // Personel detay modal state
+  const [personDetailModal, setPersonDetailModal] = useState<{
+    isOpen: boolean
+    person: Person
+    coordinatorId: string
+    subUnitId: string
+  } | null>(null)
+
+  // Link to main schema modal state
+  const [linkModal, setLinkModal] = useState<{
+    isOpen: boolean
+    nodeId: string
+  } | null>(null)
+
+  // Yeni şemada mıyız kontrolü
+  const isInNewSchema = !!currentProjectId
 
   // Handler using ref to avoid stale closures
   const handleUnitClickRef = useRef<(unitId: string) => void>(() => {})
@@ -106,12 +163,18 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
   const nodes: Node[] = useMemo(() => {
     const nodeList: Node[] = []
 
+    // Pozisyon al (özel veya varsayılan)
+    const getPosition = (id: string, defaultPos: { x: number; y: number }) => {
+      return customPositions[id] || defaultPos
+    }
+
     // Add chairman
     data.management.forEach((item) => {
       nodeList.push({
         id: item.id,
         type: 'chairman',
-        position: item.position,
+        position: getPosition(item.id, item.position),
+        draggable: !isLocked,
         data: {
           label: item.name,
           title: item.title,
@@ -124,7 +187,8 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
       nodeList.push({
         id: exec.id,
         type: 'executive',
-        position: exec.position,
+        position: getPosition(exec.id, exec.position),
+        draggable: !isLocked,
         data: {
           label: exec.name,
           title: exec.title,
@@ -138,7 +202,8 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
       nodeList.push({
         id: coord.id,
         type: 'mainCoordinator',
-        position: coord.position,
+        position: getPosition(coord.id, coord.position),
+        draggable: !isLocked,
         data: {
           label: coord.title,
           id: coord.id,
@@ -154,7 +219,8 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
       nodeList.push({
         id: coord.id,
         type: 'subCoordinator',
-        position: coord.position,
+        position: getPosition(coord.id, coord.position),
+        draggable: !isLocked,
         data: {
           label: coord.title,
           id: coord.id,
@@ -228,15 +294,25 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
           data: {
             label: subUnit.title,
             type: 'subunit',
-            people: subUnit.people?.map((p) => p.name),
+            people: subUnit.people,
             responsibilities: subUnit.responsibilities,
+            coordinatorId: expandedCoordinatorData.id,
+            subUnitId: subUnit.id,
+            onPersonClick: (person: Person) => {
+              setPersonDetailModal({
+                isOpen: true,
+                person,
+                coordinatorId: expandedCoordinatorData.id,
+                subUnitId: subUnit.id,
+              })
+            },
           },
         })
       })
     }
 
     return nodeList
-  }, [data, handleUnitClick, handleContextMenu, expandedCoordinator, expandedCoordinatorData])
+  }, [data, handleUnitClick, handleContextMenu, expandedCoordinator, expandedCoordinatorData, customPositions, isLocked])
 
   // Convert data to React Flow edges
   const edges: Edge[] = useMemo(() => {
@@ -341,11 +417,115 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState(nodes)
   const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState(edges)
 
+  // Node sürüklendiğinde pozisyonu kaydet
+  const handleNodesChange = useCallback((changes: NodeChange[]) => {
+    onNodesChange(changes)
+    
+    // Sürükleme bittiğinde pozisyonu kaydet
+    changes.forEach((change) => {
+      if (change.type === 'position' && change.position && !change.dragging) {
+        const nodeId = change.id
+        // Detail node'ları kaydetme
+        if (!nodeId.startsWith('detail-')) {
+          setCustomPositions((prev) => {
+            const updated = {
+              ...prev,
+              [nodeId]: { x: change.position!.x, y: change.position!.y }
+            }
+            localStorage.setItem('orgChartPositions', JSON.stringify(updated))
+            return updated
+          })
+        }
+      }
+    })
+  }, [onNodesChange])
+
+  // Kilitleme toggle
+  const toggleLock = useCallback(() => {
+    setIsLocked((prev) => {
+      const newValue = !prev
+      localStorage.setItem('orgChartLocked', String(newValue))
+      return newValue
+    })
+    setPaneContextMenu(null)
+  }, [])
+
+  // Pozisyonları sıfırla
+  const resetPositions = useCallback(() => {
+    setCustomPositions({})
+    localStorage.removeItem('orgChartPositions')
+    setPaneContextMenu(null)
+  }, [])
+
+  // Boş alana sağ tıklama
+  const handlePaneContextMenu = useCallback((event: React.MouseEvent) => {
+    event.preventDefault()
+    // Screen coordinates to flow coordinates
+    const flowPosition = reactFlowInstance.screenToFlowPosition({
+      x: event.clientX,
+      y: event.clientY,
+    })
+    setPaneContextMenu({ x: event.clientX, y: event.clientY, flowPosition })
+  }, [reactFlowInstance])
+
+  // Yeni node ekleme fonksiyonları
+  const handleAddNewNode = useCallback((type: 'management' | 'executive' | 'mainCoordinator' | 'coordinator') => {
+    if (!paneContextMenu?.flowPosition) return
+    
+    const position = paneContextMenu.flowPosition
+    
+    if (type === 'management') {
+      addManagement({
+        name: 'Yeni Yönetici',
+        title: 'Başkan',
+        type: 'chairman',
+        position
+      })
+    } else if (type === 'executive') {
+      addExecutive({
+        name: 'Yeni Yönetici',
+        title: 'Genel Müdür Yardımcısı',
+        type: 'executive',
+        position,
+        parent: data.management[0]?.id || ''
+      })
+    } else if (type === 'mainCoordinator') {
+      addMainCoordinator({
+        title: 'Yeni Ana Koordinatörlük',
+        description: '',
+        type: 'main-coordinator',
+        position,
+        parent: data.executives[0]?.id || null
+      })
+    } else if (type === 'coordinator') {
+      const parentId = data.mainCoordinators[0]?.id || ''
+      addCoordinator(parentId, {
+        title: 'Yeni Koordinatörlük',
+        description: '',
+        responsibilities: [],
+        parent: parentId,
+        deputies: [],
+        subUnits: []
+      })
+    }
+    
+    setPaneContextMenu(null)
+  }, [paneContextMenu, addManagement, addExecutive, addMainCoordinator, addCoordinator, data])
+
   // Update nodes and edges when they change
   useEffect(() => {
     setFlowNodes(nodes)
     setFlowEdges(edges)
   }, [nodes, edges, setFlowNodes, setFlowEdges])
+
+  // Menüleri kapat
+  useEffect(() => {
+    const handleClick = () => {
+      setPaneContextMenu(null)
+    }
+    window.addEventListener('click', handleClick)
+    return () => window.removeEventListener('click', handleClick)
+  }, [])
 
   // Form handlers
   const handleAddSubUnit = () => {
@@ -456,11 +636,13 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
       <ReactFlow
         nodes={flowNodes}
         edges={flowEdges}
-        onNodesChange={onNodesChange}
+        onNodesChange={handleNodesChange}
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
         connectionMode={ConnectionMode.Loose}
         onNodeContextMenu={handleNodeContextMenu}
+        onPaneContextMenu={handlePaneContextMenu}
+        nodesDraggable={!isLocked}
         fitView
         minZoom={0.2}
         maxZoom={1.5}
@@ -480,9 +662,27 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
         />
       </ReactFlow>
 
-      {/* Expanded indicator */}
-      {expandedCoordinator && (
-        <div className="absolute top-4 left-4 z-10">
+      {/* Expanded indicator + Kilit durumu göstergesi */}
+      <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
+        {/* Kilit ikonu */}
+        <div className={`backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform ${
+          isLocked 
+            ? 'bg-red-50 border-red-200' 
+            : 'bg-green-50 border-green-200'
+        }`} onClick={toggleLock} title={isLocked ? 'Kilidi Aç' : 'Kilitle'}>
+          {isLocked ? (
+            <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+            </svg>
+          )}
+        </div>
+
+        {/* Detayları Kapat butonu */}
+        {expandedCoordinator && (
           <button
             onClick={() => setExpandedCoordinator(null)}
             className="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200 flex items-center gap-2 hover:bg-gray-50 transition-colors"
@@ -492,16 +692,7 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-        </div>
-      )}
-
-      {/* Help text */}
-      <div className="absolute bottom-4 left-4 z-10">
-        <div className="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200">
-          <p className="text-xs text-gray-600">
-            💡 <strong>İpucu:</strong> Herhangi bir birime <strong>sağ tık</strong> yaparak alt birim, yardımcı veya görev ekleyebilirsiniz.
-          </p>
-        </div>
+        )}
       </div>
 
       {/* Logo */}
@@ -527,6 +718,12 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
         onAddPerson={handleAddPerson}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onLinkToMainSchema={() => {
+          if (contextMenu) {
+            setLinkModal({ isOpen: true, nodeId: contextMenu.nodeId })
+          }
+        }}
+        isInNewSchema={isInNewSchema}
       />
 
       {/* Form Modal */}
@@ -539,6 +736,118 @@ const OrgCanvasInner = ({ onNodeClick }: OrgCanvasProps) => {
           initialData={formModal.initialData}
           onSave={handleFormSave}
         />
+      )}
+
+      {/* Personel Detay Modal */}
+      {personDetailModal && (
+        <PersonDetailModal
+          isOpen={personDetailModal.isOpen}
+          onClose={() => setPersonDetailModal(null)}
+          person={personDetailModal.person}
+          onSave={(updates) => {
+            updatePerson(
+              personDetailModal.coordinatorId,
+              personDetailModal.subUnitId,
+              personDetailModal.person.id,
+              updates
+            )
+          }}
+        />
+      )}
+
+      {/* Link to Main Schema Modal */}
+      {linkModal && (
+        <LinkToMainSchemaModal
+          isOpen={linkModal.isOpen}
+          onClose={() => setLinkModal(null)}
+          currentSchemaId={currentProjectId || ''}
+          currentSchemaName={currentProjectName || 'Yeni Şema'}
+          onLink={(coordinatorId) => {
+            linkSchemaToCoordinator(currentProjectId || '', coordinatorId)
+            alert('Şema başarıyla bağlandı! Ana şemada ilgili koordinatörlüğe tıkladığınızda bu şema görünecek.')
+          }}
+        />
+      )}
+
+      {/* Boş Alan Context Menu */}
+      {paneContextMenu && (
+        <div
+          className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 py-2 min-w-[220px]"
+          style={{ left: paneContextMenu.x, top: paneContextMenu.y }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Yeni birim ekleme bölümü */}
+          <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase">Yeni Ekle</div>
+          <button
+            onClick={() => handleAddNewNode('management')}
+            className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 flex items-center gap-2"
+          >
+            <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Yönetici (Başkan)</span>
+          </button>
+          <button
+            onClick={() => handleAddNewNode('executive')}
+            className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 flex items-center gap-2"
+          >
+            <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span>Genel Müdür Yardımcısı</span>
+          </button>
+          <button
+            onClick={() => handleAddNewNode('mainCoordinator')}
+            className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 flex items-center gap-2"
+          >
+            <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            <span>Ana Koordinatörlük</span>
+          </button>
+          <button
+            onClick={() => handleAddNewNode('coordinator')}
+            className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 flex items-center gap-2"
+          >
+            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span>Koordinatörlük</span>
+          </button>
+          
+          <div className="border-t border-gray-200 my-2"></div>
+          
+          {/* Kilitleme bölümü */}
+          <button
+            onClick={toggleLock}
+            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+          >
+            {isLocked ? (
+              <>
+                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                </svg>
+                <span>Kilidi Aç</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span>Kilitle</span>
+              </>
+            )}
+          </button>
+          <button
+            onClick={resetPositions}
+            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 text-orange-600"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Pozisyonları Sıfırla</span>
+          </button>
+        </div>
       )}
     </div>
   )

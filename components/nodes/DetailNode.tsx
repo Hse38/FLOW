@@ -3,13 +3,27 @@
 import { memo } from 'react'
 import { Handle, Position } from 'reactflow'
 
+interface Person {
+  id: string
+  name: string
+  title?: string
+  email?: string
+  phone?: string
+  notes?: string
+  cvFileName?: string
+  cvData?: string
+}
+
 interface DetailNodeProps {
   data: {
     label: string
     type: 'coordinator' | 'deputy' | 'subunit' | 'responsibility'
     subtitle?: string
-    people?: string[]
+    people?: Person[]
     responsibilities?: string[]
+    onPersonClick?: (person: Person) => void
+    coordinatorId?: string
+    subUnitId?: string
   }
 }
 
@@ -48,10 +62,22 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
         {data.people && data.people.length > 0 && (
           <div className="mb-2">
             <ul className="text-xs space-y-0.5">
-              {data.people.map((person, idx) => (
-                <li key={idx} className="flex items-center gap-1">
+              {data.people.map((person) => (
+                <li 
+                  key={person.id} 
+                  className={`flex items-center gap-1 ${data.onPersonClick ? 'cursor-pointer hover:bg-blue-50 rounded px-1 py-0.5 transition-colors' : ''}`}
+                  onClick={(e) => {
+                    if (data.onPersonClick) {
+                      e.stopPropagation()
+                      data.onPersonClick(person)
+                    }
+                  }}
+                >
                   <span className="text-gray-400">•</span>
-                  <span className="text-gray-800">{person}</span>
+                  <span className="text-gray-800">{person.name}</span>
+                  {person.cvFileName && (
+                    <span className="text-green-500 text-[10px]" title="CV yüklü">📄</span>
+                  )}
                 </li>
               ))}
             </ul>
