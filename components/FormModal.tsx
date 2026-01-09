@@ -4,6 +4,11 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Plus, Trash2 } from 'lucide-react'
 
+interface SubUnit {
+  id: string
+  title: string
+}
+
 interface FormModalProps {
   isOpen: boolean
   onClose: () => void
@@ -11,6 +16,7 @@ interface FormModalProps {
   type: 'subunit' | 'deputy' | 'responsibility' | 'person' | 'edit'
   initialData?: any
   onSave: (data: any) => void
+  subUnits?: SubUnit[]
 }
 
 export default function FormModal({
@@ -20,6 +26,7 @@ export default function FormModal({
   type,
   initialData,
   onSave,
+  subUnits = [],
 }: FormModalProps) {
   const [formData, setFormData] = useState<any>({})
   const [responsibilities, setResponsibilities] = useState<string[]>([''])
@@ -151,6 +158,24 @@ export default function FormModal({
             {/* Kişi Formu */}
             {type === 'person' && (
               <>
+                {subUnits.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Alt Birim Seçin *
+                    </label>
+                    <select
+                      required
+                      value={formData.subUnitId || ''}
+                      onChange={(e) => setFormData({ ...formData, subUnitId: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    >
+                      <option value="">Birim seçin...</option>
+                      {subUnits.map((unit) => (
+                        <option key={unit.id} value={unit.id}>{unit.title}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Ad Soyad *
@@ -162,6 +187,18 @@ export default function FormModal({
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     placeholder="Örn: Ayşe Kaya"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ünvan
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title || ''}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    placeholder="Örn: Yazılım Geliştirici"
                   />
                 </div>
               </>

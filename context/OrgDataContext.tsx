@@ -86,7 +86,8 @@ interface OrgDataContextType {
   deleteSubUnit: (coordinatorId: string, subUnitId: string) => void
   deleteDeputy: (coordinatorId: string, deputyId: string) => void
   deleteCoordinator: (id: string) => void
-  addCoordinator: (parentId: string, coordinator: Omit<Coordinator, 'id' | 'position'>) => void
+  deleteNode: (id: string, nodeType: string) => void
+  addCoordinator: (parentId: string, coordinator: Omit<Coordinator, 'id'> & { position?: { x: number; y: number } }) => void
   addManagement: (management: Omit<Management, 'id'>) => void
   addExecutive: (executive: Omit<Executive, 'id'>) => void
   addMainCoordinator: (mainCoordinator: Omit<MainCoordinator, 'id'>) => void
@@ -677,8 +678,28 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     setTimeout(saveData, 0)
   }
 
+  // Delete any node by type
+  const deleteNode = (id: string, nodeType: string) => {
+    setData(prev => {
+      switch (nodeType) {
+        case 'chairman':
+          return { ...prev, management: prev.management.filter(m => m.id !== id) }
+        case 'executive':
+          return { ...prev, executives: prev.executives.filter(e => e.id !== id) }
+        case 'mainCoordinator':
+          return { ...prev, mainCoordinators: prev.mainCoordinators.filter(mc => mc.id !== id) }
+        case 'coordinator':
+        case 'subCoordinator':
+          return { ...prev, coordinators: prev.coordinators.filter(c => c.id !== id) }
+        default:
+          return prev
+      }
+    })
+    setTimeout(saveData, 0)
+  }
+
   // Add new coordinator
-  const addCoordinator = (parentId: string, coordinator: Omit<Coordinator, 'id' | 'position'>) => {
+  const addCoordinator = (parentId: string, coordinator: Omit<Coordinator, 'id'> & { position?: { x: number; y: number } }) => {
     // Find parent to calculate position
     const parent = data.coordinators.find(c => c.id === parentId) ||
                    data.mainCoordinators.find(m => m.id === parentId)
@@ -688,13 +709,13 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     const newCoordinator: Coordinator = {
       ...coordinator,
       id: generateId(),
-      position: {
+      position: coordinator.position || {
         x: (parent?.position.x || 500) + (siblingCount * 170),
         y: (parent?.position.y || 300) + 100,
       },
       parent: parentId,
-      deputies: [],
-      subUnits: [],
+      deputies: coordinator.deputies || [],
+      subUnits: coordinator.subUnits || [],
     }
     
     setData(prev => ({
@@ -806,6 +827,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       deleteSubUnit,
       deleteDeputy,
       deleteCoordinator,
+      deleteNode,
       addCoordinator,
       addManagement,
       addExecutive,

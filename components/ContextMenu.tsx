@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Users, ListChecks, UserPlus, Trash2, Edit, Link2 } from 'lucide-react'
+import { Plus, Users, ListChecks, UserPlus, Trash2, Edit, Link2, Building2, User, Briefcase, Cable, Unlink } from 'lucide-react'
 
 interface ContextMenuProps {
   x: number
@@ -18,6 +18,14 @@ interface ContextMenuProps {
   onDelete: () => void
   onLinkToMainSchema?: () => void
   isInNewSchema?: boolean
+  // Yeni: Hiyerarşik ekleme
+  onAddExecutive?: () => void
+  onAddMainCoordinator?: () => void
+  onAddCoordinator?: () => void
+  // Yeni: Bağlantı oluşturma
+  onStartConnection?: () => void
+  hasConnections?: boolean
+  onShowConnections?: () => void
 }
 
 export default function ContextMenu({
@@ -35,15 +43,46 @@ export default function ContextMenu({
   onDelete,
   onLinkToMainSchema,
   isInNewSchema = false,
+  onAddExecutive,
+  onAddMainCoordinator,
+  onAddCoordinator,
+  onStartConnection,
+  hasConnections,
+  onShowConnections,
 }: ContextMenuProps) {
   if (!isOpen) return null
 
   const menuItems = [
+    // Hiyerarşik Ekleme - Chairman altına Executive
+    {
+      label: 'Genel Müdür Yardımcısı Ekle',
+      icon: Briefcase,
+      onClick: onAddExecutive,
+      show: nodeType === 'chairman' && !!onAddExecutive,
+      special: true,
+    },
+    // Executive altına Main Coordinator
+    {
+      label: 'Ana Koordinatörlük Ekle',
+      icon: Building2,
+      onClick: onAddMainCoordinator,
+      show: nodeType === 'executive' && !!onAddMainCoordinator,
+      special: true,
+    },
+    // Main Coordinator altına Coordinator
+    {
+      label: 'Koordinatörlük Ekle',
+      icon: Users,
+      onClick: onAddCoordinator,
+      show: nodeType === 'mainCoordinator' && !!onAddCoordinator,
+      special: true,
+    },
+    // Coordinator altına SubUnit
     {
       label: 'Alt Birim Ekle',
       icon: Plus,
       onClick: onAddSubCoordinator,
-      show: ['coordinator', 'mainCoordinator', 'subCoordinator'].includes(nodeType),
+      show: ['coordinator', 'subCoordinator'].includes(nodeType),
     },
     {
       label: 'Yardımcı Ekle',
@@ -55,13 +94,29 @@ export default function ContextMenu({
       label: 'Görev/Sorumluluk Ekle',
       icon: ListChecks,
       onClick: onAddResponsibility,
-      show: true,
+      show: ['coordinator', 'subCoordinator', 'mainCoordinator'].includes(nodeType),
     },
     {
       label: 'Kişi Ekle',
-      icon: Users,
+      icon: User,
       onClick: onAddPerson,
-      show: ['coordinator', 'subCoordinator', 'subunit'].includes(nodeType),
+      show: ['coordinator', 'subCoordinator'].includes(nodeType),
+    },
+    { type: 'divider' },
+    // Bağlantı oluşturma
+    {
+      label: 'Bağlantı Oluştur (İp Çek)',
+      icon: Cable,
+      onClick: onStartConnection,
+      show: !!onStartConnection,
+      special: true,
+    },
+    {
+      label: 'Bağlantıları Göster/Kaldır',
+      icon: Unlink,
+      onClick: onShowConnections,
+      show: hasConnections && !!onShowConnections,
+      danger: false,
     },
     { type: 'divider' },
     {
@@ -81,7 +136,7 @@ export default function ContextMenu({
       label: 'Sil',
       icon: Trash2,
       onClick: onDelete,
-      show: !['chairman', 'executive'].includes(nodeType),
+      show: true,
       danger: true,
     },
   ]
