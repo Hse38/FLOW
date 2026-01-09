@@ -158,13 +158,13 @@ export default function NormKadroModal({
 
         {/* Table */}
         <div className="flex-1 overflow-auto p-6">
-          <table className="w-full">
-            <thead className="sticky top-0 bg-gray-50 z-10">
-              <tr>
-                <th className="text-left py-3 px-4 font-semibold text-gray-600 border-b">Birim / Koordinatörlük</th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-600 border-b w-32">Güncel Sayı</th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-600 border-b w-40">Norm Kadro</th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-600 border-b w-32">Durum</th>
+          <table className="w-full table-fixed border-collapse">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-gray-100">
+                <th className="text-left py-3 px-4 font-semibold text-gray-600 border-b-2 border-gray-200 w-[45%]">Birim / Koordinatörlük</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-600 border-b-2 border-gray-200 w-[15%]">Güncel Sayı</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-600 border-b-2 border-gray-200 w-[20%]">Norm Kadro</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-600 border-b-2 border-gray-200 w-[20%]">Durum</th>
               </tr>
             </thead>
             <tbody>
@@ -178,16 +178,16 @@ export default function NormKadroModal({
                     key={itemId}
                     className={`border-b hover:bg-gray-50 transition-colors ${item.type === 'coordinator' ? 'bg-blue-50/50' : ''}`}
                   >
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 w-[45%]">
                       <div className="flex items-center gap-2">
                         {item.type === 'coordinator' ? (
-                          <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
                             <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                             </svg>
                           </div>
                         ) : (
-                          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center ml-6">
+                          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center ml-6 flex-shrink-0">
                             <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
@@ -203,10 +203,10 @@ export default function NormKadroModal({
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-3 px-4 text-center w-[15%]">
                       <span className="font-semibold text-gray-700">{item.currentCount}</span>
                     </td>
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-3 px-4 text-center w-[20%]">
                       {isEditing ? (
                         <div className="flex items-center justify-center gap-2">
                           <input
@@ -250,7 +250,7 @@ export default function NormKadroModal({
                         </button>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-3 px-4 text-center w-[20%]">
                       {item.normKadro > 0 ? (
                         <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusBg(item.currentCount, item.normKadro)} ${getStatusColor(item.currentCount, item.normKadro)}`}>
                           {diff === 0 ? (
