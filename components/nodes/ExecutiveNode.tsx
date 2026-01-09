@@ -19,6 +19,7 @@ const ExecutiveNode = memo(({ data }: ExecutiveNodeProps) => {
       <Handle
         type="target"
         position={Position.Top}
+        id="top"
         className={`!w-3 !h-3 !border-2 !border-white ${isSpecial ? '!bg-rose-500' : '!bg-rose-500'}`}
       />
       <div className={`${isSpecial 
@@ -32,6 +33,7 @@ const ExecutiveNode = memo(({ data }: ExecutiveNodeProps) => {
       <Handle
         type="source"
         position={Position.Bottom}
+        id="bottom"
         className="!bg-rose-500 !w-3 !h-3 !border-2 !border-white"
       />
     </div>

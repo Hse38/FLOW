@@ -129,7 +129,10 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
   // Custom connections (ip çekme) - Firebase'den geliyor
   const customConnections = useMemo(() => {
     return (firebaseConnections || []).map((conn, idx) => ({
-      ...conn,
+      source: conn.source,
+      target: conn.target,
+      sourceHandle: conn.sourceHandle || 'bottom',
+      targetHandle: conn.targetHandle || 'top',
       id: `custom-${conn.source}-${conn.target}-${idx}`
     }))
   }, [firebaseConnections])
@@ -475,6 +478,15 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
 
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState(nodes)
   const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState(edges)
+
+  // nodes veya edges değiştiğinde flowNodes ve flowEdges'i güncelle
+  useEffect(() => {
+    setFlowNodes(nodes)
+  }, [nodes, setFlowNodes])
+
+  useEffect(() => {
+    setFlowEdges(edges)
+  }, [edges, setFlowEdges])
 
   // Node sürüklendiğinde pozisyonu Firebase'e kaydet
   const handleNodesChange = useCallback((changes: NodeChange[]) => {

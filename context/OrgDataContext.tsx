@@ -136,7 +136,7 @@ const initialData: OrgData = {
       name: "Selçuk Bayraktar",
       title: "Yönetim Kurulu Başkanı",
       type: "chairman",
-      position: { x: 600, y: 50 }
+      position: { x: 700, y: 50 }
     }
   ],
   executives: [
@@ -153,7 +153,7 @@ const initialData: OrgData = {
       name: "Elvan Kuzucu Hıdır",
       title: "Genel Müdür Yardımcısı",
       type: "executive",
-      position: { x: 400, y: 150 },
+      position: { x: 350, y: 180 },
       parent: "selcuk-bayraktar"
     },
     {
@@ -161,7 +161,7 @@ const initialData: OrgData = {
       name: "Muhammet Saymaz",
       title: "Genel Müdür Yardımcısı",
       type: "executive",
-      position: { x: 800, y: 150 },
+      position: { x: 1050, y: 180 },
       parent: "selcuk-bayraktar"
     }
   ],
@@ -171,7 +171,7 @@ const initialData: OrgData = {
       title: "T3 Vakfı Koordinatörlükleri",
       description: "T3 Vakfı bünyesindeki tüm koordinatörlükler",
       type: "main-coordinator",
-      position: { x: 250, y: 280 },
+      position: { x: 200, y: 320 },
       parent: "elvan-kuzucu"
     },
     {
@@ -179,7 +179,7 @@ const initialData: OrgData = {
       title: "Teknofest Koordinatörlükleri",
       description: "Teknofest etkinlikleri koordinatörlükleri",
       type: "main-coordinator",
-      position: { x: 950, y: 280 },
+      position: { x: 1200, y: 320 },
       parent: "muhammet-saymaz"
     },
     {
@@ -187,7 +187,7 @@ const initialData: OrgData = {
       title: "T3 Vakfı / Teknofest Koordinatörlükleri",
       description: "Her iki yapıya da hizmet veren koordinatörlükler",
       type: "main-coordinator",
-      position: { x: 600, y: 750 },
+      position: { x: 700, y: 900 },
       parent: null
     }
   ],
@@ -197,7 +197,7 @@ const initialData: OrgData = {
       title: "Satın Alma Birimi",
       description: "Satın alma ve tedarik işlemleri",
       responsibilities: ["Tedarikçi yönetimi", "Satın alma süreçleri", "Fiyat müzakereleri", "Sözleşme yönetimi"],
-      position: { x: 30, y: 400 },
+      position: { x: -100, y: 480 },
       parent: "t3-vakfi-koordinatorlukleri",
       deputies: [],
       subUnits: []
@@ -207,7 +207,7 @@ const initialData: OrgData = {
       title: "Bursiyer Koordinatörlüğü",
       description: "Burs programları yönetimi",
       responsibilities: ["Burs başvuru yönetimi", "Bursiyer takibi", "Mentorluk programları", "Kariyer rehberliği"],
-      position: { x: 200, y: 400 },
+      position: { x: 100, y: 480 },
       parent: "t3-vakfi-koordinatorlukleri",
       deputies: [],
       subUnits: []
@@ -217,7 +217,7 @@ const initialData: OrgData = {
       title: "Mimari Tasarım ve Planlama Koordinatörlüğü",
       description: "Mekan tasarımı ve planlama",
       responsibilities: ["Mekan tasarımları", "Proje planlaması", "İnşaat koordinasyonu", "Teknik çizimler"],
-      position: { x: 370, y: 400 },
+      position: { x: 300, y: 480 },
       parent: "t3-vakfi-koordinatorlukleri",
       deputies: [],
       subUnits: []
@@ -227,7 +227,7 @@ const initialData: OrgData = {
       title: "İnsan Kaynakları Koordinatörlüğü",
       description: "İnsan kaynakları yönetimi",
       responsibilities: ["İşe alım süreçleri", "Performans yönetimi", "Eğitim ve gelişim", "Özlük işleri"],
-      position: { x: 30, y: 490 },
+      position: { x: 500, y: 480 },
       parent: "t3-vakfi-koordinatorlukleri",
       deputies: [],
       subUnits: []
@@ -237,7 +237,7 @@ const initialData: OrgData = {
       title: "T3 Girişim Merkezi Koordinatörlüğü",
       description: "Girişimcilik ve inovasyon merkezi yönetimi",
       responsibilities: ["Girişimcilik programları yönetimi", "Startup destekleme", "Mentor ağı koordinasyonu", "Demo Day organizasyonları"],
-      position: { x: 200, y: 490 },
+      position: { x: -100, y: 620 },
       parent: "t3-vakfi-koordinatorlukleri",
       deputies: [],
       subUnits: []
@@ -247,7 +247,7 @@ const initialData: OrgData = {
       title: "Eğitim ve AR-GE Koordinatörlüğü",
       description: "Eğitim programları ve araştırma geliştirme",
       responsibilities: ["Eğitim müfredatı geliştirme", "AR-GE projeleri yönetimi", "Akademik işbirlikleri", "İnovasyon araştırmaları"],
-      position: { x: 370, y: 490 },
+      position: { x: 100, y: 620 },
       parent: "t3-vakfi-koordinatorlukleri",
       deputies: [],
       subUnits: []
@@ -257,7 +257,7 @@ const initialData: OrgData = {
       title: "Muhasebe Birimi",
       description: "Mali işler ve muhasebe",
       responsibilities: ["Muhasebe kayıtları", "Mali raporlama", "Bütçe takibi", "Vergi işlemleri"],
-      position: { x: 30, y: 580 },
+      position: { x: 300, y: 620 },
       parent: "t3-vakfi-koordinatorlukleri",
       deputies: [],
       subUnits: []
@@ -267,7 +267,7 @@ const initialData: OrgData = {
       title: "Bilişim Teknolojileri Koordinatörlüğü",
       description: "IT altyapı ve yazılım yönetimi",
       responsibilities: ["IT altyapı yönetimi", "Yazılım geliştirme", "Siber güvenlik", "Teknik destek"],
-      position: { x: 200, y: 580 },
+      position: { x: 500, y: 620 },
       parent: "t3-vakfi-koordinatorlukleri",
       deputies: [],
       subUnits: []
@@ -277,7 +277,7 @@ const initialData: OrgData = {
       title: "Teknofest Yarışmalar Koordinatörlüğü",
       description: "Teknoloji yarışmaları yönetimi",
       responsibilities: ["Yarışma organizasyonu", "Jüri koordinasyonu", "Başvuru yönetimi", "Ödül törenleri"],
-      position: { x: 370, y: 580 },
+      position: { x: -100, y: 760 },
       parent: "t3-vakfi-koordinatorlukleri",
       deputies: [],
       subUnits: []
@@ -287,7 +287,7 @@ const initialData: OrgData = {
       title: "DENEYAP Koordinatörlüğü",
       description: "DENEYAP Teknoloji Atölyeleri yönetimi",
       responsibilities: ["DENEYAP atölye yönetimi", "Eğitmen koordinasyonu", "Öğrenci takibi", "Teknoloji eğitimleri"],
-      position: { x: 120, y: 670 },
+      position: { x: 100, y: 760 },
       parent: "t3-vakfi-koordinatorlukleri",
       deputies: [],
       subUnits: []
@@ -297,7 +297,7 @@ const initialData: OrgData = {
       title: "DENEYAP Kart Birimi",
       description: "DENEYAP Kart üretim ve dağıtım",
       responsibilities: ["Kart üretimi koordinasyonu", "Dağıtım planlaması", "Stok yönetimi", "Kalite kontrol"],
-      position: { x: 290, y: 670 },
+      position: { x: 300, y: 760 },
       parent: "t3-vakfi-koordinatorlukleri",
       deputies: [],
       subUnits: []
@@ -307,7 +307,7 @@ const initialData: OrgData = {
       title: "Teknofest Ulaşım Koordinatörlüğü",
       description: "Teknofest etkinlik ulaşım lojistiği",
       responsibilities: ["Ulaşım planlaması", "Araç koordinasyonu", "Katılımcı transferleri", "Lojistik yönetimi"],
-      position: { x: 800, y: 400 },
+      position: { x: 1000, y: 480 },
       parent: "teknofest-koordinatorlukleri",
       deputies: [],
       subUnits: []
@@ -317,7 +317,7 @@ const initialData: OrgData = {
       title: "Teknofest Satış ve Pazarlama Koordinatörlüğü",
       description: "Pazarlama ve sponsorluk yönetimi",
       responsibilities: ["Sponsorluk yönetimi", "Pazarlama stratejisi", "Marka yönetimi", "Satış operasyonları"],
-      position: { x: 970, y: 400 },
+      position: { x: 1200, y: 480 },
       parent: "teknofest-koordinatorlukleri",
       deputies: [],
       subUnits: []
@@ -337,7 +337,7 @@ const initialData: OrgData = {
       title: "Teknofest Yarışmalar Koordinatörlüğü",
       description: "Teknofest yarışmaları yönetimi",
       responsibilities: ["Yarışma organizasyonu", "Jüri koordinasyonu", "Başvuru yönetimi", "Ödül törenleri"],
-      position: { x: 850, y: 490 },
+      position: { x: 1050, y: 620 },
       parent: "teknofest-koordinatorlukleri",
       deputies: [],
       subUnits: []
@@ -347,7 +347,7 @@ const initialData: OrgData = {
       title: "Teknofest Operasyon Koordinatörlüğü",
       description: "Etkinlik operasyonları yönetimi",
       responsibilities: ["Saha operasyonları", "Güvenlik koordinasyonu", "Teknik altyapı", "Acil durum yönetimi"],
-      position: { x: 1050, y: 490 },
+      position: { x: 1250, y: 620 },
       parent: "teknofest-koordinatorlukleri",
       deputies: [],
       subUnits: []
@@ -357,7 +357,7 @@ const initialData: OrgData = {
       title: "İdari İşler Koordinatörlüğü",
       description: "İdari işler ve genel hizmetler",
       responsibilities: ["Genel idari işler", "Ofis yönetimi", "Tedarik süreçleri", "Tesis yönetimi"],
-      position: { x: 500, y: 870 },
+      position: { x: 500, y: 1050 },
       parent: "t3-teknofest-koordinatorlukleri",
       deputies: [],
       subUnits: []
@@ -372,7 +372,7 @@ const initialData: OrgData = {
         "İletişim ekipleri ve süreçlerinin koordinasyonu",
         "Medya, kriz ve paydaş iletişiminin yürütülmesi"
       ],
-      position: { x: 700, y: 870 },
+      position: { x: 900, y: 1050 },
       parent: "t3-teknofest-koordinatorlukleri",
       hasDetailPage: true,
       coordinator: {

@@ -24,6 +24,7 @@ const MainCoordinatorNode = memo(({ data }: MainCoordinatorNodeProps) => {
       <Handle
         type="target"
         position={Position.Top}
+        id="top"
         className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
       />
       <div
@@ -39,6 +40,7 @@ const MainCoordinatorNode = memo(({ data }: MainCoordinatorNodeProps) => {
       <Handle
         type="source"
         position={Position.Bottom}
+        id="bottom"
         className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
       />
     </div>

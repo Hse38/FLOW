@@ -27,6 +27,7 @@ const SubCoordinatorNode = memo(({ data }: SubCoordinatorNodeProps) => {
       <Handle
         type="target"
         position={Position.Top}
+        id="top"
         className="!bg-gray-400 !w-2.5 !h-2.5 !border-2 !border-white"
       />
       <div
@@ -50,6 +51,7 @@ const SubCoordinatorNode = memo(({ data }: SubCoordinatorNodeProps) => {
       <Handle
         type="source"
         position={Position.Bottom}
+        id="bottom"
         className="!bg-gray-400 !w-2.5 !h-2.5 !border-2 !border-white"
       />
     </div>
