@@ -103,6 +103,7 @@ interface OrgDataContextType {
   addResponsibility: (coordinatorId: string, responsibility: string) => void
   addPerson: (coordinatorId: string, subUnitId: string, person: Omit<Person, 'id'>) => void
   updatePerson: (coordinatorId: string, subUnitId: string, personId: string, updates: Partial<Person>) => void
+  deletePerson: (coordinatorId: string, subUnitId: string, personId: string) => void
   deleteSubUnit: (coordinatorId: string, subUnitId: string) => void
   deleteDeputy: (coordinatorId: string, deputyId: string) => void
   deleteCoordinator: (id: string) => void
@@ -807,6 +808,32 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     })
   }, [saveToFirebase])
 
+  // Delete person from sub unit
+  const deletePerson = useCallback((coordinatorId: string, subUnitId: string, personId: string) => {
+    setData(prev => {
+      const newData = {
+        ...prev,
+        coordinators: prev.coordinators.map(c => 
+          c.id === coordinatorId 
+            ? {
+                ...c,
+                subUnits: (c.subUnits || []).map(su =>
+                  su.id === subUnitId
+                    ? {
+                        ...su,
+                        people: (su.people || []).filter(p => p.id !== personId)
+                      }
+                    : su
+                )
+              }
+            : c
+        )
+      }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [saveToFirebase])
+
   // Delete sub unit
   const deleteSubUnit = useCallback((coordinatorId: string, subUnitId: string) => {
     setData(prev => {
@@ -1008,6 +1035,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       addResponsibility,
       addPerson,
       updatePerson,
+      deletePerson,
       deleteSubUnit,
       deleteDeputy,
       deleteCoordinator,

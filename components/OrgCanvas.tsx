@@ -57,7 +57,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
     addExecutive, 
     addMainCoordinator, 
     updatePerson, 
-    addPerson, 
+    addPerson,
+    deletePerson,
     linkSchemaToCoordinator,
     // Firebase senkronizasyon
     isLocked: firebaseLocked,
@@ -118,6 +119,16 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
     person: Person
     coordinatorId: string
     subUnitId: string
+  } | null>(null)
+
+  // Alt birim context menu (kişi ekle/sil için)
+  const [subUnitContextMenu, setSubUnitContextMenu] = useState<{
+    x: number
+    y: number
+    coordinatorId: string
+    subUnitId: string
+    subUnitTitle: string
+    people: Person[]
   } | null>(null)
 
   // Link to main schema modal state
@@ -353,6 +364,18 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
                 person,
                 coordinatorId: expandedCoordinatorData.id,
                 subUnitId: subUnit.id,
+              })
+            },
+            onContextMenu: (e: React.MouseEvent) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setSubUnitContextMenu({
+                x: e.clientX,
+                y: e.clientY,
+                coordinatorId: expandedCoordinatorData.id,
+                subUnitId: subUnit.id,
+                subUnitTitle: subUnit.title,
+                people: subUnit.people || [],
               })
             },
           },
@@ -842,36 +865,61 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
       </ReactFlow>
 
       {/* Expanded indicator + Kilit durumu göstergesi */}
-      <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
-        {/* Kilit ikonu */}
-        <div className={`backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform ${
-          isLocked 
-            ? 'bg-red-50 border-red-200' 
-            : 'bg-green-50 border-green-200'
-        }`} onClick={toggleLock} title={isLocked ? 'Kilidi Aç' : 'Kilitle'}>
-          {isLocked ? (
-            <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          ) : (
-            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
-            </svg>
+      <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          {/* Kilit ikonu */}
+          <div className={`backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform ${
+            isLocked 
+              ? 'bg-red-50 border-red-200' 
+              : 'bg-green-50 border-green-200'
+          }`} onClick={toggleLock} title={isLocked ? 'Kilidi Aç' : 'Kilitle'}>
+            {isLocked ? (
+              <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+              </svg>
+            )}
+          </div>
+
+          {/* Pozisyonları Kaydet butonu */}
+          {!isLocked && (
+            <button
+              onClick={() => {
+                // Mevcut node pozisyonlarını al ve kaydet
+                const currentPositions: Record<string, { x: number; y: number }> = {}
+                flowNodes.forEach(node => {
+                  if (!node.id.startsWith('detail-')) {
+                    currentPositions[node.id] = { x: node.position.x, y: node.position.y }
+                  }
+                })
+                updateFirebasePositions(currentPositions)
+                alert('Pozisyonlar kaydedildi!')
+              }}
+              className="backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform bg-blue-50 border-blue-200"
+              title="Pozisyonları Kaydet"
+            >
+              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+              </svg>
+            </button>
+          )}
+
+          {/* Detayları Kapat butonu */}
+          {expandedCoordinator && (
+            <button
+              onClick={() => setExpandedCoordinator(null)}
+              className="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200 flex items-center gap-2 hover:bg-gray-50 transition-colors"
+            >
+              <span className="text-sm font-medium text-gray-700">Detayları Kapat</span>
+              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           )}
         </div>
-
-        {/* Detayları Kapat butonu */}
-        {expandedCoordinator && (
-          <button
-            onClick={() => setExpandedCoordinator(null)}
-            className="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200 flex items-center gap-2 hover:bg-gray-50 transition-colors"
-          >
-            <span className="text-sm font-medium text-gray-700">Detayları Kapat</span>
-            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        )}
       </div>
 
       {/* Hızlı Ekleme Paneli - Koordinatör açıkken görünür */}
@@ -1112,6 +1160,75 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
             alert('Şema başarıyla bağlandı! Ana şemada ilgili koordinatörlüğe tıkladığınızda bu şema görünecek.')
           }}
         />
+      )}
+
+      {/* Alt Birim Context Menu - Kişi Ekle/Sil */}
+      {subUnitContextMenu && (
+        <>
+          <div className="fixed inset-0 z-50" onClick={() => setSubUnitContextMenu(null)} />
+          <div
+            className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 py-2 min-w-[200px]"
+            style={{ left: subUnitContextMenu.x, top: subUnitContextMenu.y }}
+          >
+            <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase border-b mb-1">
+              {subUnitContextMenu.subUnitTitle}
+            </div>
+            
+            {/* Kişi Ekle */}
+            <button
+              onClick={() => {
+                setFormModal({
+                  isOpen: true,
+                  type: 'person',
+                  title: `${subUnitContextMenu.subUnitTitle} - Kişi Ekle`,
+                  nodeId: subUnitContextMenu.coordinatorId,
+                  initialData: { subUnitId: subUnitContextMenu.subUnitId }
+                })
+                setSubUnitContextMenu(null)
+              }}
+              className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 flex items-center gap-2"
+            >
+              <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+              <span>Kişi Ekle</span>
+            </button>
+
+            {/* Kişileri Listele ve Sil */}
+            {subUnitContextMenu.people.length > 0 && (
+              <>
+                <div className="border-t my-1"></div>
+                <div className="px-3 py-1 text-xs font-semibold text-gray-500">Kişiler</div>
+                {subUnitContextMenu.people.map((person) => (
+                  <div 
+                    key={person.id}
+                    className="w-full px-4 py-2 text-sm flex items-center justify-between hover:bg-gray-50 group"
+                  >
+                    <span className="text-gray-700">{person.name}</span>
+                    <button
+                      onClick={() => {
+                        if (confirm(`"${person.name}" silinecek. Emin misiniz?`)) {
+                          deletePerson(
+                            subUnitContextMenu.coordinatorId,
+                            subUnitContextMenu.subUnitId,
+                            person.id
+                          )
+                          setSubUnitContextMenu(null)
+                        }
+                      }}
+                      className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 p-1 rounded transition-opacity"
+                      title="Kişiyi Sil"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </>
       )}
 
       {/* Boş Alan Context Menu */}

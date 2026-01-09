@@ -22,6 +22,7 @@ interface DetailNodeProps {
     people?: Person[]
     responsibilities?: string[]
     onPersonClick?: (person: Person) => void
+    onContextMenu?: (e: React.MouseEvent) => void
     coordinatorId?: string
     subUnitId?: string
   }
@@ -54,7 +55,10 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
 
   if (data.type === 'subunit') {
     return (
-      <div className="bg-white border-l-4 border-[#3b82a0] rounded-lg px-4 py-3 shadow-md min-w-[140px] max-w-[180px]">
+      <div 
+        className="bg-white border-l-4 border-[#3b82a0] rounded-lg px-4 py-3 shadow-md min-w-[140px] max-w-[180px]"
+        onContextMenu={data.onContextMenu}
+      >
         <Handle type="target" position={Position.Top} className="!bg-gray-400" />
         <h4 className="font-bold text-[#3b82a0] text-sm text-center mb-2">{data.label}</h4>
         
