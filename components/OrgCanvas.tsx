@@ -28,7 +28,7 @@ import PersonDetailModal from './PersonDetailModal'
 import LinkToMainSchemaModal from './LinkToMainSchemaModal'
 import RightDetailPanel from './RightDetailPanel'
 import NormKadroModal from './NormKadroModal'
-import TurkeyMapModal from './TurkeyMapModal'
+import TurkeyMapPanel from './TurkeyMapPanel'
 import { useOrgData, Person } from '@/context/OrgDataContext'
 
 const nodeTypes = {
@@ -88,8 +88,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
   // Norm Kadro Modal
   const [normKadroModal, setNormKadroModal] = useState<boolean>(false)
 
-  // Türkiye Haritası Modal (Toplumsal Çalışmalar için)
-  const [turkeyMapModal, setTurkeyMapModal] = useState<boolean>(false)
+  // Türkiye Haritası Sol Panel (Toplumsal Çalışmalar için)
+  const [turkeyMapOpen, setTurkeyMapOpen] = useState<boolean>(false)
   
   // Kilitleme durumu - Firebase'den geliyor
   const isLocked = firebaseLocked
@@ -857,22 +857,36 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
   }
 
   return (
-    <div className="w-full h-screen relative" style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 50%, #93c5fd 100%)' }}>
-      <ReactFlow
-        nodes={flowNodes}
-        edges={flowEdges}
-        onNodesChange={handleNodesChange}
-        onEdgesChange={onEdgesChange}
-        nodeTypes={nodeTypes}
-        connectionMode={ConnectionMode.Loose}
-        onNodeContextMenu={handleNodeContextMenu}
-        onPaneContextMenu={handlePaneContextMenu}
-        onNodeClick={(_, node) => {
-          // Toplumsal Çalışmalar Koordinatörlüğü'ne tıklandığında harita aç
-          if (node.id === 'toplumsal-calismalar') {
-            setTurkeyMapModal(true)
-            return
-          }
+    <div className="w-full h-screen flex" style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 50%, #93c5fd 100%)' }}>
+      {/* Sol Panel - Türkiye Haritası */}
+      {turkeyMapOpen && (
+        <TurkeyMapPanel
+          isOpen={turkeyMapOpen}
+          onClose={() => setTurkeyMapOpen(false)}
+          cityPersonnel={getCityPersonnel()}
+          onAddPerson={addCityPerson}
+          onUpdatePerson={updateCityPerson}
+          onDeletePerson={deleteCityPerson}
+        />
+      )}
+
+      {/* Sağ Taraf - Şema */}
+      <div className="flex-1 h-full relative">
+        <ReactFlow
+          nodes={flowNodes}
+          edges={flowEdges}
+          onNodesChange={handleNodesChange}
+          onEdgesChange={onEdgesChange}
+          nodeTypes={nodeTypes}
+          connectionMode={ConnectionMode.Loose}
+          onNodeContextMenu={handleNodeContextMenu}
+          onPaneContextMenu={handlePaneContextMenu}
+          onNodeClick={(_, node) => {
+            // Toplumsal Çalışmalar Koordinatörlüğü'ne tıklandığında sol panel aç/kapat
+            if (node.id === 'toplumsal-calismalar') {
+              setTurkeyMapOpen(prev => !prev)
+              return
+            }
           // Bağlantı modundaysa hedef yönü seçimi için modal aç
           if (connectionMode.active && node.id !== connectionMode.sourceId) {
             setPendingTarget({ targetId: node.id })
@@ -1009,17 +1023,6 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
         coordinators={data.coordinators}
         onUpdateCoordinator={updateCoordinator}
         onUpdateSubUnit={updateSubUnit}
-      />
-
-      {/* Türkiye Haritası Modal - Toplumsal Çalışmalar */}
-      <TurkeyMapModal
-        isOpen={turkeyMapModal}
-        onClose={() => setTurkeyMapModal(false)}
-        cityPersonnel={getCityPersonnel()}
-        onUpdateCityPersonnel={() => {}}
-        onAddPerson={addCityPerson}
-        onUpdatePerson={updateCityPerson}
-        onDeletePerson={deleteCityPerson}
       />
 
       {/* Logo */}
@@ -1656,6 +1659,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
