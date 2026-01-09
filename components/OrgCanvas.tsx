@@ -285,6 +285,20 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
 
     // Add main coordinators
     data.mainCoordinators.forEach((coord) => {
+      // Bu ana koordinatörlüğe bağlı tüm koordinatörlerin personel sayısını hesapla
+      const childCoordinators = data.coordinators.filter(c => c.parent === coord.id)
+      const personnelCount = childCoordinators.reduce((total, childCoord) => {
+        return total + (childCoord.subUnits?.reduce((subTotal, subUnit) => {
+          return subTotal + (subUnit.people?.length || 0)
+        }, 0) || 0)
+      }, 0)
+      
+      const normKadro = childCoordinators.reduce((total, childCoord) => {
+        return total + (childCoord.normKadro || childCoord.subUnits?.reduce((subTotal, subUnit) => {
+          return subTotal + (subUnit.normKadro || 0)
+        }, 0) || 0)
+      }, 0)
+      
       nodeList.push({
         id: coord.id,
         type: 'mainCoordinator',
@@ -295,6 +309,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
           id: coord.id,
           onClick: handleUnitClick,
           onContextMenu: handleContextMenu,
+          personnelCount,
+          normKadro,
         },
       })
     })
@@ -302,6 +318,17 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
     // Add sub-coordinators
     data.coordinators.forEach((coord) => {
       const hasDetails = (coord.deputies?.length || 0) > 0 || (coord.subUnits?.length || 0) > 0
+      
+      // Koordinatöre bağlı tüm personel sayısını hesapla
+      const personnelCount = coord.subUnits?.reduce((total, subUnit) => {
+        return total + (subUnit.people?.length || 0)
+      }, 0) || 0
+      
+      // normKadro: koordinatör düzeyinde veya tüm subUnitlerin normKadro toplamı
+      const normKadro = coord.normKadro || coord.subUnits?.reduce((total, subUnit) => {
+        return total + (subUnit.normKadro || 0)
+      }, 0) || 0
+      
       nodeList.push({
         id: coord.id,
         type: 'subCoordinator',
@@ -314,6 +341,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
           onContextMenu: handleContextMenu,
           isExpanded: expandedCoordinator === coord.id,
           hasDetails,
+          personnelCount,
+          normKadro,
         },
       })
     })
@@ -898,6 +927,11 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
         maxZoom={1.5}
         defaultViewport={{ x: 0, y: 0, zoom: 0.7 }}
         className="react-flow-custom"
+        // Çoklu seçim özellikleri (masaüstü gibi)
+        selectionOnDrag={true}
+        panOnDrag={[1, 2]}
+        selectNodesOnDrag={true}
+        selectionKeyCode={null}
       >
         <Background
           variant={BackgroundVariant.Dots}

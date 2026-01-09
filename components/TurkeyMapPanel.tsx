@@ -1,80 +1,22 @@
 'use client'
 
 import { useState } from 'react'
-import { Person } from '@/context/OrgDataContext'
+import { X, Plus, Edit2, Trash2, MapPin, Users, Phone, Mail, User } from 'lucide-react'
 
-// Türkiye bölgeleri ve şehirleri
-const regions = {
-  marmara: {
-    name: 'Marmara Bölgesi',
-    color: '#DC2626',
-    cities: ['İstanbul', 'Tekirdağ', 'Edirne', 'Kırklareli', 'Kocaeli', 'Sakarya', 'Bilecik', 'Bursa', 'Yalova', 'Çanakkale', 'Balıkesir']
-  },
-  karadeniz: {
-    name: 'Karadeniz Bölgesi',
-    color: '#1F2937',
-    cities: ['Zonguldak', 'Bartın', 'Karabük', 'Kastamonu', 'Sinop', 'Samsun', 'Ordu', 'Giresun', 'Trabzon', 'Rize', 'Artvin', 'Gümüşhane', 'Bayburt', 'Amasya', 'Tokat', 'Çorum', 'Bolu', 'Düzce']
-  },
-  doguAnadolu: {
-    name: 'Doğu Anadolu Bölgesi',
-    color: '#16A34A',
-    cities: ['Erzurum', 'Erzincan', 'Kars', 'Ardahan', 'Iğdır', 'Ağrı', 'Van', 'Muş', 'Bitlis', 'Hakkari', 'Bingöl', 'Tunceli', 'Elazığ', 'Malatya']
-  },
-  guneydoguAnadolu: {
-    name: 'Güneydoğu Anadolu Bölgesi',
-    color: '#4338CA',
-    cities: ['Gaziantep', 'Adıyaman', 'Kilis', 'Şanlıurfa', 'Diyarbakır', 'Mardin', 'Batman', 'Şırnak', 'Siirt']
-  },
-  akdeniz: {
-    name: 'Akdeniz Bölgesi',
-    color: '#7C3AED',
-    cities: ['Antalya', 'Isparta', 'Burdur', 'Mersin', 'Adana', 'Osmaniye', 'Hatay', 'Kahramanmaraş']
-  },
-  ege: {
-    name: 'Ege Bölgesi',
-    color: '#2563EB',
-    cities: ['İzmir', 'Aydın', 'Muğla', 'Denizli', 'Manisa', 'Kütahya', 'Uşak', 'Afyonkarahisar']
-  },
-  icAnadolu: {
-    name: 'İç Anadolu Bölgesi',
-    color: '#EA580C',
-    cities: ['Ankara', 'Eskişehir', 'Konya', 'Karaman', 'Aksaray', 'Niğde', 'Nevşehir', 'Kırşehir', 'Kırıkkale', 'Çankırı', 'Yozgat', 'Sivas', 'Kayseri']
-  }
+// Context'teki Person tipi
+export interface Person {
+  id: string
+  name: string
+  title?: string
+  phone?: string
+  email?: string
+  photo?: string
 }
 
-// Şehir konumları
-const cityPositions: Record<string, { x: number; y: number; region: string }> = {
-  'İstanbul': { x: 145, y: 65, region: 'marmara' },
-  'Ankara': { x: 240, y: 115, region: 'icAnadolu' },
-  'İzmir': { x: 105, y: 155, region: 'ege' },
-  'Bursa': { x: 150, y: 95, region: 'marmara' },
-  'Antalya': { x: 185, y: 210, region: 'akdeniz' },
-  'Adana': { x: 260, y: 200, region: 'akdeniz' },
-  'Konya': { x: 235, y: 165, region: 'icAnadolu' },
-  'Gaziantep': { x: 295, y: 200, region: 'guneydoguAnadolu' },
-  'Şanlıurfa': { x: 320, y: 195, region: 'guneydoguAnadolu' },
-  'Diyarbakır': { x: 345, y: 170, region: 'guneydoguAnadolu' },
-  'Kayseri': { x: 270, y: 140, region: 'icAnadolu' },
-  'Mersin': { x: 245, y: 210, region: 'akdeniz' },
-  'Eskişehir': { x: 185, y: 110, region: 'icAnadolu' },
-  'Samsun': { x: 280, y: 70, region: 'karadeniz' },
-  'Trabzon': { x: 345, y: 65, region: 'karadeniz' },
-  'Erzurum': { x: 385, y: 90, region: 'doguAnadolu' },
-  'Van': { x: 420, y: 140, region: 'doguAnadolu' },
-  'Malatya': { x: 315, y: 140, region: 'doguAnadolu' },
-  'Elazığ': { x: 330, y: 130, region: 'doguAnadolu' },
-  'Mardin': { x: 360, y: 190, region: 'guneydoguAnadolu' },
-  'Sivas': { x: 300, y: 110, region: 'icAnadolu' },
-  'Denizli': { x: 145, y: 180, region: 'ege' },
-  'Tekirdağ': { x: 130, y: 55, region: 'marmara' },
-  'Edirne': { x: 108, y: 45, region: 'marmara' },
-  'Kocaeli': { x: 163, y: 78, region: 'marmara' },
-  'Hatay': { x: 280, y: 220, region: 'akdeniz' },
-}
-
+// Context'teki CityPersonnel tipi
 export interface CityPersonnel {
   id: string
-  city: string
+  city: string  // Şehir adı (örn: "Ankara")
   people: Person[]
 }
 
@@ -87,506 +29,489 @@ interface TurkeyMapPanelProps {
   onDeletePerson: (city: string, personId: string) => void
 }
 
+// Türkiye illeri veri seti
+const turkeyProvinces: { id: string; name: string; plateCode: string; region: string }[] = [
+  // Marmara (bolge-1)
+  { id: 'balikesir', name: 'Balıkesir', plateCode: '10', region: 'Marmara' },
+  { id: 'bilecik', name: 'Bilecik', plateCode: '11', region: 'Marmara' },
+  { id: 'bursa', name: 'Bursa', plateCode: '16', region: 'Marmara' },
+  { id: 'canakkale', name: 'Çanakkale', plateCode: '17', region: 'Marmara' },
+  { id: 'edirne', name: 'Edirne', plateCode: '22', region: 'Marmara' },
+  { id: 'istanbul', name: 'İstanbul', plateCode: '34', region: 'Marmara' },
+  { id: 'kirklareli', name: 'Kırklareli', plateCode: '39', region: 'Marmara' },
+  { id: 'kocaeli', name: 'Kocaeli', plateCode: '41', region: 'Marmara' },
+  { id: 'sakarya', name: 'Sakarya', plateCode: '54', region: 'Marmara' },
+  { id: 'tekirdag', name: 'Tekirdağ', plateCode: '59', region: 'Marmara' },
+  { id: 'yalova', name: 'Yalova', plateCode: '77', region: 'Marmara' },
+  // İç Anadolu (bolge-2)
+  { id: 'ankara', name: 'Ankara', plateCode: '06', region: 'İç Anadolu' },
+  { id: 'cankiri', name: 'Çankırı', plateCode: '18', region: 'İç Anadolu' },
+  { id: 'eskisehir', name: 'Eskişehir', plateCode: '26', region: 'İç Anadolu' },
+  { id: 'kayseri', name: 'Kayseri', plateCode: '38', region: 'İç Anadolu' },
+  { id: 'kirsehir', name: 'Kırşehir', plateCode: '40', region: 'İç Anadolu' },
+  { id: 'konya', name: 'Konya', plateCode: '42', region: 'İç Anadolu' },
+  { id: 'nevsehir', name: 'Nevşehir', plateCode: '50', region: 'İç Anadolu' },
+  { id: 'nigde', name: 'Niğde', plateCode: '51', region: 'İç Anadolu' },
+  { id: 'sivas', name: 'Sivas', plateCode: '58', region: 'İç Anadolu' },
+  { id: 'yozgat', name: 'Yozgat', plateCode: '66', region: 'İç Anadolu' },
+  { id: 'aksaray', name: 'Aksaray', plateCode: '68', region: 'İç Anadolu' },
+  { id: 'karaman', name: 'Karaman', plateCode: '70', region: 'İç Anadolu' },
+  { id: 'kirikkale', name: 'Kırıkkale', plateCode: '71', region: 'İç Anadolu' },
+  // Ege (bolge-3)
+  { id: 'afyon', name: 'Afyonkarahisar', plateCode: '03', region: 'Ege' },
+  { id: 'aydin', name: 'Aydın', plateCode: '09', region: 'Ege' },
+  { id: 'denizli', name: 'Denizli', plateCode: '20', region: 'Ege' },
+  { id: 'izmir', name: 'İzmir', plateCode: '35', region: 'Ege' },
+  { id: 'kutahya', name: 'Kütahya', plateCode: '43', region: 'Ege' },
+  { id: 'manisa', name: 'Manisa', plateCode: '45', region: 'Ege' },
+  { id: 'mugla', name: 'Muğla', plateCode: '48', region: 'Ege' },
+  { id: 'usak', name: 'Uşak', plateCode: '64', region: 'Ege' },
+  // Akdeniz (bolge-4)
+  { id: 'adana', name: 'Adana', plateCode: '01', region: 'Akdeniz' },
+  { id: 'antalya', name: 'Antalya', plateCode: '07', region: 'Akdeniz' },
+  { id: 'burdur', name: 'Burdur', plateCode: '15', region: 'Akdeniz' },
+  { id: 'hatay', name: 'Hatay', plateCode: '31', region: 'Akdeniz' },
+  { id: 'isparta', name: 'Isparta', plateCode: '32', region: 'Akdeniz' },
+  { id: 'mersin', name: 'Mersin', plateCode: '33', region: 'Akdeniz' },
+  { id: 'kahramanmaras', name: 'Kahramanmaraş', plateCode: '46', region: 'Akdeniz' },
+  { id: 'osmaniye', name: 'Osmaniye', plateCode: '80', region: 'Akdeniz' },
+  // Karadeniz (bolge-5)
+  { id: 'amasya', name: 'Amasya', plateCode: '05', region: 'Karadeniz' },
+  { id: 'artvin', name: 'Artvin', plateCode: '08', region: 'Karadeniz' },
+  { id: 'bolu', name: 'Bolu', plateCode: '14', region: 'Karadeniz' },
+  { id: 'corum', name: 'Çorum', plateCode: '19', region: 'Karadeniz' },
+  { id: 'giresun', name: 'Giresun', plateCode: '28', region: 'Karadeniz' },
+  { id: 'gumushane', name: 'Gümüşhane', plateCode: '29', region: 'Karadeniz' },
+  { id: 'kastamonu', name: 'Kastamonu', plateCode: '37', region: 'Karadeniz' },
+  { id: 'ordu', name: 'Ordu', plateCode: '52', region: 'Karadeniz' },
+  { id: 'rize', name: 'Rize', plateCode: '53', region: 'Karadeniz' },
+  { id: 'samsun', name: 'Samsun', plateCode: '55', region: 'Karadeniz' },
+  { id: 'sinop', name: 'Sinop', plateCode: '57', region: 'Karadeniz' },
+  { id: 'tokat', name: 'Tokat', plateCode: '60', region: 'Karadeniz' },
+  { id: 'trabzon', name: 'Trabzon', plateCode: '61', region: 'Karadeniz' },
+  { id: 'zonguldak', name: 'Zonguldak', plateCode: '67', region: 'Karadeniz' },
+  { id: 'bayburt', name: 'Bayburt', plateCode: '69', region: 'Karadeniz' },
+  { id: 'bartin', name: 'Bartın', plateCode: '74', region: 'Karadeniz' },
+  { id: 'karabuk', name: 'Karabük', plateCode: '78', region: 'Karadeniz' },
+  { id: 'duzce', name: 'Düzce', plateCode: '81', region: 'Karadeniz' },
+  // Güneydoğu Anadolu (bolge-6)
+  { id: 'adiyaman', name: 'Adıyaman', plateCode: '02', region: 'Güneydoğu Anadolu' },
+  { id: 'diyarbakir', name: 'Diyarbakır', plateCode: '21', region: 'Güneydoğu Anadolu' },
+  { id: 'gaziantep', name: 'Gaziantep', plateCode: '27', region: 'Güneydoğu Anadolu' },
+  { id: 'mardin', name: 'Mardin', plateCode: '47', region: 'Güneydoğu Anadolu' },
+  { id: 'siirt', name: 'Siirt', plateCode: '56', region: 'Güneydoğu Anadolu' },
+  { id: 'sanliurfa', name: 'Şanlıurfa', plateCode: '63', region: 'Güneydoğu Anadolu' },
+  { id: 'batman', name: 'Batman', plateCode: '72', region: 'Güneydoğu Anadolu' },
+  { id: 'sirnak', name: 'Şırnak', plateCode: '73', region: 'Güneydoğu Anadolu' },
+  { id: 'kilis', name: 'Kilis', plateCode: '79', region: 'Güneydoğu Anadolu' },
+  // Doğu Anadolu (bolge-7)
+  { id: 'agri', name: 'Ağrı', plateCode: '04', region: 'Doğu Anadolu' },
+  { id: 'bingol', name: 'Bingöl', plateCode: '12', region: 'Doğu Anadolu' },
+  { id: 'bitlis', name: 'Bitlis', plateCode: '13', region: 'Doğu Anadolu' },
+  { id: 'elazig', name: 'Elazığ', plateCode: '23', region: 'Doğu Anadolu' },
+  { id: 'erzincan', name: 'Erzincan', plateCode: '24', region: 'Doğu Anadolu' },
+  { id: 'erzurum', name: 'Erzurum', plateCode: '25', region: 'Doğu Anadolu' },
+  { id: 'hakkari', name: 'Hakkari', plateCode: '30', region: 'Doğu Anadolu' },
+  { id: 'kars', name: 'Kars', plateCode: '36', region: 'Doğu Anadolu' },
+  { id: 'malatya', name: 'Malatya', plateCode: '44', region: 'Doğu Anadolu' },
+  { id: 'mus', name: 'Muş', plateCode: '49', region: 'Doğu Anadolu' },
+  { id: 'tunceli', name: 'Tunceli', plateCode: '62', region: 'Doğu Anadolu' },
+  { id: 'van', name: 'Van', plateCode: '65', region: 'Doğu Anadolu' },
+  { id: 'ardahan', name: 'Ardahan', plateCode: '75', region: 'Doğu Anadolu' },
+  { id: 'igdir', name: 'Iğdır', plateCode: '76', region: 'Doğu Anadolu' },
+]
+
+// Bölge renkleri
+const regionColors: Record<string, string> = {
+  'Marmara': '#87cdde',
+  'İç Anadolu': '#ac93a7',
+  'Ege': '#ffb380',
+  'Akdeniz': '#cccccc',
+  'Karadeniz': '#decd87',
+  'Güneydoğu Anadolu': '#de8787',
+  'Doğu Anadolu': '#aade87',
+}
+
 export default function TurkeyMapPanel({
   isOpen,
   onClose,
   cityPersonnel,
   onAddPerson,
   onUpdatePerson,
-  onDeletePerson,
+  onDeletePerson
 }: TurkeyMapPanelProps) {
-  const [hoveredCity, setHoveredCity] = useState<string | null>(null)
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
-  const [selectedCity, setSelectedCity] = useState<string | null>(null)
+  const [selectedCity, setSelectedCity] = useState<{ id: string; name: string; plateCode: string } | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
-  const [newPerson, setNewPerson] = useState<{
-    name: string
-    title: string
-    email: string
-    phone: string
-    notes: string
-    cvFileName?: string
-    cvData?: string
-  }>({ name: '', title: '', email: '', phone: '', notes: '' })
+  const [editingPerson, setEditingPerson] = useState<{ person: Person; cityName: string } | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    title: '',
+    phone: '',
+    email: ''
+  })
+
+  // Seçili il personelleri
+  const selectedCityPersonnel = selectedCity
+    ? cityPersonnel.find(cp => cp.city === selectedCity.name)?.people || []
+    : []
+
+  // İstatistikler
+  const totalPersonnel = cityPersonnel.reduce((sum, cp) => sum + cp.people.length, 0)
+  const citiesWithPersonnel = cityPersonnel.length
+
+  // Filtrelenmiş iller
+  const filteredProvinces = turkeyProvinces.filter(p => 
+    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const handleProvinceClick = (provinceId: string) => {
+    const province = turkeyProvinces.find(p => p.id === provinceId)
+    if (province) {
+      setSelectedCity({
+        id: province.id,
+        name: province.name,
+        plateCode: province.plateCode
+      })
+      setShowAddForm(false)
+      setEditingPerson(null)
+    }
+  }
+
+  const handleAddSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedCity || !formData.name || !formData.title) return
+
+    onAddPerson(selectedCity.name, {
+      name: formData.name,
+      title: formData.title,
+      phone: formData.phone || undefined,
+      email: formData.email || undefined
+    })
+
+    setFormData({ name: '', title: '', phone: '', email: '' })
+    setShowAddForm(false)
+  }
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingPerson) return
+
+    onUpdatePerson(editingPerson.cityName, editingPerson.person.id, {
+      name: formData.name,
+      title: formData.title,
+      phone: formData.phone || undefined,
+      email: formData.email || undefined
+    })
+
+    setFormData({ name: '', title: '', phone: '', email: '' })
+    setEditingPerson(null)
+  }
+
+  const startEdit = (person: Person, cityName: string) => {
+    setEditingPerson({ person, cityName })
+    setFormData({
+      name: person.name,
+      title: person.title || '',
+      phone: person.phone || '',
+      email: person.email || ''
+    })
+    setShowAddForm(false)
+  }
+
+  const handleDelete = (personId: string, cityName: string) => {
+    if (confirm('Bu personeli silmek istediğinize emin misiniz?')) {
+      onDeletePerson(cityName, personId)
+    }
+  }
+
+  // İl için personel sayısını al
+  const getPersonnelCount = (cityName: string) => {
+    const cityData = cityPersonnel.find(cp => cp.city === cityName)
+    return cityData ? cityData.people.length : 0
+  }
 
   if (!isOpen) return null
 
-  const getCityPeople = (city: string): Person[] => {
-    const cityData = cityPersonnel.find(cp => cp.city === city)
-    return cityData?.people || []
-  }
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    setMousePos({ x: e.clientX, y: e.clientY })
-  }
-
-  const getRegionColor = (city: string): string => {
-    const pos = cityPositions[city]
-    if (!pos) return '#gray'
-    const region = regions[pos.region as keyof typeof regions]
-    return region?.color || '#gray'
-  }
-
-  const handleCVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        setNewPerson(prev => ({
-          ...prev,
-          cvFileName: file.name,
-          cvData: event.target?.result as string
-        }))
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const handleAddPerson = () => {
-    if (selectedCity && newPerson.name) {
-      onAddPerson(selectedCity, newPerson)
-      setNewPerson({ name: '', title: '', email: '', phone: '', notes: '' })
-      setShowAddForm(false)
-    }
-  }
-
   return (
-    <div 
-      className="w-[500px] h-full bg-gradient-to-b from-slate-50 to-blue-50 border-r-2 border-blue-200 shadow-xl flex flex-col overflow-hidden"
-      onMouseMove={handleMouseMove}
-    >
+    <div className="w-[500px] h-full bg-white shadow-xl flex flex-col border-r border-gray-200">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4">
-        <div className="flex items-center justify-between">
+      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <MapPin className="w-6 h-6" />
           <div>
-            <h2 className="text-lg font-bold flex items-center gap-2">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              Toplumsal Çalışmalar
-            </h2>
-            <p className="text-blue-200 text-xs">Türkiye Geneli Personel</p>
+            <h2 className="text-lg font-bold">Toplumsal Çalışmalar</h2>
+            <p className="text-sm text-green-100">İl Temsilcileri Haritası</p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+        </div>
+        <button
+          onClick={onClose}
+          className="p-2 hover:bg-green-500 rounded-lg transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* İstatistikler */}
+      <div className="p-4 bg-green-50 border-b border-green-100 grid grid-cols-2 gap-4">
+        <div className="bg-white rounded-lg p-3 shadow-sm">
+          <div className="flex items-center gap-2 text-green-600">
+            <Users className="w-4 h-4" />
+            <span className="text-sm font-medium">Toplam Personel</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-800 mt-1">{totalPersonnel}</p>
+        </div>
+        <div className="bg-white rounded-lg p-3 shadow-sm">
+          <div className="flex items-center gap-2 text-green-600">
+            <MapPin className="w-4 h-4" />
+            <span className="text-sm font-medium">Aktif İl</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-800 mt-1">{citiesWithPersonnel} / 81</p>
         </div>
       </div>
 
-      {/* Harita */}
-      <div className="p-3 flex-shrink-0">
-        <div className="bg-white rounded-xl shadow-lg p-2 relative">
-          <svg viewBox="0 0 450 250" className="w-full h-auto">
-            {/* Marmara Bölgesi */}
-            <path
-              d="M95,50 L145,40 L175,45 L210,60 L225,75 L215,105 L190,120 L160,123 L128,115 L105,95 L88,75 Z"
-              fill={regions.marmara.color}
-              fillOpacity="0.75"
-              stroke="white"
-              strokeWidth="1.5"
-              className="hover:fill-opacity-90 transition-all"
-            />
-            
-            {/* Ege Bölgesi */}
-            <path
-              d="M80,120 L128,115 L160,123 L168,160 L175,200 L158,225 L120,240 L80,220 L65,180 L60,140 Z"
-              fill={regions.ege.color}
-              fillOpacity="0.75"
-              stroke="white"
-              strokeWidth="1.5"
-              className="hover:fill-opacity-90 transition-all"
-            />
+      {/* Arama */}
+      <div className="p-4 border-b border-gray-200">
+        <input
+          type="text"
+          placeholder="İl ara..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+        />
+      </div>
 
-            {/* İç Anadolu Bölgesi */}
-            <path
-              d="M190,95 L215,75 L270,85 L340,90 L365,115 L375,150 L360,200 L305,220 L240,205 L200,175 L168,160 L175,130 Z"
-              fill={regions.icAnadolu.color}
-              fillOpacity="0.75"
-              stroke="white"
-              strokeWidth="1.5"
-              className="hover:fill-opacity-90 transition-all"
-            />
-
-            {/* Karadeniz Bölgesi */}
-            <path
-              d="M205,45 L270,35 L320,30 L380,35 L420,50 L440,70 L430,95 L400,100 L340,90 L270,85 L210,70 Z"
-              fill={regions.karadeniz.color}
-              fillOpacity="0.75"
-              stroke="white"
-              strokeWidth="1.5"
-              className="hover:fill-opacity-90 transition-all"
-            />
-
-            {/* Akdeniz Bölgesi */}
-            <path
-              d="M158,225 L175,200 L210,210 L280,220 L340,230 L375,245 L320,265 L240,270 L175,260 L135,245 Z"
-              fill={regions.akdeniz.color}
-              fillOpacity="0.75"
-              stroke="white"
-              strokeWidth="1.5"
-              className="hover:fill-opacity-90 transition-all"
-            />
-
-            {/* Doğu Anadolu Bölgesi */}
-            <path
-              d="M365,60 L430,50 L500,55 L530,80 L540,130 L520,170 L475,185 L430,175 L395,150 L375,115 L370,85 Z"
-              fill={regions.doguAnadolu.color}
-              fillOpacity="0.75"
-              stroke="white"
-              strokeWidth="1.5"
-              className="hover:fill-opacity-90 transition-all"
-              transform="scale(0.85) translate(0, 10)"
-            />
-
-            {/* Güneydoğu Anadolu Bölgesi */}
-            <path
-              d="M305,160 L350,145 L400,155 L440,170 L455,205 L420,240 L360,250 L310,240 L285,210 Z"
-              fill={regions.guneydoguAnadolu.color}
-              fillOpacity="0.75"
-              stroke="white"
-              strokeWidth="1.5"
-              className="hover:fill-opacity-90 transition-all"
-            />
-
-            {/* Şehir noktaları */}
-            {Object.entries(cityPositions).map(([city, pos]) => {
-              const people = getCityPeople(city)
-              const hasPeople = people.length > 0
-              
+      {/* Harita veya İl Listesi */}
+      <div className="flex-1 overflow-auto p-4">
+        {searchTerm ? (
+          // Arama sonuçları - Liste görünümü
+          <div className="space-y-2">
+            {filteredProvinces.map(province => {
+              const count = getPersonnelCount(province.name)
               return (
-                <g key={city}>
-                  <circle
-                    cx={pos.x}
-                    cy={pos.y}
-                    r={hasPeople ? 8 : 4}
-                    fill={hasPeople ? 'white' : 'rgba(255,255,255,0.6)'}
-                    stroke={getRegionColor(city)}
-                    strokeWidth={hasPeople ? 2 : 1}
-                    className="cursor-pointer transition-all duration-200 hover:scale-150"
-                    style={{ filter: hasPeople ? 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' : 'none' }}
-                    onMouseEnter={() => setHoveredCity(city)}
-                    onMouseLeave={() => setHoveredCity(null)}
-                    onClick={() => setSelectedCity(city)}
-                  />
-                  {hasPeople && (
-                    <text
-                      x={pos.x}
-                      y={pos.y + 3}
-                      textAnchor="middle"
-                      fontSize="8"
-                      fill={getRegionColor(city)}
-                      fontWeight="bold"
-                      className="pointer-events-none"
-                    >
-                      {people.length}
-                    </text>
+                <button
+                  key={province.id}
+                  onClick={() => handleProvinceClick(province.id)}
+                  className={`w-full p-3 rounded-lg text-left transition-colors flex items-center justify-between ${
+                    selectedCity?.id === province.id
+                      ? 'bg-green-100 border-2 border-green-500'
+                      : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
+                  }`}
+                >
+                  <div>
+                    <span className="font-medium">{province.name}</span>
+                    <span className="text-sm text-gray-500 ml-2">({province.plateCode})</span>
+                  </div>
+                  {count > 0 && (
+                    <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                      {count} kişi
+                    </span>
                   )}
-                </g>
+                </button>
               )
             })}
-          </svg>
-
-          {/* Legend */}
-          <div className="flex flex-wrap gap-1.5 mt-2 px-1">
-            {Object.entries(regions).map(([key, region]) => (
-              <div key={key} className="flex items-center gap-1 text-[10px]">
-                <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: region.color }}></div>
-                <span className="text-gray-600">{region.name.replace(' Bölgesi', '')}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Şehir Detayı veya Genel Bilgi */}
-      <div className="flex-1 overflow-auto px-3 pb-3">
-        {selectedCity ? (
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-            {/* Şehir Header */}
-            <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white p-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold text-lg">{selectedCity}</h3>
-                  <p className="text-slate-300 text-xs">
-                    {regions[cityPositions[selectedCity]?.region as keyof typeof regions]?.name}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="bg-white/20 px-2 py-1 rounded text-sm font-bold">
-                    {getCityPeople(selectedCity).length} Kişi
-                  </span>
-                  <button
-                    onClick={() => setSelectedCity(null)}
-                    className="p-1 hover:bg-white/20 rounded"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowAddForm(true)}
-                className="mt-2 w-full bg-white/20 hover:bg-white/30 py-1.5 rounded text-sm font-medium transition-colors flex items-center justify-center gap-1"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Personel Ekle
-              </button>
-            </div>
-
-            {/* Personel Ekleme Formu */}
-            {showAddForm && (
-              <div className="p-3 bg-blue-50 border-b space-y-2">
-                <input
-                  type="text"
-                  placeholder="Ad Soyad *"
-                  value={newPerson.name}
-                  onChange={(e) => setNewPerson({ ...newPerson, name: e.target.value })}
-                  className="w-full px-2 py-1.5 border rounded text-sm"
-                />
-                <input
-                  type="text"
-                  placeholder="Ünvan / Görev"
-                  value={newPerson.title}
-                  onChange={(e) => setNewPerson({ ...newPerson, title: e.target.value })}
-                  className="w-full px-2 py-1.5 border rounded text-sm"
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="email"
-                    placeholder="E-posta"
-                    value={newPerson.email}
-                    onChange={(e) => setNewPerson({ ...newPerson, email: e.target.value })}
-                    className="px-2 py-1.5 border rounded text-sm"
-                  />
-                  <input
-                    type="tel"
-                    placeholder="Telefon"
-                    value={newPerson.phone}
-                    onChange={(e) => setNewPerson({ ...newPerson, phone: e.target.value })}
-                    className="px-2 py-1.5 border rounded text-sm"
-                  />
-                </div>
-                <textarea
-                  placeholder="Notlar"
-                  value={newPerson.notes}
-                  onChange={(e) => setNewPerson({ ...newPerson, notes: e.target.value })}
-                  rows={2}
-                  className="w-full px-2 py-1.5 border rounded text-sm"
-                />
-                
-                {/* CV Yükleme */}
-                <div className="border border-dashed border-gray-300 rounded p-2 text-center bg-white">
-                  <input
-                    type="file"
-                    id="cv-upload-panel"
-                    accept=".pdf,.doc,.docx"
-                    onChange={handleCVUpload}
-                    className="hidden"
-                  />
-                  {newPerson.cvFileName ? (
-                    <div className="flex items-center justify-center gap-2 text-sm">
-                      <span className="text-green-600">✓ {newPerson.cvFileName}</span>
-                      <button
-                        type="button"
-                        onClick={() => setNewPerson(prev => ({ ...prev, cvFileName: undefined, cvData: undefined }))}
-                        className="text-red-500 text-xs"
-                      >
-                        Kaldır
-                      </button>
-                    </div>
-                  ) : (
-                    <label htmlFor="cv-upload-panel" className="cursor-pointer text-sm text-gray-500">
-                      📎 CV Yükle
-                    </label>
-                  )}
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleAddPerson}
-                    className="flex-1 bg-blue-600 text-white py-1.5 rounded text-sm font-medium hover:bg-blue-700"
-                  >
-                    Ekle
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowAddForm(false)
-                      setNewPerson({ name: '', title: '', email: '', phone: '', notes: '' })
-                    }}
-                    className="flex-1 bg-gray-200 text-gray-700 py-1.5 rounded text-sm font-medium hover:bg-gray-300"
-                  >
-                    İptal
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Personel Listesi */}
-            <div className="p-2 space-y-2 max-h-[300px] overflow-auto">
-              {getCityPeople(selectedCity).length > 0 ? (
-                getCityPeople(selectedCity).map((person) => (
-                  <div
-                    key={person.id}
-                    className="bg-gray-50 rounded-lg p-2 hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-sm">
-                          {person.name.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm text-gray-800">{person.name}</p>
-                          <p className="text-xs text-gray-500">{person.title || 'Personel'}</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => {
-                          if (confirm(`"${person.name}" silinecek?`)) {
-                            onDeletePerson(selectedCity, person.id)
-                          }
-                        }}
-                        className="text-red-400 hover:text-red-600 p-1"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </div>
-                    {(person.email || person.phone) && (
-                      <div className="mt-1 text-xs text-gray-500 pl-10">
-                        {person.email && <span>{person.email}</span>}
-                        {person.email && person.phone && <span> • </span>}
-                        {person.phone && <span>{person.phone}</span>}
-                      </div>
-                    )}
-                    {person.cvFileName && (
-                      <div className="mt-1 pl-10">
-                        <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
-                          📄 {person.cvFileName}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-6 text-gray-400">
-                  <p className="text-sm">Henüz personel yok</p>
-                  <button
-                    onClick={() => setShowAddForm(true)}
-                    className="text-blue-500 text-sm mt-1 hover:underline"
-                  >
-                    + İlk personeli ekle
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
         ) : (
-          /* Genel İstatistik */
-          <div className="space-y-3">
-            <div className="bg-white rounded-xl shadow-lg p-4">
-              <h3 className="font-semibold text-gray-700 mb-3">Genel Özet</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-blue-50 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {cityPersonnel.reduce((acc, cp) => acc + cp.people.length, 0)}
+          // Harita görünümü - Bölgelere göre grupla
+          <div className="space-y-4">
+            {Object.entries(regionColors).map(([region, color]) => {
+              const regionProvinces = turkeyProvinces.filter(p => p.region === region)
+              return (
+                <div key={region} className="bg-gray-50 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div 
+                      className="w-4 h-4 rounded-full" 
+                      style={{ backgroundColor: color }}
+                    />
+                    <h3 className="font-semibold text-gray-700">{region}</h3>
+                    <span className="text-xs text-gray-500">
+                      ({regionProvinces.reduce((sum, p) => sum + getPersonnelCount(p.name), 0)} kişi)
+                    </span>
                   </div>
-                  <div className="text-xs text-gray-500">Toplam Personel</div>
-                </div>
-                <div className="bg-green-50 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold text-green-600">
-                    {cityPersonnel.filter(cp => cp.people.length > 0).length}
+                  <div className="flex flex-wrap gap-1">
+                    {regionProvinces.map(province => {
+                      const count = getPersonnelCount(province.name)
+                      return (
+                        <button
+                          key={province.id}
+                          onClick={() => handleProvinceClick(province.id)}
+                          className={`px-2 py-1 text-xs rounded transition-colors ${
+                            selectedCity?.id === province.id
+                              ? 'bg-green-600 text-white'
+                              : count > 0
+                              ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                              : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                          }`}
+                        >
+                          {province.name}
+                          {count > 0 && <span className="ml-1">({count})</span>}
+                        </button>
+                      )
+                    })}
                   </div>
-                  <div className="text-xs text-gray-500">Aktif Şehir</div>
                 </div>
-              </div>
-            </div>
-
-            {/* Aktif şehirler listesi */}
-            {cityPersonnel.filter(cp => cp.people.length > 0).length > 0 && (
-              <div className="bg-white rounded-xl shadow-lg p-4">
-                <h3 className="font-semibold text-gray-700 mb-2">Aktif Şehirler</h3>
-                <div className="space-y-1">
-                  {cityPersonnel
-                    .filter(cp => cp.people.length > 0)
-                    .sort((a, b) => b.people.length - a.people.length)
-                    .map((cp) => (
-                      <button
-                        key={cp.city}
-                        onClick={() => setSelectedCity(cp.city)}
-                        className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors text-left"
-                      >
-                        <span className="font-medium text-sm">{cp.city}</span>
-                        <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full">
-                          {cp.people.length} kişi
-                        </span>
-                      </button>
-                    ))}
-                </div>
-              </div>
-            )}
-
-            <p className="text-xs text-gray-400 text-center">
-              Haritadan bir şehre tıklayarak personel ekleyebilirsiniz
-            </p>
+              )
+            })}
           </div>
         )}
       </div>
 
-      {/* Hover Tooltip */}
-      {hoveredCity && (
-        <div
-          className="fixed z-[200] bg-gray-900 text-white rounded-lg shadow-xl p-3 pointer-events-none"
-          style={{
-            left: mousePos.x + 15,
-            top: mousePos.y + 15,
-            maxWidth: 220,
-          }}
-        >
-          <div className="flex items-center gap-2 mb-1">
-            <div 
-              className="w-2.5 h-2.5 rounded-full"
-              style={{ backgroundColor: getRegionColor(hoveredCity) }}
-            ></div>
-            <span className="font-bold">{hoveredCity}</span>
+      {/* Seçili İl Detayları */}
+      {selectedCity && (
+        <div className="border-t border-gray-200 bg-gray-50 p-4 max-h-[40%] overflow-auto">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h3 className="font-bold text-lg text-gray-800">{selectedCity.name}</h3>
+              <p className="text-sm text-gray-500">Plaka: {selectedCity.plateCode}</p>
+            </div>
+            <button
+              onClick={() => {
+                setShowAddForm(true)
+                setEditingPerson(null)
+                setFormData({ name: '', title: '', phone: '', email: '' })
+              }}
+              className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+            >
+              <Plus className="w-4 h-4" />
+              Personel Ekle
+            </button>
           </div>
-          <p className="text-gray-400 text-xs mb-1">
-            {regions[cityPositions[hoveredCity]?.region as keyof typeof regions]?.name}
-          </p>
-          
-          {getCityPeople(hoveredCity).length > 0 ? (
-            <div className="space-y-1">
-              <p className="text-green-400 text-xs font-medium">
-                {getCityPeople(hoveredCity).length} Personel
-              </p>
-              {getCityPeople(hoveredCity).slice(0, 2).map((person) => (
-                <div key={person.id} className="flex items-center gap-1.5 text-xs">
-                  <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center text-[8px]">
-                    {person.name.charAt(0)}
+
+          {/* Personel Ekleme/Düzenleme Formu */}
+          {(showAddForm || editingPerson) && (
+            <form 
+              onSubmit={editingPerson ? handleEditSubmit : handleAddSubmit}
+              className="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-200"
+            >
+              <h4 className="font-semibold text-gray-700 mb-3">
+                {editingPerson ? 'Personel Düzenle' : 'Yeni Personel Ekle'}
+              </h4>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">Ad Soyad *</label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">Ünvan *</label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">Telefon</label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">E-posta</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                >
+                  {editingPerson ? 'Güncelle' : 'Ekle'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddForm(false)
+                    setEditingPerson(null)
+                    setFormData({ name: '', title: '', phone: '', email: '' })
+                  }}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm"
+                >
+                  İptal
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Personel Listesi */}
+          {selectedCityPersonnel.length > 0 ? (
+            <div className="space-y-2">
+              {selectedCityPersonnel.map(person => (
+                <div
+                  key={person.id}
+                  className="bg-white rounded-lg p-3 shadow-sm border border-gray-200"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-800">{person.name}</h4>
+                        <p className="text-sm text-gray-500">{person.title}</p>
+                        {person.phone && (
+                          <div className="flex items-center gap-1 text-xs text-gray-400 mt-1">
+                            <Phone className="w-3 h-3" />
+                            {person.phone}
+                          </div>
+                        )}
+                        {person.email && (
+                          <div className="flex items-center gap-1 text-xs text-gray-400">
+                            <Mail className="w-3 h-3" />
+                            {person.email}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => startEdit(person, selectedCity.name)}
+                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        title="Düzenle"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(person.id, selectedCity.name)}
+                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                        title="Sil"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                  <span>{person.name}</span>
                 </div>
               ))}
-              {getCityPeople(hoveredCity).length > 2 && (
-                <p className="text-xs text-gray-400">
-                  +{getCityPeople(hoveredCity).length - 2} kişi daha
-                </p>
-              )}
             </div>
-          ) : (
-            <p className="text-gray-400 text-xs">Henüz personel yok</p>
-          )}
-          
-          <p className="text-[10px] text-blue-400 mt-1">Tıklayarak düzenle</p>
+          ) : !showAddForm && !editingPerson ? (
+            <div className="text-center py-6 text-gray-500">
+              <Users className="w-12 h-12 mx-auto text-gray-300 mb-2" />
+              <p>Bu il için henüz personel eklenmemiş</p>
+              <button
+                onClick={() => setShowAddForm(true)}
+                className="mt-2 text-green-600 hover:text-green-700 font-medium text-sm"
+              >
+                İlk personeli ekle
+              </button>
+            </div>
+          ) : null}
         </div>
       )}
     </div>
