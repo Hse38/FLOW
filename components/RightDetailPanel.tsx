@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Person, Coordinator, Deputy, SubUnit } from '@/context/OrgDataContext'
 
 interface RightDetailPanelProps {
@@ -464,6 +464,20 @@ function PersonMiniCard({ person, type, onClose, onUpdate }: PersonMiniCardProps
   })
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // person prop değişince editData'yı güncelle
+  useEffect(() => {
+    setEditData({
+      name: person.name,
+      title: person.title || '',
+      email: person.email || '',
+      phone: person.phone || '',
+      notes: person.notes || '',
+      cvFileName: person.cvFileName || '',
+      cvData: person.cvData || '',
+    })
+    setIsEditing(false)
+  }, [person])
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -555,7 +569,19 @@ function PersonMiniCard({ person, type, onClose, onUpdate }: PersonMiniCardProps
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <span className="text-green-700">{person.cvFileName}</span>
-                <button className="ml-auto text-green-600 hover:text-green-800 text-xs font-medium">Görüntüle</button>
+                {person.cvData && (
+                  <button 
+                    onClick={() => {
+                      const link = document.createElement('a')
+                      link.href = person.cvData!
+                      link.download = person.cvFileName!
+                      link.click()
+                    }}
+                    className="ml-auto text-green-600 hover:text-green-800 text-xs font-medium"
+                  >
+                    İndir
+                  </button>
+                )}
               </div>
             )}
             <button

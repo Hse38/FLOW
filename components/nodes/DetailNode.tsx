@@ -54,9 +54,17 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
   }
 
   if (data.type === 'subunit') {
+    const handlePersonClick = (e: React.MouseEvent, person: Person) => {
+      e.preventDefault()
+      e.stopPropagation()
+      if (data.onPersonClick) {
+        data.onPersonClick(person)
+      }
+    }
+
     return (
       <div 
-        className="bg-white border-l-4 border-[#3b82a0] rounded-lg px-4 py-3 shadow-md min-w-[140px] max-w-[180px]"
+        className="bg-white border-l-4 border-[#3b82a0] rounded-lg px-4 py-3 shadow-md min-w-[140px] max-w-[180px] nodrag"
         onContextMenu={data.onContextMenu}
       >
         <Handle type="target" position={Position.Top} className="!bg-gray-400" />
@@ -69,13 +77,9 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
               {data.people.map((person) => (
                 <li 
                   key={person.id} 
-                  className={`flex items-center gap-1 ${data.onPersonClick ? 'cursor-pointer hover:bg-blue-50 rounded px-1 py-0.5 transition-colors' : ''}`}
-                  onClick={(e) => {
-                    if (data.onPersonClick) {
-                      e.stopPropagation()
-                      data.onPersonClick(person)
-                    }
-                  }}
+                  className={`flex items-center gap-1 nodrag nopan ${data.onPersonClick ? 'cursor-pointer hover:bg-blue-50 rounded px-1 py-0.5 transition-colors' : ''}`}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={(e) => handlePersonClick(e, person)}
                 >
                   <span className="text-gray-400">•</span>
                   <span className="text-gray-800">{person.name}</span>
