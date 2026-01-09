@@ -116,8 +116,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
     nodeId: string
   } | null>(null)
 
-  // Custom connections (ip çekme) state
-  const [customConnections, setCustomConnections] = useState<Array<{ source: string; target: string; id: string }>>(() => {
+  // Custom connections (ip çekme) state - sourceHandle/targetHandle: 'top' veya 'bottom'
+  const [customConnections, setCustomConnections] = useState<Array<{ source: string; target: string; id: string; sourceHandle?: string; targetHandle?: string }>>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('orgCustomConnections')
       if (saved) {
@@ -132,11 +132,19 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
   })
 
   // Connection mode state (bağlantı oluşturma modu)
-  const [connectionMode, setConnectionMode] = useState<{ active: boolean; sourceId: string | null; sourceName: string | null }>({
+  const [connectionMode, setConnectionMode] = useState<{ active: boolean; sourceId: string | null; sourceName: string | null; sourceHandle: 'top' | 'bottom' }>({
     active: false,
     sourceId: null,
-    sourceName: null
+    sourceName: null,
+    sourceHandle: 'bottom'
   })
+
+  // Bağlantı yönü seçimi modal
+  const [connectionHandleModal, setConnectionHandleModal] = useState<{ 
+    isOpen: boolean; 
+    nodeId: string; 
+    nodeName: string 
+  } | null>(null)
 
   // Connection list modal (bağlantı listesi)
   const [connectionListModal, setConnectionListModal] = useState<{ isOpen: boolean; nodeId: string } | null>(null)
@@ -148,9 +156,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
   const handleUnitClickRef = useRef<(unitId: string) => void>(() => {})
 
   handleUnitClickRef.current = (unitId: string) => {
-    // Bağlantı modundaysa hedefi seç
+    // Bağlantı modundaysa hedef seçimi için modal aç
     if (connectionMode.active) {
-      completeConnection(unitId)
+      setPendingTarget({ targetId: unitId })
       return
     }
 
@@ -446,17 +454,16 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
       })
     }
 
-    // Custom connections (manuel bağlantılar)
+    // Custom connections (manuel bağlantılar) - beyaz çizgi, diğerleri gibi
     customConnections.forEach((conn) => {
       edgeList.push({
         id: conn.id,
         source: conn.source,
         target: conn.target,
+        sourceHandle: conn.sourceHandle || 'bottom',
+        targetHandle: conn.targetHandle || 'top',
         type: 'smoothstep',
-        animated: true,
-        style: { stroke: '#f59e0b', strokeWidth: 2.5, strokeDasharray: '5,5' },
-        labelStyle: { fill: '#f59e0b', fontWeight: 700 },
-        labelBgStyle: { fill: '#ffffff', fillOpacity: 0.9 },
+        style: { stroke: '#ffffff', strokeWidth: 2.5 },
       })
     })
 
@@ -506,28 +513,36 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
     setPaneContextMenu(null)
   }, [])
 
-  // Custom connection (bağlantı) oluşturma
-  const startConnection = useCallback((nodeId: string, nodeName: string) => {
-    setConnectionMode({ active: true, sourceId: nodeId, sourceName: nodeName })
+  // Custom connection (bağlantı) oluşturma - önce yön seçimi modal açılır
+  const startConnection = useCallback((nodeId: string, nodeName: string, sourceHandle: 'top' | 'bottom') => {
+    setConnectionMode({ active: true, sourceId: nodeId, sourceName: nodeName, sourceHandle })
     setContextMenu(null)
+    setConnectionHandleModal(null)
   }, [])
 
-  const completeConnection = useCallback((targetId: string) => {
+  // Hedef seçildiğinde targetHandle seçimi için modal aç
+  const [pendingTarget, setPendingTarget] = useState<{ targetId: string } | null>(null)
+
+  const completeConnection = useCallback((targetId: string, targetHandle: 'top' | 'bottom') => {
     if (connectionMode.sourceId && connectionMode.sourceId !== targetId) {
       const newConnection = {
         id: `custom-${connectionMode.sourceId}-${targetId}-${Date.now()}`,
         source: connectionMode.sourceId,
-        target: targetId
+        target: targetId,
+        sourceHandle: connectionMode.sourceHandle,
+        targetHandle: targetHandle
       }
       const updatedConnections = [...customConnections, newConnection]
       setCustomConnections(updatedConnections)
       localStorage.setItem('orgCustomConnections', JSON.stringify(updatedConnections))
     }
-    setConnectionMode({ active: false, sourceId: null, sourceName: null })
+    setConnectionMode({ active: false, sourceId: null, sourceName: null, sourceHandle: 'bottom' })
+    setPendingTarget(null)
   }, [connectionMode, customConnections])
 
   const cancelConnection = useCallback(() => {
-    setConnectionMode({ active: false, sourceId: null, sourceName: null })
+    setConnectionMode({ active: false, sourceId: null, sourceName: null, sourceHandle: 'bottom' })
+    setPendingTarget(null)
   }, [])
 
   const removeConnection = useCallback((connectionId: string) => {
@@ -799,9 +814,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
         onNodeContextMenu={handleNodeContextMenu}
         onPaneContextMenu={handlePaneContextMenu}
         onNodeClick={(_, node) => {
-          // Bağlantı modundaysa hedefi tamamla
+          // Bağlantı modundaysa hedef yönü seçimi için modal aç
           if (connectionMode.active && node.id !== connectionMode.sourceId) {
-            completeConnection(node.id)
+            setPendingTarget({ targetId: node.id })
           }
         }}
         nodesDraggable={!isLocked}
@@ -1036,7 +1051,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
             const exec = data.executives.find(e => e.id === contextMenu.nodeId)
             const mgmt = data.management.find(m => m.id === contextMenu.nodeId)
             const nodeName = coord?.title || mainCoord?.title || exec?.name || mgmt?.name || 'Bilinmeyen'
-            startConnection(contextMenu.nodeId, nodeName)
+            // Önce kaynak yönü seçimi için modal aç
+            setConnectionHandleModal({ isOpen: true, nodeId: contextMenu.nodeId, nodeName })
+            setContextMenu(null)
           }
         }}
         hasConnections={customConnections.some(c => c.source === contextMenu?.nodeId || c.target === contextMenu?.nodeId)}
@@ -1225,6 +1242,118 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
             <div className="p-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-center">
               <h3 className="text-lg font-bold text-gray-900">Selçuk Bayraktar</h3>
               <p className="text-sm text-yellow-900">T3 Vakfı Mütevelli Heyeti Başkanı</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Kaynak Bağlantı Noktası Seçim Modal */}
+      {connectionHandleModal && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
+          onClick={() => setConnectionHandleModal(null)}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4">
+              <h3 className="text-lg font-bold text-white">Bağlantı Noktası Seçin</h3>
+              <p className="text-sm text-blue-100">"{connectionHandleModal.nodeName}" için çıkış yönü</p>
+            </div>
+            <div className="p-4 space-y-3">
+              <button
+                onClick={() => startConnection(connectionHandleModal.nodeId, connectionHandleModal.nodeName, 'top')}
+                className="w-full p-4 bg-gray-50 hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-400 rounded-xl transition-all flex items-center gap-3"
+              >
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-gray-800">Üstten Çıkış</div>
+                  <div className="text-sm text-gray-500">Bağlantı üst noktadan başlar</div>
+                </div>
+              </button>
+              <button
+                onClick={() => startConnection(connectionHandleModal.nodeId, connectionHandleModal.nodeName, 'bottom')}
+                className="w-full p-4 bg-gray-50 hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-400 rounded-xl transition-all flex items-center gap-3"
+              >
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-gray-800">Alttan Çıkış</div>
+                  <div className="text-sm text-gray-500">Bağlantı alt noktadan başlar</div>
+                </div>
+              </button>
+            </div>
+            <div className="p-4 border-t bg-gray-50">
+              <button
+                onClick={() => setConnectionHandleModal(null)}
+                className="w-full py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition-colors"
+              >
+                İptal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hedef Bağlantı Noktası Seçim Modal */}
+      {pendingTarget && connectionMode.active && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
+          onClick={cancelConnection}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bg-gradient-to-r from-green-500 to-green-600 p-4">
+              <h3 className="text-lg font-bold text-white">Hedef Bağlantı Noktası</h3>
+              <p className="text-sm text-green-100">Hedef node için giriş yönü seçin</p>
+            </div>
+            <div className="p-4 space-y-3">
+              <button
+                onClick={() => completeConnection(pendingTarget.targetId, 'top')}
+                className="w-full p-4 bg-gray-50 hover:bg-green-50 border-2 border-gray-200 hover:border-green-400 rounded-xl transition-all flex items-center gap-3"
+              >
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-gray-800">Üstten Giriş</div>
+                  <div className="text-sm text-gray-500">Bağlantı üst noktaya bağlanır</div>
+                </div>
+              </button>
+              <button
+                onClick={() => completeConnection(pendingTarget.targetId, 'bottom')}
+                className="w-full p-4 bg-gray-50 hover:bg-green-50 border-2 border-gray-200 hover:border-green-400 rounded-xl transition-all flex items-center gap-3"
+              >
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-gray-800">Alttan Giriş</div>
+                  <div className="text-sm text-gray-500">Bağlantı alt noktaya bağlanır</div>
+                </div>
+              </button>
+            </div>
+            <div className="p-4 border-t bg-gray-50">
+              <button
+                onClick={cancelConnection}
+                className="w-full py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition-colors"
+              >
+                İptal
+              </button>
             </div>
           </div>
         </div>
