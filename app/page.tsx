@@ -2,10 +2,11 @@
 
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Network, ChevronDown, ChevronUp, Settings, Plus, Trash2, Menu, X, FileText, FolderOpen, Edit2, Eye, Download } from 'lucide-react'
+import { Network, ChevronDown, ChevronUp, Settings, Plus, Trash2, Menu, X, FileText, FolderOpen, Edit2, Eye, Download, CloudUpload } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import ConfirmationModal from '@/components/ConfirmationModal'
 import { showToast } from '@/components/Toast'
+import { useOrgData } from '@/context/OrgDataContext'
 
 // Dynamically import OrgCanvas to avoid SSR issues with React Flow
 const OrgCanvas = dynamic(() => import('@/components/OrgCanvas'), {
@@ -51,6 +52,9 @@ interface SavedProject {
 }
 
 export default function Home() {
+  // OrgData context
+  const { syncLocalToFirebase } = useOrgData()
+  
   // Sidebar state
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [savedProjects, setSavedProjects] = useState<SavedProject[]>([])
@@ -66,6 +70,40 @@ export default function Home() {
 
   // Presentation mode state
   const [isPresentationMode, setIsPresentationMode] = useState(false)
+  
+  // Sync to Firebase handler
+  const handleSyncToFirebase = async () => {
+    try {
+      showToast('Firebase\'e yükleniyor...', 'info', 3000)
+      const result = await syncLocalToFirebase()
+      if (result?.success) {
+        showToast(
+          `✅ Veriler Firebase'e yüklendi! Şimdi push yapın: git push origin main`, 
+          'success',
+          10000
+        )
+        console.log('')
+        console.log('═══════════════════════════════════════════════════════════')
+        console.log('📝 CANLIDA GÖRMEK İÇİN PUSH YAPIN:')
+        console.log('═══════════════════════════════════════════════════════════')
+        console.log('')
+        console.log('1️⃣  git add .')
+        console.log('2️⃣  git commit -m "Lokaldeki verileri Firebase\'e yükle"')
+        console.log('3️⃣  git push origin main')
+        console.log('')
+        console.log('✅ Vercel otomatik deploy edecek (1-2 dakika)')
+        console.log('✅ Deploy sonrası canlıda Firebase\'den veriler yüklenecek')
+        console.log('')
+        console.log('💡 Firebase Console\'dan kontrol edebilirsiniz:')
+        console.log('   https://console.firebase.google.com/project/t3-vakfi-org/database')
+        console.log('')
+        console.log('═══════════════════════════════════════════════════════════')
+      }
+    } catch (error) {
+      console.error('Firebase sync hatası:', error)
+      showToast('Firebase\'e yükleme hatası. Console\'u kontrol edin.', 'error', 5000)
+    }
+  }
 
   // Load saved projects on mount
   useEffect(() => {
@@ -389,6 +427,22 @@ export default function Home() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
+                {/* Sync to Firebase Button (Development only) */}
+                {typeof window !== 'undefined' && process.env.NODE_ENV === 'development' && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleSyncToFirebase}
+                      className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all font-medium text-sm shadow-sm"
+                      title="Lokaldeki verileri Firebase'e yükle. Canlıda (production) otomatik olarak Firebase kullanılır ve veriler görünür."
+                    >
+                      <CloudUpload className="w-4 h-4" />
+                      <span className="hidden lg:inline">Firebase'e Yükle</span>
+                    </button>
+                    <div className="hidden xl:block text-xs text-gray-500 max-w-[200px]">
+                      <span className="font-medium text-green-600">💡 İpucu:</span> Bu butona tıklayın, canlıda otomatik görünür
+                    </div>
+                  </div>
+                )}
                 {/* Mode Toggle Buttons */}
                 <div className="flex items-center bg-gray-100 rounded-xl p-1 gap-1">
                   <button

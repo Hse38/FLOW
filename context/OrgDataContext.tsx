@@ -10,8 +10,49 @@ import {
 } from '@/lib/firebase'
 import orgJsonData from '@/data/org.json'
 
-// Lokal çalışmak için Firebase'i kapat
-const USE_LOCAL_ONLY = true
+// Development'ta localStorage, production'da Firebase kullan
+// Environment variable ile manuel kontrol: NEXT_PUBLIC_USE_LOCAL_ONLY=true (localStorage zorla kullan)
+// Production'da (Vercel) otomatik Firebase kullanılır
+const getUseLocalOnly = () => {
+  if (typeof window === 'undefined') {
+    // SSR: Sadece env variable kontrolü
+    const useLocal = process.env.NEXT_PUBLIC_USE_LOCAL_ONLY === 'true'
+    console.log('🔍 [SSR] USE_LOCAL_ONLY:', useLocal, '| NEXT_PUBLIC_USE_LOCAL_ONLY:', process.env.NEXT_PUBLIC_USE_LOCAL_ONLY)
+    return useLocal
+  }
+  
+  // Client-side: hostname ve env kontrolleri
+  const hostname = window.location.hostname
+  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('127.')
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  const forceLocal = process.env.NEXT_PUBLIC_USE_LOCAL_ONLY === 'true'
+  
+  // Production'da (vercel.app veya başka domain) Firebase kullan
+  // Sadece localhost ve development modunda localStorage kullan
+  // ÖNEMLİ: Production'da (localhost değilse) her zaman Firebase kullan!
+  const useLocal = forceLocal || (isDevelopment && isLocalhost)
+  
+  // Debug log - Production'da özellikle önemli
+  console.log('🔍 Data Storage Mode Detection:')
+  console.log('  - USE_LOCAL_ONLY:', useLocal)
+  console.log('  - Storage Mode:', useLocal ? '⚠️ localStorage (lokalde)' : '✅ Firebase (production)')
+  console.log('  - NODE_ENV:', process.env.NODE_ENV)
+  console.log('  - Hostname:', hostname)
+  console.log('  - Is Localhost:', isLocalhost)
+  console.log('  - Is Development:', isDevelopment)
+  console.log('  - Force Local:', forceLocal)
+  console.log('  - NEXT_PUBLIC_USE_LOCAL_ONLY:', process.env.NEXT_PUBLIC_USE_LOCAL_ONLY || '(not set)')
+  
+  if (!useLocal) {
+    console.log('✅ Production modu: Firebase aktif!')
+  } else {
+    console.log('⚠️ Local modu: localStorage kullanılıyor (sadece development)')
+  }
+  
+  return useLocal
+}
+
+const USE_LOCAL_ONLY = getUseLocalOnly()
 
 // Types
 export interface Person {
@@ -145,6 +186,7 @@ interface OrgDataContextType {
   restoreData: (data: OrgData) => void // Undo/Redo için
   saveData: () => void
   loadData: () => void
+  syncLocalToFirebase: () => Promise<void> // Lokaldeki verileri Firebase'e yükle
   setActiveProject: (projectId: string) => void
   createProject: (name: string, isMain?: boolean) => void
   deleteProject: (projectId: string) => void
@@ -932,6 +974,101 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     // onValue dinleyicisi zaten yüklüyor
   }, [])
 
+  // Lokaldeki verileri Firebase'e sync et
+  const syncLocalToFirebase = useCallback(async () => {
+    const projectId = activeProjectId || 'main'
+    
+    try {
+      // localStorage'dan verileri oku
+      const localData = localStorage.getItem(`orgData_${projectId}`)
+      const localPositions = localStorage.getItem(`orgPositions_${projectId}`)
+      const localConnections = localStorage.getItem(`orgConnections_${projectId}`)
+      const localLocked = localStorage.getItem('orgLocked')
+
+      if (!localData) {
+        const errorMsg = '⚠️ localStorage\'da veri bulunamadı! Önce lokalde bir şeyler ekleyin.'
+        console.warn(errorMsg)
+        throw new Error(errorMsg)
+      }
+
+      const parsedData = JSON.parse(localData)
+      console.log('📤 Firebase\'e yükleniyor...')
+      console.log('  - Project ID:', projectId)
+      console.log('  - Coordinators:', parsedData.coordinators?.length || 0)
+      
+      // Firebase'e yaz - tüm verileri aynı anda yükle
+      const promises = [
+        set(ref(database, `orgData/${projectId}`), parsedData).then(() => console.log('  ✅ orgData yüklendi')),
+      ]
+      
+      if (localPositions) {
+        promises.push(
+          set(ref(database, `positions/${projectId}`), JSON.parse(localPositions))
+            .then(() => console.log('  ✅ positions yüklendi'))
+        )
+      }
+      
+      if (localConnections) {
+        promises.push(
+          set(ref(database, `connections/${projectId}`), JSON.parse(localConnections))
+            .then(() => console.log('  ✅ connections yüklendi'))
+        )
+      }
+      
+      if (localLocked !== null) {
+        promises.push(
+          set(ref(database, 'settings/locked'), localLocked === 'true')
+            .then(() => console.log('  ✅ locked durumu yüklendi'))
+        )
+      }
+      
+      promises.push(
+        set(ref(database, 'settings/activeProjectId'), projectId)
+          .then(() => console.log('  ✅ activeProjectId yüklendi'))
+      )
+      
+      await Promise.all(promises)
+
+      console.log('')
+      console.log('✅✅✅ TÜM VERİLER FIREBASE\'E BAŞARIYLA YÜKLENDİ! ✅✅✅')
+      console.log('📍 Project ID:', projectId)
+      console.log('🌐 Canlıda (production) otomatik olarak Firebase\'den yüklenecek')
+      console.log('💡 Production\'da Storage Mode: Firebase (USE_LOCAL_ONLY = false)')
+      console.log('')
+      
+      // Firebase'den doğrulama oku
+      try {
+        const snapshot = await get(ref(database, `orgData/${projectId}`))
+        if (snapshot.exists()) {
+          const firebaseData = snapshot.val()
+          console.log('✅ DOĞRULAMA: Firebase\'de veri mevcut!')
+          console.log('  - Firebase\'deki coordinators:', firebaseData.coordinators?.length || 0)
+          if (firebaseData.coordinators && firebaseData.coordinators.length > 0) {
+            const firstCoord = firebaseData.coordinators[0]
+            console.log('  - İlk coordinator:', firstCoord.title)
+            if (firstCoord.deputies && firstCoord.deputies.length > 0) {
+              console.log('    - Deputies:', firstCoord.deputies.length, '- İlk:', firstCoord.deputies[0].name)
+            }
+            if (firstCoord.subUnits && firstCoord.subUnits.length > 0) {
+              console.log('    - SubUnits:', firstCoord.subUnits.length, '- İlk:', firstCoord.subUnits[0].title)
+            }
+          }
+          console.log('')
+          console.log('🎉 BAŞARILI! Canlıda bu veriler görünecek.')
+        } else {
+          console.warn('⚠️ DOĞRULAMA: Firebase\'de veri bulunamadı!')
+        }
+      } catch (verifyError) {
+        console.warn('⚠️ Doğrulama hatası:', verifyError)
+      }
+      
+      return { success: true, projectId }
+    } catch (error) {
+      console.error('❌ Firebase\'e yükleme hatası:', error)
+      throw error
+    }
+  }, [activeProjectId])
+
   // Reset to empty canvas
   const resetToEmpty = useCallback(() => {
     const emptyData: OrgData = {
@@ -1460,6 +1597,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       restoreData,
       saveData,
       loadData,
+      syncLocalToFirebase,
       setActiveProject,
       createProject,
       deleteProject,

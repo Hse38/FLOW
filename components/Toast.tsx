@@ -18,20 +18,20 @@ let toastIdCounter = 0
 const toasts: Toast[] = []
 const listeners: ((toasts: Toast[]) => void)[] = []
 
-export const showToast = (message: string, type: ToastType = 'info') => {
+export const showToast = (message: string, type: ToastType = 'info', duration: number = 4000) => {
   const id = `toast-${toastIdCounter++}`
   const newToast: Toast = { id, message, type }
   toasts.push(newToast)
   listeners.forEach(listener => listener([...toasts]))
   
-  // Auto-remove after 4 seconds
+  // Auto-remove after specified duration
   setTimeout(() => {
     const index = toasts.findIndex(t => t.id === id)
     if (index > -1) {
       toasts.splice(index, 1)
       listeners.forEach(listener => listener([...toasts]))
     }
-  }, 4000)
+  }, duration)
 }
 
 export default function ToastContainer() {
