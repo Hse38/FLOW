@@ -187,7 +187,7 @@ interface OrgDataContextType {
   restoreData: (data: OrgData) => void // Undo/Redo için
   saveData: () => void
   loadData: () => void
-  syncLocalToFirebase: () => Promise<void> // Lokaldeki verileri Firebase'e yükle
+  syncLocalToFirebase: () => Promise<{ success: boolean; projectId: string } | undefined> // Lokaldeki verileri Firebase'e yükle
   setActiveProject: (projectId: string) => void
   createProject: (name: string, isMain?: boolean) => void
   deleteProject: (projectId: string) => void
