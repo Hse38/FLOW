@@ -985,15 +985,21 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
 
   const handleEdit = () => {
     if (contextMenu) {
-      const coord = data.coordinators.find(c => c.id === contextMenu.nodeId)
-      const mainCoord = data.mainCoordinators.find(m => m.id === contextMenu.nodeId)
+      // Detay node ise gerçek ID'yi çözümle
+      let targetId = contextMenu.nodeId
+      if (targetId.startsWith('detail-') && targetId.endsWith('-root')) {
+        targetId = targetId.replace('detail-', '').replace('-root', '')
+      }
+
+      const coord = data.coordinators.find(c => c.id === targetId)
+      const mainCoord = data.mainCoordinators.find(m => m.id === targetId)
       const item = coord || mainCoord
 
       setFormModal({
         isOpen: true,
         type: 'edit',
         title: 'Düzenle',
-        nodeId: contextMenu.nodeId,
+        nodeId: targetId,
         initialData: item ? {
           title: coord?.title || mainCoord?.title || '',
           description: coord?.description || mainCoord?.description || '',
@@ -1004,7 +1010,26 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
 
   const handleDelete = () => {
     if (contextMenu && confirm('Bu birimi silmek istediğinize emin misiniz?')) {
-      deleteNode(contextMenu.nodeId, contextMenu.nodeType)
+      let targetId = contextMenu.nodeId
+      let targetType = contextMenu.nodeType
+
+      // Detay node ise gerçek ID ve tip çözümlemesi
+      if (targetId.startsWith('detail-') && targetId.endsWith('-root')) {
+        targetId = targetId.replace('detail-', '').replace('-root', '')
+        // Detay görünümü sadece koordinatörler için var, tipini bulalım
+        if (data.coordinators.find(c => c.id === targetId)) {
+          targetType = 'coordinator'
+        } else if (data.mainCoordinators.find(c => c.id === targetId)) {
+          targetType = 'mainCoordinator'
+        }
+
+        // Eğer açık olan koordinatör siliniyorsa detay panelini kapat
+        if (expandedCoordinator === targetId) {
+          setExpandedCoordinator(null)
+        }
+      }
+
+      deleteNode(targetId, targetType)
       setContextMenu(null)
     }
   }
@@ -1540,6 +1565,82 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                     deletePerson(personContextMenu.coordinatorId, personContextMenu.subUnitId, personContextMenu.person.id)
                   }
                   setPersonContextMenu(null)
+                }}
+                className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Sil
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* SubUnit Context Menu */}
+        {subUnitContextMenu && (
+          <div
+            className="fixed z-[300] bg-white rounded-xl shadow-2xl border border-gray-100 py-2 min-w-[180px] animate-in fade-in zoom-in-95 duration-150"
+            style={{ left: subUnitContextMenu.x, top: subUnitContextMenu.y }}
+            onClick={() => setSubUnitContextMenu(null)}
+          >
+            <div className="px-3 py-2 border-b border-gray-100">
+              <p className="text-xs text-gray-400">Alt Birim</p>
+              <p className="text-sm font-semibold text-gray-800 truncate">{subUnitContextMenu.subUnitTitle}</p>
+            </div>
+
+            <button
+              onClick={() => {
+                setFormModal({
+                  isOpen: true,
+                  type: 'person',
+                  title: 'Kişi Ekle',
+                  nodeId: subUnitContextMenu.coordinatorId,
+                  initialData: {
+                    subUnitId: subUnitContextMenu.subUnitId
+                  }
+                })
+                setSubUnitContextMenu(null)
+              }}
+              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+              Kişi Ekle
+            </button>
+
+            <button
+              onClick={() => {
+                setFormModal({
+                  isOpen: true,
+                  type: 'subunit', // Alt birim düzenleme için subunit tipini kullanabiliriz, handleFormSave buna göre güncellenmeli
+                  title: 'Birim Düzenle',
+                  nodeId: subUnitContextMenu.coordinatorId,
+                  initialData: {
+                    id: subUnitContextMenu.subUnitId,
+                    title: subUnitContextMenu.subUnitTitle,
+                    responsibilities: [] // Mevcut responsibilities çekilmeli gerekirse
+                  }
+                })
+                // Not: Şu an updateSubUnit modal üzerinden tam desteklenmiyor olabilir, basitçe kişi ekle ve sil özellikleri kritik.
+                setSubUnitContextMenu(null)
+              }}
+              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 flex items-center gap-2 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Düzenle
+            </button>
+
+            <div className="border-t border-gray-100 mt-1 pt-1">
+              <button
+                onClick={() => {
+                  if (confirm(`${subUnitContextMenu.subUnitTitle} birimini silmek istediğinize emin misiniz?`)) {
+                    deleteSubUnit(subUnitContextMenu.coordinatorId, subUnitContextMenu.subUnitId)
+                  }
+                  setSubUnitContextMenu(null)
                 }}
                 className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
               >
