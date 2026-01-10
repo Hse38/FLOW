@@ -22,6 +22,7 @@ interface ContextMenuProps {
   onAddExecutive?: () => void
   onAddMainCoordinator?: () => void
   onAddCoordinator?: () => void
+  onAddCoordinatorPerson?: () => void // Koordinatörlüğe koordinatör kişisi eklemek için
   // Yeni: Bağlantı oluşturma
   onStartConnection?: () => void
   hasConnections?: boolean
@@ -46,6 +47,7 @@ export default function ContextMenu({
   onAddExecutive,
   onAddMainCoordinator,
   onAddCoordinator,
+  onAddCoordinatorPerson,
   onStartConnection,
   hasConnections,
   onShowConnections,
@@ -69,13 +71,28 @@ export default function ContextMenu({
       show: nodeType === 'executive' && !!onAddMainCoordinator,
       special: true,
     },
-    // Main Coordinator altına Coordinator
+    // Main Coordinator altına Coordinator (alt koordinatörlük)
     {
       label: 'Koordinatörlük Ekle',
       icon: Users,
       onClick: onAddCoordinator,
       show: nodeType === 'mainCoordinator' && !!onAddCoordinator,
       special: true,
+    },
+    // Coordinator'a koordinatör ekle (coordinator.name) - En üstte, önemli
+    {
+      label: 'Koordinatör Ekle',
+      icon: User,
+      onClick: onAddCoordinatorPerson,
+      show: (nodeType === 'coordinator' || nodeType === 'subCoordinator') && !!onAddCoordinatorPerson,
+      special: true,
+    },
+    // Coordinator altına Yardımcı ekle
+    {
+      label: 'Koordinatör Yardımcısı Ekle',
+      icon: UserPlus,
+      onClick: onAddDeputy,
+      show: ['coordinator', 'subCoordinator'].includes(nodeType),
     },
     // Coordinator altına SubUnit
     {
@@ -85,19 +102,13 @@ export default function ContextMenu({
       show: ['coordinator', 'subCoordinator'].includes(nodeType),
     },
     {
-      label: 'Yardımcı Ekle',
-      icon: UserPlus,
-      onClick: onAddDeputy,
-      show: ['coordinator', 'subCoordinator'].includes(nodeType),
-    },
-    {
       label: 'Görev/Sorumluluk Ekle',
       icon: ListChecks,
       onClick: onAddResponsibility,
       show: ['coordinator', 'subCoordinator', 'mainCoordinator'].includes(nodeType),
     },
     {
-      label: 'Kişi Ekle',
+      label: 'Kişi Ekle (Birime)',
       icon: User,
       onClick: onAddPerson,
       show: ['coordinator', 'subCoordinator'].includes(nodeType),

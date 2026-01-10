@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Plus, Trash2 } from 'lucide-react'
 
@@ -13,7 +13,7 @@ interface FormModalProps {
   isOpen: boolean
   onClose: () => void
   title: string
-  type: 'subunit' | 'deputy' | 'responsibility' | 'person' | 'edit' | 'edit-person'
+  type: 'subunit' | 'deputy' | 'responsibility' | 'person' | 'edit' | 'edit-person' | 'coordinator'
   initialData?: any
   onSave: (data: any) => void
   subUnits?: SubUnit[]
@@ -30,20 +30,52 @@ export default function FormModal({
 }: FormModalProps) {
   const [formData, setFormData] = useState<any>({})
   const [responsibilities, setResponsibilities] = useState<string[]>([''])
+  const isSubmittingRef = useRef(false) // Çift submit'i önlemek için
 
   // Reset form when modal opens with new data
   useEffect(() => {
     if (isOpen) {
       setFormData(initialData || {})
       setResponsibilities(initialData?.responsibilities || [''])
+      isSubmittingRef.current = false // Modal açıldığında submit flag'ini sıfırla
+    } else {
+      // Modal kapandığında da sıfırla
+      isSubmittingRef.current = false
     }
   }, [isOpen, initialData])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault()
-    onSave({ ...formData, responsibilities: responsibilities.filter(r => r.trim()) })
-    onClose()
-  }
+    e.stopPropagation()
+    
+    // Çift submit'i önle - daha güçlü kontrol
+    if (isSubmittingRef.current) {
+      e.stopPropagation()
+      return
+    }
+    
+    isSubmittingRef.current = true
+    
+    try {
+      // Form verisini hazırla - initialData'dan id'yi de ekle (düzenleme için)
+      const submitData = { 
+        ...formData, 
+        id: initialData?.id || formData.id, // Düzenleme için id'yi koru
+        responsibilities: responsibilities.filter(r => r && r.trim()) 
+      }
+      
+      // onSave'yi çağır
+      onSave(submitData)
+      
+      // Modal'ı hemen kapat (çift çağrıyı önlemek için)
+      onClose()
+    } finally {
+      // Flag'i gecikmeyle sıfırla (çift çağrıyı önlemek için)
+      setTimeout(() => {
+        isSubmittingRef.current = false
+      }, 1000)
+    }
+  }, [formData, responsibilities, initialData, onSave, onClose])
 
   const addResponsibility = () => {
     setResponsibilities([...responsibilities, ''])
@@ -92,7 +124,7 @@ export default function FormModal({
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[60vh]">
+          <form id="form-modal-form" onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[60vh]">
             {/* Alt Birim / Koordinatör Formu */}
             {(type === 'subunit' || type === 'edit') && (
               <>
@@ -124,6 +156,37 @@ export default function FormModal({
               </>
             )}
 
+            {/* Koordinatör Formu */}
+            {type === 'coordinator' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ad Soyad *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name || ''}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    placeholder="Örn: Büşra COŞKUN"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ünvan
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title || 'Koordinatör'}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    placeholder="Koordinatör"
+                  />
+                </div>
+              </>
+            )}
+
             {/* Yardımcı Formu */}
             {type === 'deputy' && (
               <>
@@ -146,10 +209,10 @@ export default function FormModal({
                   </label>
                   <input
                     type="text"
-                    value={formData.title || 'Koordinatör Yardımcısı'}
+                    value={formData.title || ''}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                    placeholder="Koordinatör Yardımcısı"
+                    placeholder="Koordinatör Yardımcısı (isteğe bağlı)"
                   />
                 </div>
               </>
@@ -286,7 +349,7 @@ export default function FormModal({
             )}
 
             {/* Sorumluluklar - Tüm tipler için */}
-            {(type === 'responsibility' || type === 'subunit' || type === 'deputy' || type === 'edit') && (
+            {(type === 'responsibility' || type === 'subunit' || type === 'deputy' || type === 'edit' || type === 'coordinator') && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Görevler / Sorumluluklar
@@ -335,8 +398,10 @@ export default function FormModal({
               İptal
             </button>
             <button
-              onClick={handleSubmit}
-              className="px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
+              type="submit"
+              form="form-modal-form"
+              className="px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSubmittingRef.current}
             >
               Kaydet
             </button>

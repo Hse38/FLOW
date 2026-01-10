@@ -26,6 +26,7 @@ interface DetailNodeProps {
     onContextMenu?: (e: React.MouseEvent) => void
     coordinatorId?: string
     subUnitId?: string
+    deputyId?: string // Deputy ID'si
   }
 }
 
@@ -37,7 +38,9 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
         onClick={(e) => {
           e.stopPropagation()
           if (data.onPersonClick) {
-            data.onPersonClick({ id: 'self', name: data.label, title: data.subtitle } as any)
+            // onPersonClick callback'i zaten tam person objesini oluşturuyor
+            // Burada sadece placeholder bir obje gönderiyoruz, callback içinde doğru obje oluşturulacak
+            data.onPersonClick({ id: 'coordinator', name: data.label || '', title: data.subtitle || '' } as any)
           }
         }}
       >
@@ -58,12 +61,29 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
         onClick={(e) => {
           e.stopPropagation()
           if (data.onPersonClick) {
-            data.onPersonClick({ id: 'self', name: data.label, title: 'Koordinatör Yardımcısı' } as any)
+            data.onPersonClick({ id: 'self', name: data.label, title: data.subtitle || '' } as any)
+          }
+        }}
+        onContextMenu={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          if (data.onPersonContextMenu && data.deputyId && data.coordinatorId) {
+            // Deputy için doğru person objesi oluştur
+            const deputyPerson = { 
+              id: data.deputyId, 
+              name: data.label, 
+              title: data.subtitle || '' 
+            } as Person
+            data.onPersonContextMenu(e, deputyPerson)
           }
         }}
       >
         <Handle type="target" position={Position.Top} className="!bg-[#3b82a0]" />
-        <p className="text-xs text-blue-600 font-medium opacity-80">Koordinatör Yardımcısı</p>
+        {data.subtitle && data.subtitle.trim() ? (
+          <p className="text-xs text-blue-600 font-medium opacity-80">{data.subtitle}</p>
+        ) : (
+          <p className="text-xs text-blue-600 font-medium opacity-80">Koordinatör Yardımcısı</p>
+        )}
         <p className="text-sm text-[#3b82a0] font-bold">{data.label}</p>
         <Handle type="source" position={Position.Bottom} className="!bg-gray-400" />
       </div>
@@ -81,54 +101,72 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
 
     return (
       <div
-        className="bg-white border-l-4 border-[#3b82a0] rounded-lg px-4 py-3 shadow-md min-w-[140px] max-w-[180px] relative"
+        className="bg-white border-l-4 border-[#3b82a0] rounded-lg px-4 py-3 shadow-md min-w-[160px] max-w-[220px] relative"
         onContextMenu={data.onContextMenu}
       >
         <Handle type="target" position={Position.Top} className="!bg-gray-400" />
         <h4 className="font-bold text-[#3b82a0] text-sm text-center mb-2">{data.label}</h4>
 
-        {/* Çalışanlar */}
+        {/* Çalışanlar - Üstte */}
         {data.people && data.people.length > 0 && (
-          <div className="mb-2">
+          <div className="mb-2.5 pb-2.5 border-b border-gray-300">
             <ul className="text-xs space-y-0.5">
-              {data.people.map((person) => (
-                <li
-                  key={person.id}
-                  className={`flex items-center gap-1 nodrag nopan ${data.onPersonClick ? 'cursor-pointer hover:bg-blue-50 rounded px-1 py-0.5 transition-colors' : ''}`}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onClick={(e) => handlePersonClick(e, person)}
-                  onContextMenu={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    if (data.onPersonContextMenu) {
-                      data.onPersonContextMenu(e, person)
-                    }
-                  }}
-                >
-                  <span className="text-gray-400">•</span>
-                  <span className="text-gray-800">{person.name}</span>
-                  {person.cvFileName && (
-                    <span className="text-green-500 text-[10px]" title="CV yüklü">📄</span>
-                  )}
-                </li>
-              ))}
+              {data.people.map((person, personIdx) => {
+                // Unique key oluştur - person.id + idx kombinasyonu
+                const personKey = person.id ? `${person.id}-${personIdx}` : `person-${data.subUnitId || 'subunit'}-${personIdx}`
+                
+                return (
+                  <li
+                    key={personKey}
+                    className={`flex items-center gap-1 nodrag nopan ${data.onPersonClick ? 'cursor-pointer hover:bg-blue-50 rounded px-1 py-0.5 transition-colors' : ''}`}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={(e) => handlePersonClick(e, person)}
+                    onContextMenu={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      if (data.onPersonContextMenu) {
+                        data.onPersonContextMenu(e, person)
+                      }
+                    }}
+                  >
+                    <span className="text-gray-400">•</span>
+                    <span className="text-gray-800">{person.name}</span>
+                    {person.cvFileName && (
+                      <span className="text-green-500 text-[10px]" title="CV yüklü">📄</span>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           </div>
         )}
 
-        {/* Sorumluluklar */}
-        {data.responsibilities && data.responsibilities.length > 0 && (
-          <div className="bg-gray-50 rounded p-2 mt-2">
-            <ul className="text-[10px] text-gray-600 space-y-0.5">
-              {data.responsibilities.slice(0, 2).map((resp, idx) => (
-                <li key={idx} className="flex items-start gap-1">
-                  <span className="text-[#3b82a0] mt-0.5">•</span>
-                  <span className="line-clamp-2">{resp}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {/* Görevler / Sorumluluklar - Altta */}
+        {(() => {
+          const validResponsibilities = Array.isArray(data.responsibilities) 
+            ? data.responsibilities.filter(r => r && String(r).trim()) 
+            : []
+          
+          return validResponsibilities.length > 0 ? (
+            <div className="mt-2">
+              <ul className="text-xs text-gray-800 space-y-1.5">
+                {validResponsibilities.map((resp, idx) => {
+                  // Unique key oluştur - resp içeriği + idx kombinasyonu
+                  const respKey = data.subUnitId 
+                    ? `resp-${data.subUnitId}-${idx}-${String(resp).slice(0, 10).replace(/\s/g, '')}` 
+                    : `resp-${idx}-${String(resp).slice(0, 10).replace(/\s/g, '')}`
+                  
+                  return (
+                    <li key={respKey} className="flex items-start gap-2">
+                      <span className="text-[#3b82a0] mt-0.5 flex-shrink-0 font-bold">•</span>
+                      <span className="leading-relaxed text-gray-700">{String(resp).trim()}</span>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          ) : null
+        })()}
       </div>
     )
   }
@@ -138,12 +176,17 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
       <div className="bg-white border border-gray-300 rounded-lg p-3 shadow-sm max-w-[280px]">
         <Handle type="target" position={Position.Top} className="!bg-[#3b82a0]" />
         <ul className="text-xs text-gray-700 space-y-1">
-          {data.responsibilities?.map((resp, idx) => (
-            <li key={idx} className="flex items-start gap-2">
-              <span className="text-[#3b82a0]">•</span>
-              <span>{resp}</span>
-            </li>
-          ))}
+          {data.responsibilities?.map((resp, idx) => {
+            // Unique key oluştur - resp içeriği + idx kombinasyonu
+            const respKey = `responsibility-${idx}-${resp.slice(0, 15).replace(/\s/g, '')}`
+            
+            return (
+              <li key={respKey} className="flex items-start gap-2">
+                <span className="text-[#3b82a0]">•</span>
+                <span>{resp}</span>
+              </li>
+            )
+          })}
         </ul>
         <Handle type="source" position={Position.Bottom} className="!bg-gray-400" />
       </div>

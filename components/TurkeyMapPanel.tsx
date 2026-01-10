@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { X, Plus, Edit2, Trash2, MapPin, Users, Phone, Mail, User } from 'lucide-react'
+import ConfirmationModal from './ConfirmationModal'
+import { showToast } from './Toast'
 
 // Context'teki Person tipi
 export interface Person {
@@ -221,10 +223,14 @@ export default function TurkeyMapPanel({
     setShowAddForm(false)
   }
 
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean
+    personId: string
+    cityName: string
+  } | null>(null)
+
   const handleDelete = (personId: string, cityName: string) => {
-    if (confirm('Bu personeli silmek istediğinize emin misiniz?')) {
-      onDeletePerson(cityName, personId)
-    }
+    setConfirmationModal({ isOpen: true, personId, cityName })
   }
 
   // İl için personel sayısını al
@@ -513,6 +519,26 @@ export default function TurkeyMapPanel({
             </div>
           ) : null}
         </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmationModal && (
+        <ConfirmationModal
+          isOpen={confirmationModal.isOpen}
+          title="Personeli Sil"
+          message="Bu personeli silmek istediğinize emin misiniz?"
+          confirmText="Evet, Sil"
+          cancelText="İptal"
+          type="danger"
+          onConfirm={() => {
+            if (confirmationModal) {
+              onDeletePerson(confirmationModal.cityName, confirmationModal.personId)
+              showToast('Personel başarıyla silindi', 'success')
+            }
+            setConfirmationModal(null)
+          }}
+          onCancel={() => setConfirmationModal(null)}
+        />
       )}
     </div>
   )

@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { X, Upload, FileText, Save, User, Mail, Phone, StickyNote } from 'lucide-react'
 import { Person } from '@/context/OrgDataContext'
+import { showToast } from './Toast'
 
 interface PersonDetailModalProps {
   isOpen: boolean
@@ -29,7 +30,7 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
     if (file) {
       // Max 5MB
       if (file.size > 5 * 1024 * 1024) {
-        alert('Dosya boyutu 5MB\'dan küçük olmalıdır.')
+        showToast('Dosya boyutu 5MB\'dan küçük olmalıdır.', 'error')
         return
       }
       

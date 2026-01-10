@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Person, Coordinator, Deputy, SubUnit } from '@/context/OrgDataContext'
+import ConfirmationModal from './ConfirmationModal'
+import { showToast } from './Toast'
 
 interface RightDetailPanelProps {
   isOpen: boolean
@@ -35,11 +37,24 @@ export default function RightDetailPanel({
 
   const [editMode, setEditMode] = useState<'coordinator' | 'deputy' | 'subunit' | 'person' | null>(null)
   const [editData, setEditData] = useState<any>(null)
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    confirmText?: string
+    cancelText?: string
+    type?: 'danger' | 'warning' | 'info'
+    onConfirm: () => void
+    personToDelete?: { coordinatorId: string; subUnitId: string; personId: string; personName: string }
+  } | null>(null)
 
   // Form states
   const [newDeputyForm, setNewDeputyForm] = useState({ name: '', title: '', responsibilities: '' })
-  const [newSubUnitForm, setNewSubUnitForm] = useState({ title: '', responsibilities: '' })
+  const [newSubUnitForm, setNewSubUnitForm] = useState({ title: '', description: '', responsibilities: '' })
   const [newPersonForm, setNewPersonForm] = useState({ name: '', title: '', subUnitId: '' })
+
+  // Guard refs - çift çağrıyı önlemek için (hooks must be called before early return)
+  const addInProgressRef = useRef<Set<string>>(new Set())
 
   if (!isOpen || !coordinator) return null
 
@@ -52,7 +67,12 @@ export default function RightDetailPanel({
     })
   }
 
-  const handleSaveCoordinator = () => {
+  const handleSaveCoordinator = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    
     if (editData) {
       onUpdateCoordinator(coordinator.id, {
         coordinator: {
@@ -66,38 +86,103 @@ export default function RightDetailPanel({
     }
   }
 
-  const handleAddDeputy = () => {
-    if (newDeputyForm.name) {
-      onAddDeputy(coordinator.id, {
-        name: newDeputyForm.name,
-        title: newDeputyForm.title || 'Koordinatör Yardımcısı',
-        responsibilities: newDeputyForm.responsibilities.split('\n').filter(r => r.trim()),
-      })
-      setNewDeputyForm({ name: '', title: '', responsibilities: '' })
-      setEditMode(null)
+  const handleAddDeputy = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    
+    if (!newDeputyForm.name) return
+
+    const addKey = `deputy-${coordinator.id}-${newDeputyForm.name}`
+    if (addInProgressRef.current.has(addKey)) return
+
+    addInProgressRef.current.add(addKey)
+
+    try {
+      // Duplicate kontrolü - title boş string veya belirtilen değer ile karşılaştır
+      const existingDeputy = coordinator.deputies?.find(d => 
+        d.name === newDeputyForm.name && 
+        d.title === (newDeputyForm.title || '')
+      )
+      
+      if (!existingDeputy) {
+        onAddDeputy(coordinator.id, {
+          name: newDeputyForm.name,
+          title: newDeputyForm.title || '',
+          responsibilities: newDeputyForm.responsibilities.split('\n').filter(r => r.trim()),
+        })
+        setNewDeputyForm({ name: '', title: '', responsibilities: '' })
+        setEditMode(null)
+      }
+    } finally {
+      setTimeout(() => {
+        addInProgressRef.current.delete(addKey)
+      }, 500)
     }
   }
 
-  const handleAddSubUnit = () => {
-    if (newSubUnitForm.title) {
-      onAddSubUnit(coordinator.id, {
-        title: newSubUnitForm.title,
-        responsibilities: newSubUnitForm.responsibilities.split('\n').filter(r => r.trim()),
-        people: [],
-      })
-      setNewSubUnitForm({ title: '', responsibilities: '' })
-      setEditMode(null)
+  const handleAddSubUnit = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    
+    if (!newSubUnitForm.title) return
+
+    const addKey = `subunit-${coordinator.id}-${newSubUnitForm.title}`
+    if (addInProgressRef.current.has(addKey)) return
+
+    addInProgressRef.current.add(addKey)
+
+    try {
+      // Duplicate kontrolü
+      const existingSubUnit = coordinator.subUnits?.find(su => su.title === newSubUnitForm.title)
+      
+      if (!existingSubUnit) {
+        onAddSubUnit(coordinator.id, {
+          title: newSubUnitForm.title,
+          description: newSubUnitForm.description || '',
+          responsibilities: newSubUnitForm.responsibilities.split('\n').filter(r => r.trim()),
+          people: [],
+        })
+        setNewSubUnitForm({ title: '', description: '', responsibilities: '' })
+        setEditMode(null)
+      }
+    } finally {
+      setTimeout(() => {
+        addInProgressRef.current.delete(addKey)
+      }, 500)
     }
   }
 
   const handleAddPerson = () => {
-    if (newPersonForm.name && newPersonForm.subUnitId) {
-      onAddPerson(coordinator.id, newPersonForm.subUnitId, {
-        name: newPersonForm.name,
-        title: newPersonForm.title,
-      })
-      setNewPersonForm({ name: '', title: '', subUnitId: '' })
-      setEditMode(null)
+    if (!newPersonForm.name || !newPersonForm.subUnitId) return
+
+    const addKey = `person-${coordinator.id}-${newPersonForm.subUnitId}-${newPersonForm.name}`
+    if (addInProgressRef.current.has(addKey)) return
+
+    addInProgressRef.current.add(addKey)
+
+    try {
+      // Duplicate kontrolü
+      const subUnit = coordinator.subUnits?.find(su => su.id === newPersonForm.subUnitId)
+      const existingPerson = subUnit?.people?.find(p => 
+        p.name === newPersonForm.name && p.title === (newPersonForm.title || '')
+      )
+      
+      if (!existingPerson) {
+        onAddPerson(coordinator.id, newPersonForm.subUnitId, {
+          name: newPersonForm.name,
+          title: newPersonForm.title,
+        })
+        setNewPersonForm({ name: '', title: '', subUnitId: '' })
+        setEditMode(null)
+      }
+    } finally {
+      setTimeout(() => {
+        addInProgressRef.current.delete(addKey)
+      }, 500)
     }
   }
 
@@ -141,7 +226,8 @@ export default function RightDetailPanel({
                 Koordinatör
               </h3>
               <button
-                onClick={handleSetCoordinator}
+                type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSetCoordinator(e) }}
                 className="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg transition-colors"
               >
                 {coordinator.coordinator ? 'Düzenle' : 'Ata'}
@@ -199,12 +285,14 @@ export default function RightDetailPanel({
                 />
                 <div className="flex gap-2">
                   <button
+                    type="button"
                     onClick={handleSaveCoordinator}
                     className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg text-sm font-medium"
                   >
                     Kaydet
                   </button>
                   <button
+                    type="button"
                     onClick={() => { setEditMode(null); setEditData(null) }}
                     className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium"
                   >
@@ -225,7 +313,8 @@ export default function RightDetailPanel({
                 Yardımcılar ({coordinator.deputies?.length || 0})
               </h3>
               <button
-                onClick={() => setEditMode('deputy')}
+                type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditMode('deputy') }}
                 className="text-xs bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-lg transition-colors"
               >
                 + Ekle
@@ -257,32 +346,37 @@ export default function RightDetailPanel({
                   className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-purple-400"
                 />
                 <div className="flex gap-2">
-                  <button onClick={handleAddDeputy} className="flex-1 bg-purple-500 hover:bg-purple-600 text-white py-2 rounded-lg text-sm font-medium">Ekle</button>
-                  <button onClick={() => setEditMode(null)} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium">İptal</button>
+                  <button type="button" onClick={handleAddDeputy} className="flex-1 bg-purple-500 hover:bg-purple-600 text-white py-2 rounded-lg text-sm font-medium">Ekle</button>
+                  <button type="button" onClick={() => setEditMode(null)} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium">İptal</button>
                 </div>
               </div>
             )}
 
             {coordinator.deputies && coordinator.deputies.length > 0 ? (
               <div className="space-y-2">
-                {coordinator.deputies.map((deputy, idx) => (
-                  <div 
-                    key={deputy.id || idx} 
-                    className="bg-white rounded-lg p-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => setSelectedPerson({
-                      person: { id: deputy.id || `deputy-${idx}`, name: deputy.name, title: deputy.title },
-                      coordinatorId: coordinator.id,
-                      subUnitId: '',
-                      type: 'deputy'
-                    })}
-                  >
-                    <p className="font-medium text-gray-900 text-sm">{deputy.name}</p>
-                    <p className="text-xs text-gray-500">{deputy.title}</p>
-                    {deputy.responsibilities && deputy.responsibilities.length > 0 && (
-                      <p className="text-xs text-purple-500 mt-1">{deputy.responsibilities.length} görev</p>
-                    )}
-                  </div>
-                ))}
+                {coordinator.deputies.map((deputy, idx) => {
+                  // Unique key oluştur - deputy.id + idx kombinasyonu
+                  const uniqueKey = deputy.id ? `${deputy.id}-${idx}` : `deputy-${coordinator.id}-${idx}`
+                  
+                  return (
+                    <div 
+                      key={uniqueKey}
+                      className="bg-white rounded-lg p-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => setSelectedPerson({
+                        person: { id: deputy.id || `deputy-${idx}`, name: deputy.name, title: deputy.title },
+                        coordinatorId: coordinator.id,
+                        subUnitId: '',
+                        type: 'deputy'
+                      })}
+                    >
+                      <p className="font-medium text-gray-900 text-sm">{deputy.name}</p>
+                      <p className="text-xs text-gray-500">{deputy.title}</p>
+                      {deputy.responsibilities && deputy.responsibilities.length > 0 && (
+                        <p className="text-xs text-purple-500 mt-1">{deputy.responsibilities.length} görev</p>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             ) : (
               <p className="text-sm text-purple-600 italic">Henüz yardımcı eklenmedi</p>
@@ -299,7 +393,8 @@ export default function RightDetailPanel({
                 Alt Birimler ({coordinator.subUnits?.length || 0})
               </h3>
               <button
-                onClick={() => setEditMode('subunit')}
+                type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEditMode('subunit') }}
                 className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg transition-colors"
               >
                 + Ekle
@@ -311,43 +406,78 @@ export default function RightDetailPanel({
               <div className="mb-3 p-3 bg-white rounded-lg border-2 border-blue-300 space-y-3">
                 <input
                   type="text"
-                  placeholder="Birim Adı"
+                  placeholder="Birim Adı *"
+                  required
                   value={newSubUnitForm.title}
                   onChange={(e) => setNewSubUnitForm({ ...newSubUnitForm, title: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-400"
                 />
                 <textarea
-                  placeholder="Sorumluluklar (her satıra bir sorumluluk)"
-                  value={newSubUnitForm.responsibilities}
-                  onChange={(e) => setNewSubUnitForm({ ...newSubUnitForm, responsibilities: e.target.value })}
+                  placeholder="Açıklama (Birim hakkında kısa açıklama)"
+                  value={newSubUnitForm.description}
+                  onChange={(e) => setNewSubUnitForm({ ...newSubUnitForm, description: e.target.value })}
                   rows={2}
                   className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-400"
                 />
+                <textarea
+                  placeholder="Sorumluluklar / Görevler (her satıra bir sorumluluk)"
+                  value={newSubUnitForm.responsibilities}
+                  onChange={(e) => setNewSubUnitForm({ ...newSubUnitForm, responsibilities: e.target.value })}
+                  rows={3}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-400"
+                />
                 <div className="flex gap-2">
-                  <button onClick={handleAddSubUnit} className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg text-sm font-medium">Ekle</button>
-                  <button onClick={() => setEditMode(null)} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium">İptal</button>
+                  <button type="button" onClick={handleAddSubUnit} className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg text-sm font-medium">Ekle</button>
+                  <button type="button" onClick={() => setEditMode(null)} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium">İptal</button>
                 </div>
               </div>
             )}
 
             {coordinator.subUnits && coordinator.subUnits.length > 0 ? (
               <div className="space-y-3">
-                {coordinator.subUnits.map((subUnit, idx) => (
-                  <div key={subUnit.id || idx} className="bg-white rounded-lg p-3 shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-medium text-gray-900 text-sm">{subUnit.title}</p>
-                      <button
-                        onClick={() => {
-                          setEditMode('person')
-                          setNewPersonForm({ ...newPersonForm, subUnitId: subUnit.id })
-                        }}
-                        className="text-xs text-blue-500 hover:text-blue-700"
-                      >
-                        + Kişi Ekle
-                      </button>
-                    </div>
-                    
-                    {/* Kişi Ekleme Formu */}
+                {coordinator.subUnits.map((subUnit, idx) => {
+                  // Unique key oluştur - subUnit.id + idx kombinasyonu
+                  const uniqueKey = subUnit.id ? `${subUnit.id}-${idx}` : `subunit-${coordinator.id}-${idx}`
+                  
+                  return (
+                    <div key={uniqueKey} className="bg-white rounded-lg p-3 shadow-sm">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="font-medium text-gray-900 text-sm">{subUnit.title}</p>
+                        <button
+                          onClick={() => {
+                            setEditMode('person')
+                            setNewPersonForm({ ...newPersonForm, subUnitId: subUnit.id })
+                          }}
+                          className="text-xs text-blue-500 hover:text-blue-700"
+                        >
+                          + Kişi Ekle
+                        </button>
+                      </div>
+                      
+                      {/* Açıklama */}
+                      {subUnit.description && subUnit.description.trim() ? (
+                        <div className="mb-3 pt-2 mt-2 border-t border-gray-200">
+                          <p className="text-xs text-gray-500 mb-1.5 font-semibold uppercase tracking-wide">Açıklama:</p>
+                          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{subUnit.description}</p>
+                        </div>
+                      ) : null}
+                      
+                      {/* Görevler / Sorumluluklar */}
+                      {subUnit.responsibilities && subUnit.responsibilities.length > 0 && subUnit.responsibilities.filter(r => r && r.trim()).length > 0 ? (
+                        <div className="mb-3 pt-2 mt-2 border-t border-gray-200">
+                          <p className="text-xs text-gray-500 mb-2 font-semibold uppercase tracking-wide">Görevler:</p>
+                          <ul className="text-sm text-gray-700 space-y-1.5">
+                            {subUnit.responsibilities.filter(r => r && r.trim()).map((resp, respIdx) => (
+                              <li key={`${subUnit.id}-resp-${respIdx}`} className="flex items-start gap-2 pl-1">
+                                <span className="text-blue-500 mt-1.5 flex-shrink-0">•</span>
+                                <span className="flex-1 leading-relaxed">{resp.trim()}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+                      
+                      {/* Kişi Ekleme Formu */}
                     {editMode === 'person' && newPersonForm.subUnitId === subUnit.id && (
                       <div className="mb-2 p-2 bg-blue-50 rounded-lg space-y-2">
                         <input
@@ -365,8 +495,8 @@ export default function RightDetailPanel({
                           className="w-full px-2 py-1.5 border rounded text-sm"
                         />
                         <div className="flex gap-2">
-                          <button onClick={handleAddPerson} className="flex-1 bg-blue-500 text-white py-1 rounded text-xs">Ekle</button>
-                          <button onClick={() => setEditMode(null)} className="flex-1 bg-gray-200 text-gray-700 py-1 rounded text-xs">İptal</button>
+                          <button type="button" onClick={handleAddPerson} className="flex-1 bg-blue-500 text-white py-1 rounded text-xs">Ekle</button>
+                          <button type="button" onClick={() => setEditMode(null)} className="flex-1 bg-gray-200 text-gray-700 py-1 rounded text-xs">İptal</button>
                         </div>
                       </div>
                     )}
@@ -374,10 +504,14 @@ export default function RightDetailPanel({
                     {/* Kişiler */}
                     {subUnit.people && subUnit.people.length > 0 ? (
                       <div className="space-y-1">
-                        {subUnit.people.map((person) => (
-                          <div
-                            key={person.id}
-                            className="flex items-center justify-between px-2 py-1.5 bg-gray-50 rounded cursor-pointer hover:bg-gray-100 transition-colors group"
+                        {subUnit.people.map((person, personIdx) => {
+                          // Person için unique key oluştur
+                          const personKey = person.id ? `${person.id}-${personIdx}` : `person-${subUnit.id}-${personIdx}`
+                          
+                          return (
+                            <div
+                              key={personKey}
+                              className="flex items-center justify-between px-2 py-1.5 bg-gray-50 rounded cursor-pointer hover:bg-gray-100 transition-colors group"
                             onClick={() => setSelectedPerson({
                               person,
                               coordinatorId: coordinator.id,
@@ -392,11 +526,24 @@ export default function RightDetailPanel({
                               <span className="text-sm text-gray-700">{person.name}</span>
                             </div>
                             <button
+                              type="button"
                               onClick={(e) => {
+                                e.preventDefault()
                                 e.stopPropagation()
-                                if (confirm(`"${person.name}" silinecek. Emin misiniz?`)) {
-                                  onDeletePerson(coordinator.id, subUnit.id, person.id)
-                                }
+                                setConfirmationModal({
+                                  isOpen: true,
+                                  title: 'Personeli Sil',
+                                  message: `"${person.name}" silinecek. Emin misiniz?`,
+                                  confirmText: 'Evet, Sil',
+                                  cancelText: 'İptal',
+                                  type: 'danger',
+                                  personToDelete: { coordinatorId: coordinator.id, subUnitId: subUnit.id, personId: person.id, personName: person.name },
+                                  onConfirm: () => {
+                                    setConfirmationModal(null)
+                                    onDeletePerson(coordinator.id, subUnit.id, person.id)
+                                    showToast(`"${person.name}" başarıyla silindi`, 'success')
+                                  }
+                                })
                               }}
                               className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 p-1"
                             >
@@ -405,13 +552,15 @@ export default function RightDetailPanel({
                               </svg>
                             </button>
                           </div>
-                        ))}
+                          )
+                        })}
                       </div>
                     ) : (
                       <p className="text-xs text-gray-400 italic">Henüz kişi eklenmedi</p>
                     )}
-                  </div>
-                ))}
+                    </div>
+                  )
+                })}
               </div>
             ) : (
               <p className="text-sm text-blue-600 italic">Henüz alt birim eklenmedi</p>
@@ -437,6 +586,20 @@ export default function RightDetailPanel({
             }
             setSelectedPerson(null)
           }}
+        />
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmationModal && (
+        <ConfirmationModal
+          isOpen={confirmationModal.isOpen}
+          title={confirmationModal.title}
+          message={confirmationModal.message}
+          confirmText={confirmationModal.confirmText}
+          cancelText={confirmationModal.cancelText}
+          type={confirmationModal.type}
+          onConfirm={confirmationModal.onConfirm}
+          onCancel={() => setConfirmationModal(null)}
         />
       )}
     </>
@@ -482,7 +645,7 @@ function PersonMiniCard({ person, type, onClose, onUpdate }: PersonMiniCardProps
     const file = e.target.files?.[0]
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('Dosya boyutu 5MB\'dan küçük olmalıdır.')
+        showToast('Dosya boyutu 5MB\'dan küçük olmalıdır.', 'error')
         return
       }
       const reader = new FileReader()

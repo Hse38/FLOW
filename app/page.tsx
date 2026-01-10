@@ -4,6 +4,8 @@ import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Network, ChevronDown, ChevronUp, Settings, Plus, Trash2, Menu, X, FileText, FolderOpen, Edit2, Eye, Download } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import ConfirmationModal from '@/components/ConfirmationModal'
+import { showToast } from '@/components/Toast'
 
 // Dynamically import OrgCanvas to avoid SSR issues with React Flow
 const OrgCanvas = dynamic(() => import('@/components/OrgCanvas'), {
@@ -128,19 +130,29 @@ export default function Home() {
     window.location.reload()
   }
 
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean
+    projectId: string
+  } | null>(null)
+
   // Delete project
   const deleteProject = (projectId: string) => {
-    if (confirm('Bu şemayı silmek istediğinize emin misiniz?')) {
-      const updatedProjects = savedProjects.filter(p => p.id !== projectId)
-      setSavedProjects(updatedProjects)
-      localStorage.setItem('orgProjects', JSON.stringify(updatedProjects))
-      localStorage.removeItem(`orgData_${projectId}`)
+    setConfirmationModal({ isOpen: true, projectId })
+  }
 
-      if (currentProject?.id === projectId) {
-        setCurrentProject(null)
-        localStorage.removeItem('activeProjectId')
-      }
+  const handleConfirmDelete = () => {
+    if (!confirmationModal) return
+    const { projectId } = confirmationModal
+    const updatedProjects = savedProjects.filter(p => p.id !== projectId)
+    setSavedProjects(updatedProjects)
+    localStorage.setItem('orgProjects', JSON.stringify(updatedProjects))
+    localStorage.removeItem(`orgData_${projectId}`)
+
+    if (currentProject?.id === projectId) {
+      setCurrentProject(null)
+      localStorage.removeItem('activeProjectId')
     }
+    setConfirmationModal(null)
   }
 
   // Rename project
@@ -547,6 +559,20 @@ export default function Home() {
           2 parmakla kaydırın
         </motion.div>
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmationModal && (
+        <ConfirmationModal
+          isOpen={confirmationModal.isOpen}
+          title="Şemayı Sil"
+          message="Bu şemayı silmek istediğinize emin misiniz?"
+          confirmText="Evet, Sil"
+          cancelText="İptal"
+          type="danger"
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmationModal(null)}
+        />
+      )}
     </main>
   )
 }

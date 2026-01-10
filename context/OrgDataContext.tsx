@@ -34,6 +34,7 @@ export interface SubUnit {
   title: string
   people: Person[]
   responsibilities: string[]
+  description?: string  // Birim açıklaması
   normKadro?: number  // Olması gereken kişi sayısı
 }
 
@@ -141,6 +142,7 @@ interface OrgDataContextType {
   deleteCityPerson: (city: string, personId: string) => void
   getCityPersonnel: () => CityPersonnel[]
   resetToEmpty: () => void
+  restoreData: (data: OrgData) => void // Undo/Redo için
   saveData: () => void
   loadData: () => void
   setActiveProject: (projectId: string) => void
@@ -704,13 +706,63 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
   // Aktif projenin verilerini dinle
   useEffect(() => {
     if (USE_LOCAL_ONLY) {
-      setData(initialData)
-      setPositions({})
-      setCustomConnections([])
+      // localStorage'dan verileri yükle (activeProjectId'ye göre)
+      try {
+        const projectId = activeProjectId || 'main'
+        const savedData = localStorage.getItem(`orgData_${projectId}`)
+        const savedPositions = localStorage.getItem(`orgPositions_${projectId}`)
+        const savedConnections = localStorage.getItem(`orgConnections_${projectId}`)
+        const savedLocked = localStorage.getItem('orgLocked')
+
+        if (savedData) {
+          const parsedData = JSON.parse(savedData)
+          setData(parsedData)
+        } else {
+          // İlk yüklemede veya yeni projede initialData'yı kullan
+          if (projectId === 'main') {
+            localStorage.setItem(`orgData_${projectId}`, JSON.stringify(initialData))
+            setData(initialData)
+          } else {
+            // Yeni proje için boş veri
+            const emptyData: OrgData = {
+              management: [],
+              executives: [],
+              mainCoordinators: [],
+              coordinators: []
+            }
+            localStorage.setItem(`orgData_${projectId}`, JSON.stringify(emptyData))
+            setData(emptyData)
+          }
+        }
+
+        if (savedPositions) {
+          setPositions(JSON.parse(savedPositions))
+        } else {
+          setPositions({})
+        }
+
+        if (savedConnections) {
+          setCustomConnections(JSON.parse(savedConnections))
+        } else {
+          setCustomConnections([])
+        }
+
+        if (savedLocked !== null) {
+          setIsLocked(savedLocked === 'true')
+        }
+      } catch (error) {
+        console.error('localStorage yükleme hatası:', error)
+        setData(initialData)
+      }
+
       setIsLoading(false)
       return
     }
-    if (!activeProjectId) return
+    
+    if (!activeProjectId) {
+      setIsLoading(false)
+      return
+    }
 
     // Org data dinle
     const orgDataRef = ref(database, `orgData/${activeProjectId}`)
@@ -748,12 +800,19 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       unsubPos()
       unsubConn()
     }
-  }, [activeProjectId])
+  }, [activeProjectId]) // activeProjectId değiştiğinde yeniden yükle
 
-  // Firebase'e veri kaydet
+  // Firebase'e veri kaydet (veya localStorage)
   const saveToFirebase = useCallback((newData: OrgData) => {
     if (USE_LOCAL_ONLY) {
       setData(newData)
+      // localStorage'a kaydet (activeProjectId'ye göre)
+      try {
+        const projectId = activeProjectId || 'main'
+        localStorage.setItem(`orgData_${projectId}`, JSON.stringify(newData))
+      } catch (error) {
+        console.error('localStorage kaydetme hatası:', error)
+      }
       return
     }
     if (activeProjectId) {
@@ -765,6 +824,13 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
   const updatePositions = useCallback((newPositions: Record<string, { x: number; y: number }>) => {
     if (USE_LOCAL_ONLY) {
       setPositions(newPositions)
+      // localStorage'a kaydet (activeProjectId'ye göre)
+      try {
+        const projectId = activeProjectId || 'main'
+        localStorage.setItem(`orgPositions_${projectId}`, JSON.stringify(newPositions))
+      } catch (error) {
+        console.error('localStorage pozisyon kaydetme hatası:', error)
+      }
       return
     }
     if (activeProjectId) {
@@ -777,6 +843,13 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     const newConnections = [...customConnections, connection]
     if (USE_LOCAL_ONLY) {
       setCustomConnections(newConnections)
+      // localStorage'a kaydet (activeProjectId'ye göre)
+      try {
+        const projectId = activeProjectId || 'main'
+        localStorage.setItem(`orgConnections_${projectId}`, JSON.stringify(newConnections))
+      } catch (error) {
+        console.error('localStorage bağlantı kaydetme hatası:', error)
+      }
       return
     }
     if (activeProjectId) {
@@ -789,6 +862,13 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     const newConnections = customConnections.filter(c => !(c.source === source && c.target === target))
     if (USE_LOCAL_ONLY) {
       setCustomConnections(newConnections)
+      // localStorage'a kaydet (activeProjectId'ye göre)
+      try {
+        const projectId = activeProjectId || 'main'
+        localStorage.setItem(`orgConnections_${projectId}`, JSON.stringify(newConnections))
+      } catch (error) {
+        console.error('localStorage bağlantı silme hatası:', error)
+      }
       return
     }
     if (activeProjectId) {
@@ -800,6 +880,12 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
   const setLocked = useCallback((locked: boolean) => {
     if (USE_LOCAL_ONLY) {
       setIsLocked(locked)
+      // localStorage'a kaydet
+      try {
+        localStorage.setItem('orgLocked', locked.toString())
+      } catch (error) {
+        console.error('localStorage kilit durumu kaydetme hatası:', error)
+      }
       return
     }
     set(ref(database, 'settings/locked'), locked)
@@ -857,6 +943,18 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     setData(emptyData)
     if (!USE_LOCAL_ONLY) {
       saveToFirebase(emptyData)
+    } else {
+      saveToFirebase(emptyData) // localStorage'a kaydet
+    }
+  }, [saveToFirebase])
+
+  // Restore data from snapshot (for Undo/Redo)
+  const restoreData = useCallback((newData: OrgData) => {
+    setData(newData)
+    if (!USE_LOCAL_ONLY) {
+      saveToFirebase(newData)
+    } else {
+      saveToFirebase(newData) // localStorage'a kaydet
     }
   }, [saveToFirebase])
 
@@ -876,11 +974,21 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
   // Add sub unit
   const addSubUnit = useCallback((coordinatorId: string, subUnit: Omit<SubUnit, 'id'>) => {
-    const newSubUnit: SubUnit = {
-      ...subUnit,
-      id: generateId(),
-    }
     setData(prev => {
+      // Duplicate kontrolü - aynı title'a sahip subunit var mı?
+      const coordinator = prev.coordinators.find(c => c.id === coordinatorId)
+      const existingSubUnit = coordinator?.subUnits?.find(su => su.title === subUnit.title)
+      
+      if (existingSubUnit) {
+        // Zaten varsa, mevcut data'yı döndür (ekleme yapma)
+        return prev
+      }
+
+      const newSubUnit: SubUnit = {
+        ...subUnit,
+        id: generateId(),
+      }
+      
       const newData = {
         ...prev,
         coordinators: prev.coordinators.map(c =>
@@ -896,11 +1004,23 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
   // Add deputy
   const addDeputy = useCallback((coordinatorId: string, deputy: Omit<Deputy, 'id'>) => {
-    const newDeputy: Deputy = {
-      ...deputy,
-      id: generateId(),
-    }
     setData(prev => {
+      // Duplicate kontrolü - aynı name ve title'a sahip deputy var mı?
+      const coordinator = prev.coordinators.find(c => c.id === coordinatorId)
+      const existingDeputy = coordinator?.deputies?.find(d => 
+        d.name === deputy.name && d.title === deputy.title
+      )
+      
+      if (existingDeputy) {
+        // Zaten varsa, mevcut data'yı döndür (ekleme yapma)
+        return prev
+      }
+
+      const newDeputy: Deputy = {
+        ...deputy,
+        id: generateId(),
+      }
+      
       const newData = {
         ...prev,
         coordinators: prev.coordinators.map(c =>
@@ -932,11 +1052,24 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
   // Add person to sub unit
   const addPerson = useCallback((coordinatorId: string, subUnitId: string, person: Omit<Person, 'id'>) => {
-    const newPerson: Person = {
-      ...person,
-      id: generateId(),
-    }
     setData(prev => {
+      // Duplicate kontrolü - aynı name ve title'a sahip person var mı?
+      const coordinator = prev.coordinators.find(c => c.id === coordinatorId)
+      const subUnit = coordinator?.subUnits?.find(su => su.id === subUnitId)
+      const existingPerson = subUnit?.people?.find(p => 
+        p.name === person.name && p.title === (person.title || '')
+      )
+      
+      if (existingPerson) {
+        // Zaten varsa, mevcut data'yı döndür (ekleme yapma)
+        return prev
+      }
+
+      const newPerson: Person = {
+        ...person,
+        id: generateId(),
+      }
+      
       const newData = {
         ...prev,
         coordinators: prev.coordinators.map(c =>
@@ -1324,6 +1457,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       unlinkSchemaFromCoordinator,
       getLinkedSchemaData,
       resetToEmpty,
+      restoreData,
       saveData,
       loadData,
       setActiveProject,

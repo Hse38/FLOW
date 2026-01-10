@@ -28,7 +28,10 @@ import PersonDetailModal from './PersonDetailModal'
 import LinkToMainSchemaModal from './LinkToMainSchemaModal'
 import RightDetailPanel from './RightDetailPanel'
 import TurkeyMapPanel from './TurkeyMapPanel'
-import { useOrgData, Person } from '@/context/OrgDataContext'
+import ConfirmationModal from './ConfirmationModal'
+import AutoLayoutSelectionModal from './AutoLayoutSelectionModal'
+import { showToast } from './Toast'
+import { useOrgData, Person, OrgData } from '@/context/OrgDataContext'
 import { toPng, toSvg } from 'html-to-image'
 import { jsPDF } from 'jspdf'
 import { saveAs } from 'file-saver'
@@ -85,12 +88,15 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     updatePerson,
     addPerson,
     deletePerson,
+    deleteDeputy,
+    deleteSubUnit,
     updateSubUnit,
     addCityPerson,
     updateCityPerson,
     deleteCityPerson,
     getCityPersonnel,
     linkSchemaToCoordinator,
+    restoreData,
     // Firebase senkronizasyon
     isLocked: firebaseLocked,
     setLocked: setFirebaseLocked,
@@ -102,6 +108,105 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     isLoading
   } = useOrgData()
   const reactFlowInstance = useReactFlow()
+
+  // Undo/Redo history
+  const [history, setHistory] = useState<OrgData[]>([])
+  const [historyIndex, setHistoryIndex] = useState<number>(-1)
+  const [shouldAutoLayout, setShouldAutoLayout] = useState<boolean>(false)
+
+  // History'ye snapshot ekle
+  const addToHistory = useCallback((snapshot: OrgData) => {
+    setHistory(prev => {
+      // Mevcut index'ten sonraki tüm history'yi temizle (yeni branch oluşturma)
+      const newHistory = prev.slice(0, historyIndex + 1)
+      newHistory.push(JSON.parse(JSON.stringify(snapshot))) // Deep copy
+      // Maksimum 50 adım history tut
+      if (newHistory.length > 50) {
+        newHistory.shift()
+        return newHistory
+      }
+      return newHistory
+    })
+    setHistoryIndex(prev => {
+      const newIndex = prev + 1
+      return newIndex > 49 ? 49 : newIndex // Maksimum index
+    })
+  }, [historyIndex])
+
+  // Undo
+  const handleUndo = useCallback(() => {
+    if (historyIndex > 0 && history.length > 0) {
+      isUndoRedoRef.current = true
+      const previousData = history[historyIndex - 1]
+      restoreData(previousData)
+      setHistoryIndex(prev => prev - 1)
+      setShouldAutoLayout(true)
+    }
+  }, [history, historyIndex, restoreData])
+
+  // Redo
+  const handleRedo = useCallback(() => {
+    if (historyIndex < history.length - 1 && history.length > 0) {
+      isUndoRedoRef.current = true
+      const nextData = history[historyIndex + 1]
+      restoreData(nextData)
+      setHistoryIndex(prev => prev + 1)
+      setShouldAutoLayout(true)
+    }
+  }, [history, historyIndex, restoreData])
+
+  // Keyboard shortcuts (Ctrl+Z, Ctrl+Y)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault()
+        handleUndo()
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault()
+        handleRedo()
+      }
+    }
+    
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [handleUndo, handleRedo])
+
+  // Data değişikliklerini dinle ve history'ye ekle (undo/redo hariç)
+  const isUndoRedoRef = useRef(false)
+  const dataChangeRef = useRef(false)
+  
+  useEffect(() => {
+    // İlk yüklemede initial snapshot ekle
+    if (history.length === 0 && !isLoading && data) {
+      addToHistory(data)
+      setHistoryIndex(0)
+      return
+    }
+    
+    // Undo/Redo sırasında history'ye ekleme
+    if (isUndoRedoRef.current) {
+      isUndoRedoRef.current = false
+      return
+    }
+    
+    // Sadece gerçek değişikliklerde history'ye ekle (ilk yüklemede değil)
+    if (dataChangeRef.current && !isLoading) {
+      const timer = setTimeout(() => {
+        addToHistory(data)
+        dataChangeRef.current = false
+      }, 500) // Debounce - kullanıcı işlemlerini bekle
+      
+      return () => clearTimeout(timer)
+    }
+  }, [data, isLoading, addToHistory, history.length])
+  
+  // Data değişikliklerini takip et (ekleme/silme işlemleri)
+  useEffect(() => {
+    if (!isLoading && history.length > 0) {
+      dataChangeRef.current = true
+    }
+  }, [data.coordinators.length, data.mainCoordinators.length, data.executives.length, data.management.length, isLoading, history.length])
+
 
   const [expandedCoordinator, setExpandedCoordinator] = useState<string | null>(null)
 
@@ -141,7 +246,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   // Form modal state
   const [formModal, setFormModal] = useState<{
     isOpen: boolean
-    type: 'subunit' | 'deputy' | 'responsibility' | 'person' | 'edit' | 'edit-person'
+    type: 'subunit' | 'deputy' | 'responsibility' | 'person' | 'edit' | 'edit-person' | 'coordinator'
     title: string
     nodeId: string
     initialData?: any
@@ -187,6 +292,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     subUnitId: string
     coordinatorTitle: string
     subUnitTitle: string
+    type?: 'person' | 'deputy' | 'coordinator' // Deputy veya person ayırımı için
+    deputyId?: string // Deputy ID'si
   } | null>(null)
 
   // Link to main schema modal state
@@ -194,6 +301,28 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     isOpen: boolean
     nodeId: string
   } | null>(null)
+
+  // Confirmation modal state
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    confirmText?: string
+    cancelText?: string
+    type?: 'danger' | 'warning' | 'info'
+    onConfirm: () => void
+  } | null>(null)
+
+  // Auto layout selection modal state
+  const [autoLayoutSelectionModal, setAutoLayoutSelectionModal] = useState<boolean>(false)
+
+  // Selected nodes state
+  const [selectedNodes, setSelectedNodes] = useState<string[]>([])
+
+  // Handle selection change
+  const handleSelectionChange = useCallback((params: { nodes: Node[]; edges: Edge[] }) => {
+    setSelectedNodes(params.nodes.map(n => n.id))
+  }, [])
 
   // Custom connections (ip çekme) - Firebase'den geliyor
   const customConnections = useMemo(() => {
@@ -373,23 +502,98 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           label: expandedCoordinatorData.title,
           type: 'coordinator',
           subtitle: expandedCoordinatorData.coordinator?.name,
+          onPersonClick: (person: Person) => {
+            // Koordinatör bilgilerini Person formatına dönüştür
+            const coordinatorPerson: Person = {
+              id: expandedCoordinatorData.coordinator?.name || `coord-${coordId}`,
+              name: expandedCoordinatorData.coordinator?.name || expandedCoordinatorData.title,
+              title: expandedCoordinatorData.coordinator?.title || 'Koordinatör',
+              color: expandedCoordinatorData.coordinator?.color,
+              jobDescription: expandedCoordinatorData.responsibilities?.join('\n') || '',
+              // Coordinator interface'inde bu alanlar yok, ancak gösterim için boş bırakılabilir
+              university: undefined,
+              department: undefined,
+            }
+            setViewPersonCard({
+              person: coordinatorPerson,
+              coordinatorId: expandedCoordinatorData.id,
+              subUnitId: '',
+              coordinatorTitle: expandedCoordinatorData.title,
+              subUnitTitle: 'Koordinatör',
+              type: 'coordinator'
+            })
+          },
         },
       })
 
-      // Deputy nodes
-      expandedCoordinatorData.deputies?.forEach((deputy, idx) => {
-        const xOffset = expandedCoordinatorData.deputies!.length === 1 ? 0 :
+      // Deputy nodes - duplicate deputy.id'leri filtrele
+      const uniqueDeputies = expandedCoordinatorData.deputies?.filter((deputy, idx, arr) => 
+        arr.findIndex(d => d.id === deputy.id) === idx
+      ) || []
+      
+      uniqueDeputies.forEach((deputy, idx) => {
+        const xOffset = uniqueDeputies.length === 1 ? 0 :
           idx === 0 ? -150 : 150
 
-        const deputyId = `detail-${coordId}-deputy-${idx}`
+        // Node ID olarak deputy.id kullan (unique ID garantisi için)
+        const deputyNodeId = `detail-${coordId}-deputy-${deputy.id}`
         nodeList.push({
-          id: deputyId,
+          id: deputyNodeId,
           type: 'detail',
-          position: getPosition(deputyId, { x: defaultBaseX + xOffset - 50, y: defaultBaseY + 120 }),
+          position: getPosition(deputyNodeId, { x: defaultBaseX + xOffset - 50, y: defaultBaseY + 120 }),
           draggable: !isLocked,
           data: {
             label: deputy.name,
             type: 'deputy',
+            subtitle: deputy.title,
+            coordinatorId: expandedCoordinatorData.id,
+            deputyId: deputy.id,
+            onPersonClick: (person: Person) => {
+              // Deputy bilgilerini Person formatına dönüştür
+              const deputyPerson: Person = {
+                id: deputy.id,
+                name: deputy.name,
+                title: deputy.title,
+                color: deputy.color,
+                jobDescription: deputy.responsibilities?.join('\n') || '',
+                // Deputy interface'inde bu alanlar yok, ancak gösterim için boş bırakılabilir
+                university: undefined,
+                department: undefined,
+              }
+              setViewPersonCard({
+                person: deputyPerson,
+                coordinatorId: expandedCoordinatorData.id,
+                subUnitId: '',
+                coordinatorTitle: expandedCoordinatorData.title,
+                subUnitTitle: deputy.title || 'Koordinatör Yardımcısı',
+                type: 'deputy'
+              })
+            },
+            onPersonContextMenu: (e: React.MouseEvent, person: Person) => {
+              e.preventDefault()
+              e.stopPropagation()
+              // Deputy bilgilerini Person formatına dönüştür
+              const deputyPerson: Person = {
+                id: deputy.id,
+                name: deputy.name,
+                title: deputy.title,
+                color: deputy.color,
+                jobDescription: deputy.responsibilities?.join('\n') || '',
+                university: undefined,
+                department: undefined,
+              }
+              setPersonContextMenu({
+                x: e.clientX,
+                y: e.clientY,
+                person: deputyPerson,
+                coordinatorId: expandedCoordinatorData.id,
+                subUnitId: '',
+                coordinatorTitle: expandedCoordinatorData.title,
+                subUnitTitle: deputy.title || 'Koordinatör Yardımcısı',
+                type: 'deputy',
+                deputyId: deputy.id
+              })
+            },
           },
         })
       })
@@ -412,8 +616,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           data: {
             label: subUnit.title,
             type: 'subunit',
-            people: subUnit.people,
-            responsibilities: subUnit.responsibilities,
+            people: subUnit.people || [],
+            responsibilities: Array.isArray(subUnit.responsibilities) ? subUnit.responsibilities.filter(r => r && r.trim()) : [],
             coordinatorId: expandedCoordinatorData.id,
             subUnitId: subUnit.id,
             onPersonClick: (person: Person) => {
@@ -567,24 +771,36 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         style: { stroke: '#3b82a0', strokeWidth: 2 },
       })
 
-      // Coordinator to deputies
-      expandedCoordinatorData.deputies?.forEach((_, idx) => {
+      // Coordinator to deputies - duplicate deputy.id'leri filtrele
+      const uniqueDeputiesForEdges = expandedCoordinatorData.deputies?.filter((deputy, idx, arr) => 
+        arr.findIndex(d => d.id === deputy.id) === idx
+      ) || []
+      
+      uniqueDeputiesForEdges.forEach((deputy, idx) => {
+        // Deputy node ID'si deputy.id kullanıyor
+        const deputyNodeId = `detail-${coordId}-deputy-${deputy.id}`
+        // Edge ID'yi unique yapmak için hem deputy.id hem de idx kullanıyoruz
         edgeList.push({
-          id: `detail-coord-to-deputy-${coordId}-${idx}`,
+          id: `detail-coord-to-deputy-${coordId}-${deputy.id}-${idx}`,
           source: rootId,
-          target: `detail-${coordId}-deputy-${idx}`,
+          target: deputyNodeId,
           type: 'smoothstep',
           style: { stroke: '#9ca3af', strokeWidth: 1.5 },
         })
       })
 
-      // Deputies to sub-units
-      const deputyCount = expandedCoordinatorData.deputies?.length || 0
+      // Deputies to sub-units - unique deputy listesini kullan
+      const deputies = uniqueDeputiesForEdges
+      const deputyCount = deputies.length
+      
       expandedCoordinatorData.subUnits?.forEach((_, idx) => {
         let sourceId = rootId
-        if (deputyCount > 0) {
+        if (deputyCount > 0 && deputies.length > 0) {
           const deputyIdx = idx % deputyCount
-          sourceId = `detail-${coordId}-deputy-${deputyIdx}`
+          const deputy = deputies[deputyIdx]
+          if (deputy) {
+            sourceId = `detail-${coordId}-deputy-${deputy.id}`
+          }
         }
 
         edgeList.push({
@@ -596,12 +812,15 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         })
       })
 
-      // Deputies to people (or root to people)
+      // Deputies to people (or root to people) - unique deputy listesini kullan
       expandedCoordinatorData.people?.forEach((_, idx) => {
         let sourceId = rootId
-        if (deputyCount > 0) {
+        if (deputyCount > 0 && deputies.length > 0) {
           const deputyIdx = idx % deputyCount
-          sourceId = `detail-${coordId}-deputy-${deputyIdx}`
+          const deputy = deputies[deputyIdx]
+          if (deputy) {
+            sourceId = `detail-${coordId}-deputy-${deputy.id}`
+          }
         }
 
         edgeList.push({
@@ -652,8 +871,13 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     setLocalPositions(prev => ({ ...prev, ...customPositions }))
   }, [customPositions])
 
-  // Otomatik yerleşim - dagre ile
-  const applyAutoLayout = useCallback((direction: 'TB' | 'LR' = 'TB') => {
+  // Otomatik yerleşim seçim modal'ını aç
+  const handleOpenAutoLayoutModal = useCallback(() => {
+    setAutoLayoutSelectionModal(true)
+  }, [])
+
+  // Otomatik yerleşim internal fonksiyonu (dagre ile)
+  const applyAutoLayoutInternal = useCallback((direction: 'TB' | 'LR' = 'TB', nodeIds?: string[]) => {
     const g = new dagre.graphlib.Graph()
     g.setGraph({
       rankdir: direction,
@@ -666,19 +890,29 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     })
     g.setDefaultEdgeLabel(() => ({}))
 
-    // Tüm mevcut node'ları (detaylar dahil) yerleşime dahil et
-    const layoutNodes = flowNodes
-    layoutNodes.forEach(node => {
+    // Eğer belirli node'lar seçildiyse sadece onları işle, değilse tümünü işle
+    const nodesToLayout = nodeIds && nodeIds.length > 0
+      ? flowNodes.filter(node => nodeIds.includes(node.id))
+      : flowNodes
+
+    // Seçili node'lar için ilgili edge'leri bul
+    const edgesToLayout = nodeIds && nodeIds.length > 0
+      ? flowEdges.filter(edge => 
+          nodeIds.includes(edge.source) && nodeIds.includes(edge.target)
+        )
+      : flowEdges
+
+    if (nodesToLayout.length === 0) return
+
+    // Seçili node'lar ve edge'leri grafa ekle
+    nodesToLayout.forEach(node => {
       const size = NODE_SIZE[node.type || 'default'] || NODE_SIZE.default
       g.setNode(node.id, { width: size.width, height: size.height })
     })
 
-    const layoutEdges = flowEdges
-    layoutEdges.forEach(edge => {
+    edgesToLayout.forEach(edge => {
       g.setEdge(edge.source, edge.target)
     })
-
-    if (layoutNodes.length === 0) return
 
     dagre.layout(g)
 
@@ -700,15 +934,63 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     setLocalPositions(prev => ({ ...prev, ...newPositions }))
     updateFirebasePositions({ ...customPositions, ...newPositions })
 
-    // Yerleşim sonrası tuvale odaklan
+    // Yerleşim sonrası tuvale odaklan (seçili node'lar varsa sadece onlara, değilse tümüne)
     requestAnimationFrame(() => {
       try {
-        reactFlowInstance.fitView({ padding: 0.2 })
+        if (nodeIds && nodeIds.length > 0) {
+          // Seçili node'lara zoom yap
+          const selectedNodeElements = updatedNodes.filter(node => nodeIds.includes(node.id))
+          
+          if (selectedNodeElements.length > 0) {
+            // React Flow fitView sadece tümüne uygulanır, node seçimi için getNodes kullan
+            reactFlowInstance.fitView({ padding: 0.2, duration: 300 })
+          }
+        } else {
+          reactFlowInstance.fitView({ padding: 0.2 })
+        }
       } catch (error) {
         console.warn('fitView başarısız:', error)
       }
     })
-  }, [flowNodes, flowEdges, customPositions, updateFirebasePositions, reactFlowInstance])
+  }, [flowNodes, flowEdges, customPositions, updateFirebasePositions, reactFlowInstance, setFlowNodes])
+
+  // Otomatik yerleşim - dagre ile (applyAutoLayoutInternal tanımlandıktan sonra)
+  const applyAutoLayout = useCallback((direction: 'TB' | 'LR' = 'TB', skipWarning: boolean = false, nodeIds?: string[]) => {
+    // Manuel pozisyonlar varsa uyarı göster (sadece kullanıcı butonuna bastığında ve tüm sayfa için)
+    if (!skipWarning && (!nodeIds || nodeIds.length === 0)) {
+      const hasManualPositions = Object.keys(customPositions || {}).length > 0 || Object.keys(localPositions).length > 0
+      if (hasManualPositions) {
+        setConfirmationModal({
+          isOpen: true,
+          title: 'Manuel Pozisyonlar Var',
+          message: 'Manuel olarak ayarlanmış node pozisyonları var. Tüm sayfaya Oto Yerleştir uygulandığında bu pozisyonlar sıfırlanacak. Devam etmek istiyor musunuz?',
+          confirmText: 'Evet, Devam Et',
+          cancelText: 'İptal',
+          type: 'warning',
+          onConfirm: () => {
+            setConfirmationModal(null)
+            applyAutoLayoutInternal(direction, nodeIds)
+          }
+        })
+        return // Modal açıldı, layout işlemi modal onayından sonra devam edecek
+      }
+    }
+    
+    applyAutoLayoutInternal(direction, nodeIds)
+  }, [customPositions, localPositions, applyAutoLayoutInternal, setConfirmationModal])
+
+  // Otomatik layout uygula (applyAutoLayout tanımlandıktan sonra)
+  useEffect(() => {
+    if (shouldAutoLayout) {
+      // Kısa bir gecikme ile layout uygula (render'ın tamamlanmasını bekle)
+      // Otomatik tetiklenen layout'larda uyarı gösterme (skipWarning: true)
+      const timer = setTimeout(() => {
+        applyAutoLayoutInternal('TB', undefined) // Otomatik tetiklenen layout'larda uyarı yok
+        setShouldAutoLayout(false)
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [shouldAutoLayout, applyAutoLayoutInternal])
 
   // Node sürüklendiğinde pozisyonu Firebase'e kaydet
   const handleNodesChange = useCallback((changes: NodeChange[]) => {
@@ -916,6 +1198,18 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     }
   }
 
+  // Koordinatörlüğe koordinatör kişisi ekle (coordinator.name)
+  const handleAddCoordinatorPerson = () => {
+    if (contextMenu) {
+      setFormModal({
+        isOpen: true,
+        type: 'coordinator',
+        title: 'Koordinatör Ekle',
+        nodeId: contextMenu.nodeId,
+      })
+    }
+  }
+
   // Hiyerarşik ekleme: Chairman altına Executive
   const handleAddExecutiveToChairman = () => {
     if (contextMenu) {
@@ -932,6 +1226,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           position: newPosition,
           parent: chairman.id
         })
+        setShouldAutoLayout(true)
       }
       setContextMenu(null)
     }
@@ -954,6 +1249,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           position: newPosition,
           parent: exec.id
         })
+        setShouldAutoLayout(true)
       }
       setContextMenu(null)
     }
@@ -978,6 +1274,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           subUnits: [],
           position: newPosition
         })
+        setShouldAutoLayout(true)
       }
       setContextMenu(null)
     }
@@ -1009,29 +1306,43 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   }
 
   const handleDelete = () => {
-    if (contextMenu && confirm('Bu birimi silmek istediğinize emin misiniz?')) {
-      let targetId = contextMenu.nodeId
-      let targetType = contextMenu.nodeType
+    if (!contextMenu) return
+    
+    setConfirmationModal({
+      isOpen: true,
+      title: 'Birimi Sil',
+      message: 'Bu birimi silmek istediğinize emin misiniz?',
+      confirmText: 'Evet, Sil',
+      cancelText: 'İptal',
+      type: 'danger',
+      onConfirm: () => {
+        setConfirmationModal(null)
+        let targetId = contextMenu.nodeId
+        let targetType = contextMenu.nodeType
 
-      // Detay node ise gerçek ID ve tip çözümlemesi
-      if (targetId.startsWith('detail-') && targetId.endsWith('-root')) {
-        targetId = targetId.replace('detail-', '').replace('-root', '')
-        // Detay görünümü sadece koordinatörler için var, tipini bulalım
-        if (data.coordinators.find(c => c.id === targetId)) {
-          targetType = 'coordinator'
-        } else if (data.mainCoordinators.find(c => c.id === targetId)) {
-          targetType = 'mainCoordinator'
+        // Detay node ise gerçek ID ve tip çözümlemesi
+        if (targetId.startsWith('detail-') && targetId.endsWith('-root')) {
+          targetId = targetId.replace('detail-', '').replace('-root', '')
+          // Detay görünümü sadece koordinatörler için var, tipini bulalım
+          if (data.coordinators.find(c => c.id === targetId)) {
+            targetType = 'coordinator'
+          } else if (data.mainCoordinators.find(c => c.id === targetId)) {
+            targetType = 'mainCoordinator'
+          }
+
+          // Eğer açık olan koordinatör siliniyorsa detay panelini kapat
+          if (expandedCoordinator === targetId) {
+            setExpandedCoordinator(null)
+          }
         }
 
-        // Eğer açık olan koordinatör siliniyorsa detay panelini kapat
-        if (expandedCoordinator === targetId) {
-          setExpandedCoordinator(null)
-        }
+        deleteNode(targetId, targetType)
+        setContextMenu(null)
+        // Silme işleminden sonra otomatik layout uygula
+        setShouldAutoLayout(true)
+        showToast('Birim başarıyla silindi', 'success')
       }
-
-      deleteNode(targetId, targetType)
-      setContextMenu(null)
-    }
+    })
   }
 
   // Export functions
@@ -1052,7 +1363,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       link.click()
     } catch (error) {
       console.error('PNG export failed:', error)
-      alert('PNG dışa aktarma başarısız oldu')
+      showToast('PNG dışa aktarma başarısız oldu', 'error')
     }
   }, [currentProjectName])
 
@@ -1071,7 +1382,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       link.click()
     } catch (error) {
       console.error('SVG export failed:', error)
-      alert('SVG dışa aktarma başarısız oldu')
+      showToast('SVG dışa aktarma başarısız oldu', 'error')
     }
   }, [currentProjectName])
 
@@ -1096,62 +1407,144 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       pdf.save(`${currentProjectName || 'org-chart'}.pdf`)
     } catch (error) {
       console.error('PDF export failed:', error)
-      alert('PDF dışa aktarma başarısız oldu')
+      showToast('PDF dışa aktarma başarısız oldu', 'error')
     }
   }, [currentProjectName])
 
-  const handleFormSave = (formData: any) => {
-    if (!formModal) return
+  // Form save guard - çift çağrıyı önlemek için
+  const formSaveInProgressRef = useRef(false)
+  // Silme işlemi guard - çift silmeyi önlemek için
+  const deleteInProgressRef = useRef<Set<string>>(new Set())
 
-    switch (formModal.type) {
-      case 'edit':
-        updateCoordinator(formModal.nodeId, {
-          title: formData.title,
-          description: formData.description,
-        })
-        break
-      case 'subunit':
-        addSubUnit(formModal.nodeId, {
-          title: formData.title,
-          people: [],
-          responsibilities: formData.responsibilities || [],
-        })
-        break
-      case 'deputy':
-        addDeputy(formModal.nodeId, {
-          name: formData.name,
-          title: formData.title || 'Koordinatör Yardımcısı',
-          responsibilities: formData.responsibilities || [],
-        })
-        break
-      case 'responsibility':
-        formData.responsibilities?.forEach((resp: string) => {
-          addResponsibility(formModal.nodeId, resp)
-        })
-        break
-      case 'person':
-        if (formData.subUnitId && formData.name) {
-          addPerson(formModal.nodeId, formData.subUnitId, {
-            name: formData.name,
-            title: formData.title || '',
-          })
-        }
-        break
-      case 'edit-person':
-        if (formData.personId && formData.subUnitId) {
-          updatePerson(formModal.nodeId, formData.subUnitId, formData.personId, {
-            name: formData.name,
-            title: formData.title || '',
-            university: formData.university || '',
-            department: formData.department || '',
-            jobDescription: formData.jobDescription || '',
-          })
-        }
-        break
+  const handleFormSave = useCallback((formData: any) => {
+    // Çift çağrıyı önle
+    if (formSaveInProgressRef.current) {
+      return
     }
 
-    setFormModal(null)
-  }
+    // formModal state'ini closure'dan al (en son değer)
+    const currentModal = formModal
+    if (!currentModal) return
+
+    // Guard'ı aktif et
+    formSaveInProgressRef.current = true
+
+    const shouldAutoLayoutAfter = ['coordinator', 'subunit', 'deputy', 'person'].includes(currentModal.type)
+
+    try {
+      switch (currentModal.type) {
+        case 'edit':
+          updateCoordinator(currentModal.nodeId, {
+            title: formData.title,
+            description: formData.description,
+          })
+          break
+        case 'coordinator':
+          // Koordinatörlüğe koordinatör kişisi ekle (coordinator.name)
+          updateCoordinator(currentModal.nodeId, {
+            coordinator: {
+              name: formData.name,
+              title: formData.title || 'Koordinatör',
+            },
+            hasDetailPage: true, // Detay sayfasını etkinleştir
+          })
+          if (shouldAutoLayoutAfter) setShouldAutoLayout(true)
+          break
+        case 'subunit':
+          // Eğer initialData.id veya formData.id varsa, bu bir güncelleme işlemi
+          const subUnitIdToUpdate = currentModal.initialData?.id || formData.id
+          if (subUnitIdToUpdate) {
+            // Mevcut birimi güncelle
+            const responsibilitiesArray = Array.isArray(formData.responsibilities)
+              ? formData.responsibilities.filter((r: string) => r && String(r).trim())
+              : []
+            
+            updateSubUnit(currentModal.nodeId, subUnitIdToUpdate, {
+              title: formData.title,
+              description: formData.description || '',
+              responsibilities: responsibilitiesArray,
+            })
+            // Koordinatörü tekrar expand et (güncellenmiş verilerin görünmesi için)
+            setTimeout(() => {
+              setExpandedCoordinator(currentModal.nodeId)
+              setShouldAutoLayout(true)
+            }, 200)
+          } else {
+            // Yeni birim ekle - addSubUnit fonksiyonu zaten duplicate kontrolü yapıyor
+            const responsibilitiesArrayNew = Array.isArray(formData.responsibilities)
+              ? formData.responsibilities.filter((r: string) => r && String(r).trim())
+              : []
+            
+            addSubUnit(currentModal.nodeId, {
+              title: formData.title,
+              people: [],
+              responsibilities: responsibilitiesArrayNew,
+              description: formData.description || '',
+            })
+            // Koordinatörü expand et (yeni birimin görünmesi için)
+            setTimeout(() => {
+              setExpandedCoordinator(currentModal.nodeId)
+              setShouldAutoLayout(true)
+            }, 100)
+          }
+          break
+        case 'deputy':
+          // Önce koordinatörü expand et (deputy node'larının görünmesi için)
+          setExpandedCoordinator(currentModal.nodeId)
+          
+          // addDeputy fonksiyonu zaten duplicate kontrolü yapıyor
+          addDeputy(currentModal.nodeId, {
+            name: formData.name,
+            title: formData.title || '',
+            responsibilities: formData.responsibilities || [],
+          })
+          
+          // Deputy eklendikten sonra koordinatörü tekrar expand et (data güncellendikten sonra)
+          setTimeout(() => {
+            setExpandedCoordinator(currentModal.nodeId)
+          }, 100)
+          
+          if (shouldAutoLayoutAfter) setShouldAutoLayout(true)
+          break
+        case 'responsibility':
+          formData.responsibilities?.forEach((resp: string) => {
+            if (resp.trim()) {
+              addResponsibility(currentModal.nodeId, resp)
+            }
+          })
+          break
+        case 'person':
+          if (formData.subUnitId && formData.name) {
+            // addPerson fonksiyonu zaten duplicate kontrolü yapıyor
+            addPerson(currentModal.nodeId, formData.subUnitId, {
+              name: formData.name,
+              title: formData.title || '',
+            })
+            if (shouldAutoLayoutAfter) setShouldAutoLayout(true)
+          }
+          break
+        case 'edit-person':
+          if (formData.personId && formData.subUnitId) {
+            updatePerson(currentModal.nodeId, formData.subUnitId, formData.personId, {
+              name: formData.name,
+              title: formData.title || '',
+              university: formData.university || '',
+              department: formData.department || '',
+              jobDescription: formData.jobDescription || '',
+            })
+          }
+          break
+      }
+
+      // Modal'ı hemen kapat (çift çağrıyı önlemek için)
+      setFormModal(null)
+    } finally {
+      // Guard'ı gecikmeyle sıfırla
+      setTimeout(() => {
+        formSaveInProgressRef.current = false
+      }, 1000)
+    }
+  }, [formModal, expandedCoordinator, addDeputy, addSubUnit, addPerson, addResponsibility, updateCoordinator, updatePerson, setShouldAutoLayout, setExpandedCoordinator])
 
   return (
     <div className="w-full h-screen flex" style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 50%, #93c5fd 100%)' }}>
@@ -1178,6 +1571,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           connectionMode={ConnectionMode.Loose}
           onNodeContextMenu={handleNodeContextMenu}
           onPaneContextMenu={handlePaneContextMenu}
+          onSelectionChange={handleSelectionChange}
           onNodeClick={(_, node) => {
             // Toplumsal Çalışmalar Koordinatörlüğü'ne tıklandığında sol panel aç/kapat
             if (node.id === 'toplumsal-calismalar') {
@@ -1245,7 +1639,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                   const merged = { ...customPositions, ...currentPositions }
                   setLocalPositions(merged)
                   updateFirebasePositions(merged)
-                  alert('Pozisyonlar kaydedildi!')
+                              showToast('Pozisyonlar kaydedildi!', 'success')
                 }}
                 className="backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform bg-blue-50 border-blue-200"
                 title="Pozisyonları Kaydet"
@@ -1256,17 +1650,51 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               </button>
             )}
 
-            {/* Otomatik yerleşim */}
-            <button
-              onClick={() => applyAutoLayout()}
-              className="backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform bg-emerald-50 border-emerald-200 flex items-center gap-2"
-              title="Bağlantılara göre otomatik konumlandır"
-            >
-              <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v4a2 2 0 002 2h2a2 2 0 002-2V3m0 18v-4a2 2 0 00-2-2h-2a2 2 0 00-2 2v4M4 9h4a2 2 0 012 2v2a2 2 0 01-2 2H4m16-6h-4a2 2 0 00-2 2v2a2 2 0 002 2h4" />
-              </svg>
-              <span className="text-sm font-semibold text-emerald-700">Oto Yerleştir</span>
-            </button>
+            {/* Undo/Redo ve Otomatik yerleşim */}
+            <div className="flex items-center gap-2">
+              {/* Geri Al (Undo) */}
+              <button
+                onClick={handleUndo}
+                disabled={historyIndex <= 0}
+                className={`backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform ${
+                  historyIndex <= 0
+                    ? 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-50'
+                    : 'bg-blue-50 border-blue-200 hover:bg-blue-100'
+                }`}
+                title="Geri Al (Ctrl+Z)"
+              >
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                </svg>
+              </button>
+
+              {/* İleri Al (Redo) */}
+              <button
+                onClick={handleRedo}
+                disabled={historyIndex >= history.length - 1}
+                className={`backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform ${
+                  historyIndex >= history.length - 1
+                    ? 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-50'
+                    : 'bg-blue-50 border-blue-200 hover:bg-blue-100'
+                }`}
+                title="İleri Al (Ctrl+Y)"
+              >
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" />
+                </svg>
+              </button>
+
+              {/* Otomatik yerleşim */}
+              <button
+                onClick={handleOpenAutoLayoutModal}
+                className="backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform bg-emerald-50 border-emerald-200"
+                title="Oto Yerleştir - Bağlantılara göre otomatik konumlandır"
+              >
+                <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v4a2 2 0 002 2h2a2 2 0 002-2V3m0 18v-4a2 2 0 00-2-2h-2a2 2 0 00-2 2v4M4 9h4a2 2 0 012 2v2a2 2 0 01-2 2H4m16-6h-4a2 2 0 00-2 2v2a2 2 0 002 2h4" />
+                </svg>
+              </button>
+            </div>
 
             {/* Detayları Kapat butonu */}
             {expandedCoordinator && (
@@ -1359,6 +1787,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           onAddExecutive={handleAddExecutiveToChairman}
           onAddMainCoordinator={handleAddMainCoordinatorToExecutive}
           onAddCoordinator={handleAddCoordinatorToMainCoordinator}
+          onAddCoordinatorPerson={handleAddCoordinatorPerson}
           onLinkToMainSchema={() => {
             if (contextMenu) {
               setLinkModal({ isOpen: true, nodeId: contextMenu.nodeId })
@@ -1493,12 +1922,30 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               {/* CV Section */}
               <div>
                 <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1.5">ÖZGEÇMİŞ (CV)</h4>
-                <div className="border-2 border-dashed border-gray-200 rounded-lg p-3 text-center">
-                  <svg className="w-6 h-6 mx-auto text-gray-300 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <p className="text-xs text-gray-400">CV yüklenmemiş</p>
-                </div>
+                {viewPersonCard.person.cvFileName || viewPersonCard.person.cvData ? (
+                  <div className="border-2 border-green-200 bg-green-50 rounded-lg p-3 text-center">
+                    <svg className="w-6 h-6 mx-auto text-green-500 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p className="text-xs text-green-600 font-medium">{viewPersonCard.person.cvFileName || 'CV Yüklü'}</p>
+                    {viewPersonCard.person.cvData && (
+                      <a
+                        href={viewPersonCard.person.cvData}
+                        download={viewPersonCard.person.cvFileName || 'cv.pdf'}
+                        className="text-xs text-blue-600 hover:underline mt-1 inline-block"
+                      >
+                        CV'yi İndir
+                      </a>
+                    )}
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-gray-200 rounded-lg p-3 text-center">
+                    <svg className="w-6 h-6 mx-auto text-gray-300 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p className="text-xs text-gray-400">CV yüklenmemiş</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1510,35 +1957,39 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             onClick={() => setPersonContextMenu(null)}
           >
             <div className="px-3 py-2 border-b border-gray-100">
-              <p className="text-xs text-gray-400">Personel</p>
+              <p className="text-xs text-gray-400">
+                {personContextMenu.type === 'deputy' ? 'Koordinatör Yardımcısı' : 'Personel'}
+              </p>
               <p className="text-sm font-semibold text-gray-800 truncate">{personContextMenu.person.name}</p>
             </div>
-            <button
-              onClick={() => {
-                setFormModal({
-                  isOpen: true,
-                  type: 'edit-person' as any,
-                  title: 'Personeli Düzenle',
-                  nodeId: personContextMenu.coordinatorId,
-                  initialData: {
-                    personId: personContextMenu.person.id,
-                    name: personContextMenu.person.name,
-                    title: personContextMenu.person.title,
-                    subUnitId: personContextMenu.subUnitId,
-                    university: personContextMenu.person.university,
-                    department: personContextMenu.person.department,
-                    jobDescription: personContextMenu.person.jobDescription,
-                  }
-                })
-                setPersonContextMenu(null)
-              }}
-              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 flex items-center gap-2 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              Düzenle
-            </button>
+            {personContextMenu.type !== 'deputy' && (
+              <button
+                onClick={() => {
+                  setFormModal({
+                    isOpen: true,
+                    type: 'edit-person' as any,
+                    title: 'Personeli Düzenle',
+                    nodeId: personContextMenu.coordinatorId,
+                    initialData: {
+                      personId: personContextMenu.person.id,
+                      name: personContextMenu.person.name,
+                      title: personContextMenu.person.title,
+                      subUnitId: personContextMenu.subUnitId,
+                      university: personContextMenu.person.university,
+                      department: personContextMenu.person.department,
+                      jobDescription: personContextMenu.person.jobDescription,
+                    }
+                  })
+                  setPersonContextMenu(null)
+                }}
+                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 flex items-center gap-2 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Düzenle
+              </button>
+            )}
             <button
               onClick={() => {
                 setViewPersonCard({
@@ -1561,10 +2012,56 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             <div className="border-t border-gray-100 mt-1 pt-1">
               <button
                 onClick={() => {
-                  if (confirm(`${personContextMenu.person.name} adlı personeli silmek istediğinize emin misiniz?`)) {
-                    deletePerson(personContextMenu.coordinatorId, personContextMenu.subUnitId, personContextMenu.person.id)
-                  }
-                  setPersonContextMenu(null)
+                  const confirmMessage = personContextMenu.type === 'deputy' 
+                    ? `${personContextMenu.person.name} adlı koordinatör yardımcısını silmek istediğinize emin misiniz?`
+                    : `${personContextMenu.person.name} adlı personeli silmek istediğinize emin misiniz?`
+                  
+                  setConfirmationModal({
+                    isOpen: true,
+                    title: personContextMenu.type === 'deputy' ? 'Koordinatör Yardımcısını Sil' : 'Personeli Sil',
+                    message: confirmMessage,
+                    confirmText: 'Evet, Sil',
+                    cancelText: 'İptal',
+                    type: 'danger',
+                    onConfirm: () => {
+                      setConfirmationModal(null)
+                      // Çift silmeyi önle
+                      const deleteKey = personContextMenu.type === 'deputy' 
+                        ? `deputy-${personContextMenu.coordinatorId}-${personContextMenu.deputyId}`
+                        : `person-${personContextMenu.coordinatorId}-${personContextMenu.subUnitId}-${personContextMenu.person.id}`
+                      
+                      if (deleteInProgressRef.current.has(deleteKey)) {
+                        setPersonContextMenu(null)
+                        return
+                      }
+
+                      deleteInProgressRef.current.add(deleteKey)
+
+                      try {
+                        if (personContextMenu.type === 'deputy' && personContextMenu.deputyId && personContextMenu.coordinatorId) {
+                          // Deputy silme - sadece belirtilen deputy ID'sini sil
+                          const coordinator = data.coordinators.find(c => c.id === personContextMenu.coordinatorId)
+                          const deputyToDelete = coordinator?.deputies?.find(d => d.id === personContextMenu.deputyId)
+                          if (deputyToDelete) {
+                            deleteDeputy(personContextMenu.coordinatorId, personContextMenu.deputyId)
+                            setShouldAutoLayout(true)
+                            showToast('Koordinatör yardımcısı başarıyla silindi', 'success')
+                          }
+                        } else if (personContextMenu.type !== 'deputy') {
+                          // Person silme
+                          deletePerson(personContextMenu.coordinatorId, personContextMenu.subUnitId, personContextMenu.person.id)
+                          setShouldAutoLayout(true)
+                          showToast('Personel başarıyla silindi', 'success')
+                        }
+                      } finally {
+                        setTimeout(() => {
+                          deleteInProgressRef.current.delete(deleteKey)
+                        }, 500)
+                      }
+                      
+                      setPersonContextMenu(null)
+                    }
+                  })
                 }}
                 className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
               >
@@ -1612,18 +2109,22 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
 
             <button
               onClick={() => {
+                // Mevcut birim bilgilerini bul
+                const coordinator = data.coordinators.find(c => c.id === subUnitContextMenu.coordinatorId)
+                const existingSubUnit = coordinator?.subUnits?.find(su => su.id === subUnitContextMenu.subUnitId)
+                
                 setFormModal({
                   isOpen: true,
-                  type: 'subunit', // Alt birim düzenleme için subunit tipini kullanabiliriz, handleFormSave buna göre güncellenmeli
+                  type: 'subunit',
                   title: 'Birim Düzenle',
                   nodeId: subUnitContextMenu.coordinatorId,
                   initialData: {
                     id: subUnitContextMenu.subUnitId,
-                    title: subUnitContextMenu.subUnitTitle,
-                    responsibilities: [] // Mevcut responsibilities çekilmeli gerekirse
+                    title: existingSubUnit?.title || subUnitContextMenu.subUnitTitle,
+                    description: existingSubUnit?.description || '',
+                    responsibilities: existingSubUnit?.responsibilities || []
                   }
                 })
-                // Not: Şu an updateSubUnit modal üzerinden tam desteklenmiyor olabilir, basitçe kişi ekle ve sil özellikleri kritik.
                 setSubUnitContextMenu(null)
               }}
               className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 flex items-center gap-2 transition-colors"
@@ -1637,10 +2138,38 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             <div className="border-t border-gray-100 mt-1 pt-1">
               <button
                 onClick={() => {
-                  if (confirm(`${subUnitContextMenu.subUnitTitle} birimini silmek istediğinize emin misiniz?`)) {
-                    deleteSubUnit(subUnitContextMenu.coordinatorId, subUnitContextMenu.subUnitId)
-                  }
-                  setSubUnitContextMenu(null)
+                  setConfirmationModal({
+                    isOpen: true,
+                    title: 'Birimi Sil',
+                    message: `${subUnitContextMenu.subUnitTitle} birimini silmek istediğinize emin misiniz?`,
+                    confirmText: 'Evet, Sil',
+                    cancelText: 'İptal',
+                    type: 'danger',
+                    onConfirm: () => {
+                      setConfirmationModal(null)
+                      // Çift silmeyi önle
+                      const deleteKey = `subunit-${subUnitContextMenu.coordinatorId}-${subUnitContextMenu.subUnitId}`
+                      
+                      if (deleteInProgressRef.current.has(deleteKey)) {
+                        setSubUnitContextMenu(null)
+                        return
+                      }
+
+                      deleteInProgressRef.current.add(deleteKey)
+
+                      try {
+                        deleteSubUnit(subUnitContextMenu.coordinatorId, subUnitContextMenu.subUnitId)
+                        setShouldAutoLayout(true)
+                        showToast('Birim başarıyla silindi', 'success')
+                      } finally {
+                        setTimeout(() => {
+                          deleteInProgressRef.current.delete(deleteKey)
+                        }, 500)
+                      }
+                      
+                      setSubUnitContextMenu(null)
+                    }
+                  })
                 }}
                 className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
               >
@@ -1653,7 +2182,36 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           </div>
         )}
 
+        {/* Confirmation Modal */}
+        {confirmationModal && (
+          <ConfirmationModal
+            isOpen={confirmationModal.isOpen}
+            title={confirmationModal.title}
+            message={confirmationModal.message}
+            confirmText={confirmationModal.confirmText}
+            cancelText={confirmationModal.cancelText}
+            type={confirmationModal.type}
+            onConfirm={confirmationModal.onConfirm}
+            onCancel={() => setConfirmationModal(null)}
+          />
+        )}
 
+        {/* Auto Layout Selection Modal */}
+        <AutoLayoutSelectionModal
+          isOpen={autoLayoutSelectionModal}
+          hasSelectedNodes={selectedNodes.length > 0}
+          selectedCount={selectedNodes.length}
+          onSelectSelected={() => {
+            setAutoLayoutSelectionModal(false)
+            applyAutoLayout('TB', false, selectedNodes)
+            showToast(`${selectedNodes.length} adet node için oto yerleştir uygulandı`, 'success')
+          }}
+          onSelectAll={() => {
+            setAutoLayoutSelectionModal(false)
+            applyAutoLayout('TB', false) // Tüm sayfa için uyarı gösterilecek
+          }}
+          onCancel={() => setAutoLayoutSelectionModal(false)}
+        />
 
       </div>
     </div>
