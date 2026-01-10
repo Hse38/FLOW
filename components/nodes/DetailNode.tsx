@@ -17,11 +17,12 @@ interface Person {
 interface DetailNodeProps {
   data: {
     label: string
-    type: 'coordinator' | 'deputy' | 'subunit' | 'responsibility'
+    type: 'coordinator' | 'deputy' | 'subunit' | 'responsibility' | 'person'
     subtitle?: string
     people?: Person[]
     responsibilities?: string[]
     onPersonClick?: (person: Person) => void
+    onPersonContextMenu?: (e: React.MouseEvent, person: Person) => void
     onContextMenu?: (e: React.MouseEvent) => void
     coordinatorId?: string
     subUnitId?: string
@@ -32,7 +33,15 @@ interface DetailNodeProps {
 const DetailNode = memo(({ data }: DetailNodeProps) => {
   if (data.type === 'coordinator') {
     return (
-      <div className="bg-white border-2 border-[#3b82a0] rounded-lg px-6 py-4 shadow-lg text-center min-w-[200px]">
+      <div
+        className="bg-white border-2 border-[#3b82a0] rounded-lg px-6 py-4 shadow-lg text-center min-w-[200px] cursor-pointer hover:bg-gray-50 transition-colors"
+        onClick={(e) => {
+          e.stopPropagation()
+          if (data.onPersonClick) {
+            data.onPersonClick({ id: 'self', name: data.label, title: data.subtitle } as any)
+          }
+        }}
+      >
         <Handle type="target" position={Position.Top} className="!bg-[#3b82a0]" />
         <h3 className="text-lg font-bold text-[#3b82a0]">{data.label}</h3>
         {data.subtitle && (
@@ -45,9 +54,17 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
 
   if (data.type === 'deputy') {
     return (
-      <div className="bg-white border-2 border-[#3b82a0] rounded-full px-5 py-3 shadow-lg text-center min-w-[180px]">
+      <div
+        className="bg-white border-2 border-[#3b82a0] rounded-full px-5 py-3 shadow-lg text-center min-w-[180px] cursor-pointer hover:bg-gray-50 transition-colors"
+        onClick={(e) => {
+          e.stopPropagation()
+          if (data.onPersonClick) {
+            data.onPersonClick({ id: 'self', name: data.label, title: 'Koordinatör Yardımcısı' } as any)
+          }
+        }}
+      >
         <Handle type="target" position={Position.Top} className="!bg-[#3b82a0]" />
-        <p className="text-xs text-[#3b82a0] font-medium">Koordinatör Yardımcısı</p>
+        <p className="text-xs text-blue-600 font-medium opacity-80">Koordinatör Yardımcısı</p>
         <p className="text-sm text-[#3b82a0] font-bold">{data.label}</p>
         <Handle type="source" position={Position.Bottom} className="!bg-gray-400" />
       </div>
@@ -65,7 +82,7 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
 
     const currentCount = data.people?.length || 0
     const normKadro = data.normKadro || 0
-    
+
     // Badge rengi belirleme
     const getBadgeColor = () => {
       if (normKadro === 0) return 'bg-gray-400'
@@ -75,33 +92,40 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
     }
 
     return (
-      <div 
-        className="bg-white border-l-4 border-[#3b82a0] rounded-lg px-4 py-3 shadow-md min-w-[140px] max-w-[180px] nodrag relative"
+      <div
+        className="bg-white border-l-4 border-[#3b82a0] rounded-lg px-4 py-3 shadow-md min-w-[140px] max-w-[180px] relative"
         onContextMenu={data.onContextMenu}
       >
         {/* Norm Kadro Badge - Sol üst köşe */}
         {normKadro > 0 && (
-          <div 
+          <div
             className={`absolute -top-2 -left-2 w-8 h-8 rounded-full ${getBadgeColor()} text-white text-[10px] font-bold flex items-center justify-center shadow-lg border-2 border-white`}
             title={`${currentCount}/${normKadro} kişi`}
           >
             {currentCount}/{normKadro}
           </div>
         )}
-        
+
         <Handle type="target" position={Position.Top} className="!bg-gray-400" />
         <h4 className="font-bold text-[#3b82a0] text-sm text-center mb-2">{data.label}</h4>
-        
+
         {/* Çalışanlar */}
         {data.people && data.people.length > 0 && (
           <div className="mb-2">
             <ul className="text-xs space-y-0.5">
               {data.people.map((person) => (
-                <li 
-                  key={person.id} 
+                <li
+                  key={person.id}
                   className={`flex items-center gap-1 nodrag nopan ${data.onPersonClick ? 'cursor-pointer hover:bg-blue-50 rounded px-1 py-0.5 transition-colors' : ''}`}
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={(e) => handlePersonClick(e, person)}
+                  onContextMenu={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (data.onPersonContextMenu) {
+                      data.onPersonContextMenu(e, person)
+                    }
+                  }}
                 >
                   <span className="text-gray-400">•</span>
                   <span className="text-gray-800">{person.name}</span>
@@ -113,7 +137,7 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
             </ul>
           </div>
         )}
-        
+
         {/* Sorumluluklar */}
         {data.responsibilities && data.responsibilities.length > 0 && (
           <div className="bg-gray-50 rounded p-2 mt-2">
@@ -144,6 +168,37 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
           ))}
         </ul>
         <Handle type="source" position={Position.Bottom} className="!bg-gray-400" />
+      </div>
+    )
+  }
+
+  if (data.type === 'person') {
+    return (
+      <div
+        className="bg-white border text-gray-800 px-4 py-3 rounded-xl shadow-md border-gray-200 min-w-[160px] max-w-[180px] text-center cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 hover:border-blue-300 relative group"
+        onClick={(e) => {
+          e.stopPropagation()
+          if (data.onPersonClick && data.people && data.people.length > 0) {
+            data.onPersonClick(data.people[0])
+          }
+        }}
+        onContextMenu={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          if (data.onPersonContextMenu && data.people && data.people.length > 0) {
+            data.onPersonContextMenu(e, data.people[0])
+          }
+        }}
+      >
+        <Handle type="target" position={Position.Top} className="!bg-gray-400 !w-2.5 !h-2.5 !border-2 !border-white" />
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg mb-1">
+            {data.label.charAt(0)}
+          </div>
+          <div className="text-sm font-semibold leading-tight">{data.label}</div>
+          {data.subtitle && <div className="text-xs text-gray-500">{data.subtitle}</div>}
+        </div>
+        <Handle type="source" position={Position.Bottom} className="!bg-gray-400 !w-2.5 !h-2.5 !border-2 !border-white" />
       </div>
     )
   }

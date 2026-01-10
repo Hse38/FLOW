@@ -13,7 +13,7 @@ interface FormModalProps {
   isOpen: boolean
   onClose: () => void
   title: string
-  type: 'subunit' | 'deputy' | 'responsibility' | 'person' | 'edit'
+  type: 'subunit' | 'deputy' | 'responsibility' | 'person' | 'edit' | 'edit-person'
   initialData?: any
   onSave: (data: any) => void
   subUnits?: SubUnit[]
@@ -199,6 +199,87 @@ export default function FormModal({
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     placeholder="Örn: Yazılım Geliştirici"
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Personel Düzenleme Formu */}
+            {type === 'edit-person' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ad Soyad *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name || ''}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    placeholder="Örn: Ayşe Kaya"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ünvan
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title || ''}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    placeholder="Örn: Yazılım Geliştirici"
+                  />
+                </div>
+                <div className="border-t border-gray-200 pt-4 mt-2">
+                  <h3 className="text-sm font-semibold text-indigo-600 mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14v7" />
+                    </svg>
+                    Eğitim Bilgileri
+                  </h3>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Üniversite
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.university || ''}
+                        onChange={(e) => setFormData({ ...formData, university: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                        placeholder="Örn: İstanbul Teknik Üniversitesi"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Bölüm
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.department || ''}
+                        onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                        placeholder="Örn: Bilgisayar Mühendisliği"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="border-t border-gray-200 pt-4 mt-2">
+                  <h3 className="text-sm font-semibold text-amber-600 mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    İş Kalemleri / Görev Tanımı
+                  </h3>
+                  <textarea
+                    value={formData.jobDescription || ''}
+                    onChange={(e) => setFormData({ ...formData, jobDescription: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    rows={4}
+                    placeholder="Personelin görev tanımı ve iş kalemleri..."
                   />
                 </div>
               </>

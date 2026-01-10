@@ -5,7 +5,10 @@
       "name": "Selçuk Bayraktar",
       "title": "Yönetim Kurulu Başkanı",
       "type": "chairman",
-      "position": { "x": 1000, "y": 50 }
+      "position": {
+        "x": 1000,
+        "y": 50
+      }
     }
   ],
   "executives": [
@@ -14,7 +17,10 @@
       "name": "Toplumsal Çalışmalar Koordinatörlüğü",
       "title": "Koordinatörlük",
       "type": "special",
-      "position": { "x": 50, "y": 50 },
+      "position": {
+        "x": 50,
+        "y": 50
+      },
       "parent": "selcuk-bayraktar"
     },
     {
@@ -22,7 +28,10 @@
       "name": "Elvan Kuzucu Hıdır",
       "title": "Genel Müdür Yardımcısı",
       "type": "executive",
-      "position": { "x": 500, "y": 200 },
+      "position": {
+        "x": 500,
+        "y": 200
+      },
       "parent": "selcuk-bayraktar"
     },
     {
@@ -30,17 +39,23 @@
       "name": "Muhammet Saymaz",
       "title": "Genel Müdür Yardımcısı",
       "type": "executive",
-      "position": { "x": 1600, "y": 200 },
+      "position": {
+        "x": 1600,
+        "y": 200
+      },
       "parent": "selcuk-bayraktar"
     }
   ],
   "mainCoordinators": [
     {
-      "id": "t3-vakfi-koordinatorlukleri",
-      "title": "T3 Vakfı Koordinatörlükleri",
-      "description": "T3 Vakfı bünyesindeki tüm koordinatörlükler",
+      "id": "elvan-koordinatorlukleri",
+      "title": "Koordinatörlükler",
+      "description": "Elvan Kuzucu Hıdır'a bağlı koordinatörlükler",
       "type": "main-coordinator",
-      "position": { "x": 500, "y": 380 },
+      "position": {
+        "x": 500,
+        "y": 380
+      },
       "parent": "elvan-kuzucu"
     },
     {
@@ -48,161 +63,246 @@
       "title": "Teknofest Koordinatörlükleri",
       "description": "Teknofest etkinlikleri koordinatörlükleri",
       "type": "main-coordinator",
-      "position": { "x": 1600, "y": 380 },
+      "position": {
+        "x": 1600,
+        "y": 380
+      },
       "parent": "muhammet-saymaz"
-    },
-    {
-      "id": "t3-teknofest-koordinatorlukleri",
-      "title": "T3 Vakfı / Teknofest Koordinatörlükleri",
-      "description": "Her iki yapıya da hizmet veren koordinatörlükler",
-      "type": "main-coordinator",
-      "position": { "x": 1000, "y": 1600 },
-      "parent": null
     }
   ],
   "coordinators": [
     {
-      "id": "satin-alma",
-      "title": "Satın Alma Birimi",
-      "description": "Satın alma ve tedarik işlemleri",
+      "id": "bilisim-teknolojileri",
+      "title": "Bilişim Teknolojileri Koordinatörlüğü",
+      "description": "Bilgi teknolojileri ve dijital altyapı yönetimi",
       "responsibilities": [
-        "Tedarikçi yönetimi",
-        "Satın alma süreçleri",
-        "Fiyat müzakereleri",
-        "Sözleşme yönetimi"
+        "BT altyapısı yönetimi",
+        "Yazılım geliştirme",
+        "Sistem ve ağ yönetimi",
+        "Dijital dönüşüm projeleri"
       ],
-      "position": { "x": 50, "y": 580 },
-      "parent": "t3-vakfi-koordinatorlukleri"
+      "position": {
+        "x": 150,
+        "y": 580
+      },
+      "parent": "elvan-koordinatorlukleri"
     },
     {
-      "id": "bursiyer",
-      "title": "Bursiyer Koordinatörlüğü",
-      "description": "Burs programları yönetimi",
+      "id": "kursiyer",
+      "title": "Kursiyer Koordinatörlüğü",
+      "description": "Stajyer ve kursiyer programları yönetimi",
       "responsibilities": [
-        "Burs başvuru yönetimi",
-        "Bursiyer takibi",
-        "Mentorluk programları",
-        "Kariyer rehberliği"
+        "Staj programları yönetimi",
+        "Kursiyer seçimi ve yerleştirme",
+        "Eğitim programları",
+        "Performans takibi"
       ],
-      "position": { "x": 450, "y": 580 },
-      "parent": "t3-vakfi-koordinatorlukleri"
+      "position": {
+        "x": 450,
+        "y": 580
+      },
+      "parent": "elvan-koordinatorlukleri"
     },
     {
-      "id": "mimari-tasarim",
-      "title": "Mimari Tasarım ve Planlama Koordinatörlüğü",
-      "description": "Mekan tasarımı ve planlama",
+      "id": "deneyap",
+      "title": "DENEYAP Koordinatörlüğü",
+      "description": "Deneyap Teknoloji Atölyeleri yönetimi",
       "responsibilities": [
-        "Mekan tasarımları",
-        "Proje planlaması",
-        "İnşaat koordinasyonu",
-        "Teknik çizimler"
+        "Deneyap atölye yönetimi",
+        "Eğitim programları koordinasyonu",
+        "Öğrenci takibi",
+        "Mentor programları"
       ],
-      "position": { "x": 850, "y": 580 },
-      "parent": "t3-vakfi-koordinatorlukleri"
+      "position": {
+        "x": 750,
+        "y": 580
+      },
+      "parent": "elvan-koordinatorlukleri"
     },
     {
       "id": "insan-kaynaklari",
       "title": "İnsan Kaynakları Koordinatörlüğü",
-      "description": "İnsan kaynakları yönetimi",
+      "description": "İnsan kaynakları ve personel yönetimi",
       "responsibilities": [
-        "İşe alım süreçleri",
-        "Performans yönetimi",
-        "Eğitim ve gelişim",
-        "Özlük işleri"
+        "İK strateji ve politika yönetimi",
+        "İşe alım ve kadro planlama",
+        "Performans ve gelişim yönetimi",
+        "Özlük, izin ve personel kayıtları"
       ],
-      "position": { "x": 50, "y": 780 },
-      "parent": "t3-vakfi-koordinatorlukleri"
+      "position": {
+        "x": 1050,
+        "y": 580
+      },
+      "parent": "elvan-koordinatorlukleri",
+      "coordinator": {
+        "name": "Gülsüm Çoban",
+        "title": "İnsan Kaynakları Koordinatörü"
+      },
+      "subUnits": [
+        {
+          "id": "ik-strateji",
+          "title": "İK Strateji ve Politika Yönetimi",
+          "responsibilities": [
+            "Strateji geliştirme",
+            "Politika yönetimi"
+          ]
+        },
+        {
+          "id": "ise-alim-kadro",
+          "title": "İşe Alım ve Kadro Planlama",
+          "responsibilities": [
+            "Kadro planlaması",
+            "İşe alım süreçleri"
+          ]
+        },
+        {
+          "id": "performans-gelisim",
+          "title": "Performans ve Gelişim Yönetimi",
+          "responsibilities": [
+            "Performans değerlendirme",
+            "Gelişim programları"
+          ]
+        },
+        {
+          "id": "ise-alim-yerlestirme",
+          "title": "İşe Alım ve Yerleştirme",
+          "responsibilities": [
+            "Mülakat süreçleri",
+            "Yerleştirme işlemleri"
+          ]
+        },
+        {
+          "id": "performans-egitim",
+          "title": "Performans ve Eğitim Operasyonları",
+          "responsibilities": [
+            "Eğitim organizasyonu",
+            "Performans takibi"
+          ]
+        },
+        {
+          "id": "ozluk-personel",
+          "title": "Özlük, İzin ve Personel Kayıtları",
+          "responsibilities": [
+            "Özlük işlemleri",
+            "İzin yönetimi",
+            "Personel kayıtları"
+          ]
+        }
+      ]
     },
     {
       "id": "t3-girisim-merkezi",
       "title": "T3 Girişim Merkezi Koordinatörlüğü",
-      "description": "Girişimcilik ve inovasyon merkezi yönetimi",
+      "description": "T3 Vakfı Girişim ve Kuluçka Merkezi yönetimi",
       "responsibilities": [
-        "Girişimcilik programları yönetimi",
-        "Startup destekleme",
-        "Mentor ağı koordinasyonu",
-        "Demo Day organizasyonları"
+        "Girişim programları yönetimi",
+        "Kuluçka merkezi operasyonları",
+        "Mentor ve danışmanlık hizmetleri",
+        "Yatırımcı ilişkileri"
       ],
-      "position": { "x": 450, "y": 780 },
-      "parent": "t3-vakfi-koordinatorlukleri"
-    },
-    {
-      "id": "egitim-arge",
-      "title": "Eğitim ve AR-GE Koordinatörlüğü",
-      "description": "Eğitim programları ve araştırma geliştirme",
-      "responsibilities": [
-        "Eğitim müfredatı geliştirme",
-        "AR-GE projeleri yönetimi",
-        "Akademik işbirlikleri",
-        "İnovasyon araştırmaları"
-      ],
-      "position": { "x": 850, "y": 780 },
-      "parent": "t3-vakfi-koordinatorlukleri"
-    },
-    {
-      "id": "muhasebe",
-      "title": "Muhasebe Birimi",
-      "description": "Mali işler ve muhasebe",
-      "responsibilities": [
-        "Muhasebe kayıtları",
-        "Mali raporlama",
-        "Bütçe takibi",
-        "Vergi işlemleri"
-      ],
-      "position": { "x": 50, "y": 980 },
-      "parent": "t3-vakfi-koordinatorlukleri"
-    },
-    {
-      "id": "bilisim-teknolojileri",
-      "title": "Bilişim Teknolojileri Koordinatörlüğü",
-      "description": "IT altyapı ve yazılım yönetimi",
-      "responsibilities": [
-        "IT altyapı yönetimi",
-        "Yazılım geliştirme",
-        "Siber güvenlik",
-        "Teknik destek"
-      ],
-      "position": { "x": 450, "y": 980 },
-      "parent": "t3-vakfi-koordinatorlukleri"
-    },
-    {
-      "id": "teknofest-yarismalar",
-      "title": "Teknofest Yarışmalar Koordinatörlüğü",
-      "description": "Teknoloji yarışmaları yönetimi",
-      "responsibilities": [
-        "Yarışma organizasyonu",
-        "Jüri koordinasyonu",
-        "Başvuru yönetimi",
-        "Ödül törenleri"
-      ],
-      "position": { "x": 850, "y": 980 },
-      "parent": "t3-vakfi-koordinatorlukleri"
-    },
-    {
-      "id": "deneyap-koordinatorlugu",
-      "title": "DENEYAP Koordinatörlüğü",
-      "description": "DENEYAP Teknoloji Atölyeleri yönetimi",
-      "responsibilities": [
-        "DENEYAP atölye yönetimi",
-        "Eğitmen koordinasyonu",
-        "Öğrenci takibi",
-        "Teknoloji eğitimleri"
-      ],
-      "position": { "x": 250, "y": 1180 },
-      "parent": "t3-vakfi-koordinatorlukleri"
-    },
-    {
-      "id": "deneyap-kart",
-      "title": "DENEYAP Kart Birimi",
-      "description": "DENEYAP Kart üretim ve dağıtım",
-      "responsibilities": [
-        "Kart üretimi koordinasyonu",
-        "Dağıtım planlaması",
-        "Stok yönetimi",
-        "Kalite kontrol"
-      ],
-      "position": { "x": 650, "y": 1180 },
-      "parent": "t3-vakfi-koordinatorlukleri"
+      "position": {
+        "x": -150,
+        "y": 580
+      },
+      "parent": "elvan-koordinatorlukleri",
+      "subUnits": [
+        {
+          "id": "girisim-stratejik",
+          "title": "Girişim Programları Strateji ve Yönetimi",
+          "responsibilities": [
+            "Program stratejisi",
+            "Girişim seçimi"
+          ]
+        },
+        {
+          "id": "girisim-ekosistem",
+          "title": "Girişim Ekosistemi ve Paydaş İlişkileri",
+          "responsibilities": [
+            "Ekosistem yönetimi",
+            "Paydaş koordinasyonu"
+          ]
+        },
+        {
+          "id": "girisim-kuluben",
+          "title": "Program ve Etkinlik Süreç Koordinatörlüğü",
+          "responsibilities": [
+            "Etkinlik organizasyonu",
+            "Süreç yönetimi"
+          ]
+        },
+        {
+          "id": "girisim-uluslararasi",
+          "title": "Uluslararası ve Ulusal İş Birlikleri",
+          "responsibilities": [
+            "Uluslararası ilişkiler",
+            "İş birlikleri yönetimi"
+          ]
+        },
+        {
+          "id": "girisim-kucukleme",
+          "title": "Küçüklemeleme",
+          "responsibilities": [
+            "Kuluçka yönetimi",
+            "Girişim destekleme"
+          ]
+        },
+        {
+          "id": "girisim-yatirimci",
+          "title": "Yatırımcı İlişkileri Yönetimi",
+          "responsibilities": [
+            "Yatırımcı portföyü",
+            "Yatırım süreçleri"
+          ]
+        },
+        {
+          "id": "girisim-finans",
+          "title": "Finans ve Muhasebe Yönetimi",
+          "responsibilities": [
+            "Bütçe yönetimi",
+            "Mali işlemler"
+          ]
+        },
+        {
+          "id": "girisim-is-gelistirme",
+          "title": "İş Geliştirme Uzmanlığı",
+          "responsibilities": [
+            "İş geliştirme",
+            "Büyüme stratejileri"
+          ]
+        },
+        {
+          "id": "girisim-egitim",
+          "title": "İş Geliştirme (Eğitim & Topluluk) Uzmanlığı",
+          "responsibilities": [
+            "Eğitim programları",
+            "Topluluk yönetimi"
+          ]
+        },
+        {
+          "id": "girisim-sosyal-medya",
+          "title": "Sosyal Medya ve İçerik Uzmanlığı",
+          "responsibilities": [
+            "Sosyal medya yönetimi",
+            "İçerik üretimi"
+          ]
+        },
+        {
+          "id": "girisim-dijital",
+          "title": "Dijital İletişim ve Sosyal Medya",
+          "responsibilities": [
+            "Dijital pazarlama",
+            "İletişim stratejisi"
+          ]
+        },
+        {
+          "id": "girisim-performans",
+          "title": "Performans Analitiği",
+          "responsibilities": [
+            "Performans takibi",
+            "Veri analizi"
+          ]
+        }
+      ]
     },
     {
       "id": "teknofest-ulasim",
@@ -214,7 +314,10 @@
         "Katılımcı transferleri",
         "Lojistik yönetimi"
       ],
-      "position": { "x": 1250, "y": 580 },
+      "position": {
+        "x": 1250,
+        "y": 580
+      },
       "parent": "teknofest-koordinatorlukleri"
     },
     {
@@ -227,7 +330,10 @@
         "Marka yönetimi",
         "Satış operasyonları"
       ],
-      "position": { "x": 1650, "y": 580 },
+      "position": {
+        "x": 1650,
+        "y": 580
+      },
       "parent": "teknofest-koordinatorlukleri"
     },
     {
@@ -240,7 +346,10 @@
         "Sergi düzenlemesi",
         "Katılımcı ilişkileri"
       ],
-      "position": { "x": 2050, "y": 580 },
+      "position": {
+        "x": 2050,
+        "y": 580
+      },
       "parent": "teknofest-koordinatorlukleri"
     },
     {
@@ -253,7 +362,10 @@
         "Başvuru yönetimi",
         "Ödül törenleri"
       ],
-      "position": { "x": 1450, "y": 780 },
+      "position": {
+        "x": 1450,
+        "y": 780
+      },
       "parent": "teknofest-koordinatorlukleri"
     },
     {
@@ -266,7 +378,10 @@
         "Teknik altyapı",
         "Acil durum yönetimi"
       ],
-      "position": { "x": 1850, "y": 780 },
+      "position": {
+        "x": 1850,
+        "y": 780
+      },
       "parent": "teknofest-koordinatorlukleri"
     },
     {
@@ -279,7 +394,10 @@
         "Tedarik süreçleri",
         "Tesis yönetimi"
       ],
-      "position": { "x": 700, "y": 1800 },
+      "position": {
+        "x": 700,
+        "y": 1800
+      },
       "parent": "t3-teknofest-koordinatorlukleri"
     },
     {
@@ -292,7 +410,10 @@
         "İletişim ekipleri ve süreçlerinin koordinasyonu",
         "Medya, kriz ve paydaş iletişiminin yürütülmesi"
       ],
-      "position": { "x": 1200, "y": 1800 },
+      "position": {
+        "x": 1200,
+        "y": 1800
+      },
       "parent": "t3-teknofest-koordinatorlukleri",
       "hasDetailPage": true,
       "coordinator": {
@@ -328,9 +449,15 @@
           "id": "iletisim-birimi",
           "title": "İletişim",
           "people": [
-            { "name": "Zahide Sara Yılmaz" },
-            { "name": "Dilara Fındıkcı" },
-            { "name": "Tarkan Murat Korkmaz" }
+            {
+              "name": "Zahide Sara Yılmaz"
+            },
+            {
+              "name": "Dilara Fındıkcı"
+            },
+            {
+              "name": "Tarkan Murat Korkmaz"
+            }
           ],
           "responsibilities": [
             "İç ve dış iletişim süreçlerinin koordinasyonu",
@@ -343,7 +470,9 @@
           "id": "editor-birimi",
           "title": "Editör",
           "people": [
-            { "name": "Zeynep Hilal Demirci" }
+            {
+              "name": "Zeynep Hilal Demirci"
+            }
           ],
           "responsibilities": [
             "Kurumsal içeriklerin hazırlanması ve düzenlenmesi",
@@ -356,9 +485,15 @@
           "id": "tasarim-birimi",
           "title": "Tasarım",
           "people": [
-            { "name": "Merve Nur Sukas" },
-            { "name": "Betül Tüfekci" },
-            { "name": "Nedim Furkan Gönenç" }
+            {
+              "name": "Merve Nur Sukas"
+            },
+            {
+              "name": "Betül Tüfekci"
+            },
+            {
+              "name": "Nedim Furkan Gönenç"
+            }
           ],
           "responsibilities": [
             "Görsel tasarım konseptlerinin geliştirilmesi ve uygulanması",
@@ -371,7 +506,9 @@
           "id": "sosyal-medya-birimi",
           "title": "Sosyal Medya",
           "people": [
-            { "name": "İsmet Selim Sirkeci" }
+            {
+              "name": "İsmet Selim Sirkeci"
+            }
           ],
           "responsibilities": [
             "Sosyal medya içeriklerinin üretilmesi ve yönetimi",
@@ -384,7 +521,9 @@
           "id": "basin-birimi",
           "title": "Basın",
           "people": [
-            { "name": "Enes Furkan Gönenç" }
+            {
+              "name": "Enes Furkan Gönenç"
+            }
           ],
           "responsibilities": [
             "Basın görünürlüğü ve medya ilişkilerinin yönetimi",
@@ -397,8 +536,12 @@
           "id": "web-siteleri-birimi",
           "title": "Web Siteleri",
           "people": [
-            { "name": "Rümeysa Ersöz" },
-            { "name": "Necip Karaman" }
+            {
+              "name": "Rümeysa Ersöz"
+            },
+            {
+              "name": "Necip Karaman"
+            }
           ],
           "responsibilities": [
             "Web sitesi ve mobil uygulama içeriklerinin yönetimi",

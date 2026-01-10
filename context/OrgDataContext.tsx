@@ -1,12 +1,12 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react'
-import { 
-  database, 
-  ref, 
-  onValue, 
-  set, 
-  get 
+import {
+  database,
+  ref,
+  onValue,
+  set,
+  get
 } from '@/lib/firebase'
 
 // Types
@@ -19,6 +19,10 @@ export interface Person {
   notes?: string
   cvFileName?: string
   cvData?: string  // Base64 encoded file
+  color?: string // Kart rengi (blue, red, green, purple, orange, pink)
+  university?: string // Üniversite
+  department?: string // Bölüm
+  jobDescription?: string // İş Kalemleri / Görev Tanımı
 }
 
 export interface SubUnit {
@@ -34,6 +38,7 @@ export interface Deputy {
   name: string
   title: string
   responsibilities: string[]
+  color?: string
 }
 
 export interface Coordinator {
@@ -44,9 +49,10 @@ export interface Coordinator {
   position: { x: number; y: number }
   parent: string
   hasDetailPage?: boolean
-  coordinator?: { name: string; title: string }
+  coordinator?: { name: string; title: string; color?: string }
   deputies: Deputy[]
   subUnits: SubUnit[]
+  people?: Person[]
   linkedSchemaId?: string
   normKadro?: number  // Koordinatörlük düzeyinde olması gereken kişi sayısı
 }
@@ -222,10 +228,27 @@ const initialData: OrgData = {
       id: "bursiyer",
       title: "Bursiyer Koordinatörlüğü",
       description: "Burs programları yönetimi",
-      responsibilities: ["Burs başvuru yönetimi", "Bursiyer takibi", "Mentorluk programları", "Kariyer rehberliği"],
+      responsibilities: ["Bursiyer Seçme ve Yerleştirme Süreçleri", "Bursiyer Dokümantasyon ve Süreç Takibi", "Operasyonel Bursiyer Yönetimi", "Etkinlik, Ödeme ve Destek Süreçleri"],
       position: { x: 100, y: 480 },
       parent: "t3-vakfi-koordinatorlukleri",
+      hasDetailPage: true,
+      coordinator: {
+        name: "Erkut Kalakavan",
+        title: "Bursiyer Koordinatörü"
+      },
       deputies: [],
+      people: [
+        {
+          id: "burs1",
+          name: "Muhammet Ali Demir",
+          jobDescription: "Bursiyer Seçme ve Yerleştirme Süreçleri\nBursiyer Dokümantasyon ve Süreç Takibi\nOperasyonel Bursiyer Yönetimi\nEtkinlik, Ödeme ve Destek Süreçleri"
+        },
+        {
+          id: "burs2",
+          name: "Nur Turhal",
+          jobDescription: "Bursiyer Seçme ve Yerleştirme Süreçleri\nBursiyer Dokümantasyon ve Süreç Takibi\nOperasyonel Bursiyer Yönetimi\nEtkinlik, Ödeme ve Destek Süreçleri"
+        }
+      ],
       subUnits: []
     },
     {
@@ -285,7 +308,35 @@ const initialData: OrgData = {
       responsibilities: ["IT altyapı yönetimi", "Yazılım geliştirme", "Siber güvenlik", "Teknik destek"],
       position: { x: 500, y: 620 },
       parent: "t3-vakfi-koordinatorlukleri",
+      hasDetailPage: true,
       deputies: [],
+      people: [
+        {
+          id: "bt1",
+          name: "Hüseyin Ocak",
+          jobDescription: "Yazılım Geliştirme ve Teknik Bakım\nDijital Altyapı ve Sistem Sürekliliği\nProje Yönetimi ve Teknik Koordinasyon\nGüvenlik, Sistem ve Performans İzleme"
+        },
+        {
+          id: "bt2",
+          name: "Hakan Sandıkçı",
+          jobDescription: "Yazılım Geliştirme ve Teknik Bakım\nDijital Altyapı ve Sistem Sürekliliği\nProje Yönetimi ve Teknik Koordinasyon\nGüvenlik, Sistem ve Performans İzleme"
+        },
+        {
+          id: "bt3",
+          name: "Büşra Köseoğlu Dağgez",
+          jobDescription: "Yazılım Geliştirme ve Teknik Bakım\nDijital Altyapı ve Sistem Sürekliliği\nProje Yönetimi ve Teknik Koordinasyon\nGüvenlik, Sistem ve Performans İzleme"
+        },
+        {
+          id: "bt4",
+          name: "Merve Camadan",
+          jobDescription: "Yazılım Geliştirme ve Teknik Bakım\nDijital Altyapı ve Sistem Sürekliliği\nProje Yönetimi ve Teknik Koordinasyon\nGüvenlik, Sistem ve Performans İzleme"
+        },
+        {
+          id: "bt5",
+          name: "Furkan Ayrı",
+          jobDescription: "Yazılım Geliştirme ve Teknik Bakım\nDijital Altyapı ve Sistem Sürekliliği\nProje Yönetimi ve Teknik Koordinasyon\nGüvenlik, Sistem ve Performans İzleme"
+        }
+      ],
       subUnits: []
     },
     {
@@ -302,11 +353,73 @@ const initialData: OrgData = {
       id: "deneyap-koordinatorlugu",
       title: "DENEYAP Koordinatörlüğü",
       description: "DENEYAP Teknoloji Atölyeleri yönetimi",
-      responsibilities: ["DENEYAP atölye yönetimi", "Eğitmen koordinasyonu", "Öğrenci takibi", "Teknoloji eğitimleri"],
+      responsibilities: ["Eğitim, satış ve operasyon süreçlerinin koordinasyonu", "Komisyonlar arası çalışma ve karar süreçlerinin yönetimi", "Okul yönetimi ve ana kural/planlama sorumlulukları"],
       position: { x: 100, y: 760 },
       parent: "t3-vakfi-koordinatorlukleri",
-      deputies: [],
-      subUnits: []
+      hasDetailPage: true,
+      coordinator: {
+        name: "Barış Anıl",
+        title: "DENEYAP Koordinatörü"
+      },
+      deputies: [
+        {
+          id: "gamze-cetisyer",
+          name: "Gamze Çetişyer",
+          title: "Koordinatör Yardımcısı",
+          responsibilities: ["Eğitim ve Tedarik Süreçleri"]
+        },
+        {
+          id: "oya-tofekci",
+          name: "Oya Zeynep Tofekçi",
+          title: "Koordinatör Yardımcısı",
+          responsibilities: ["DENEYAP lojistik ve medya yönetimi"]
+        }
+      ],
+      subUnits: [
+        {
+          id: "egitim-programlari",
+          title: "Eğitim Programları Koordinasyonu",
+          people: [{ id: "d1", name: "Kenan Yıldız", jobDescription: "Eğitim müfredatı ve yarış beceri dörtimi\nEğitim ve beceri dönütümü kontrolü\nEğitim personel ve işletim koordinasyonu" }],
+          responsibilities: ["Eğitim müfredatı yönetimi", "Yarış beceri dörtimi"]
+        },
+        {
+          id: "egitimci-yonetici",
+          title: "Eğitimci, Yönetici ve Barikat Koordinasyonu",
+          people: [{ id: "d2", name: "Kubilay Kulibeş", jobDescription: "Eğitimci ve yönetici koordinasyonu\nBarikat süreçlerinin yönetimi" }],
+          responsibilities: ["Eğitimci koordinasyonu", "Barikat süreçleri"]
+        },
+        {
+          id: "egitmen-komisyonu",
+          title: "Eğitmen Komisyonu",
+          people: [
+            { id: "d3", name: "Sümeyye Demir", jobDescription: "Eğitmen işlemleri\nEğitmen yönlendirme ve planlama\nEğitmen performans ve değerlendirme süreçleri" },
+            { id: "d4", name: "Yeşim Yannaz", jobDescription: "Eğitmen işlemleri\nEğitmen yönlendirme ve planlama\nEğitmen performans ve değerlendirme süreçleri" }
+          ],
+          responsibilities: ["Eğitmen yönlendirme", "Performans değerlendirme"]
+        },
+        {
+          id: "satis-ideri-komisyonu",
+          title: "Satış-İderi Komisyonu",
+          people: [
+            { id: "d5", name: "Muhammet Enes Köroğlu", jobDescription: "Satış işlemleri\nİderi süreç yönetimi" },
+            { id: "d6", name: "Hatice Milas", jobDescription: "Satış işlemleri\nİderi süreç yönetimi" },
+            { id: "d7", name: "Aleli", jobDescription: "Satış işlemleri\nİderi süreç yönetimi" }
+          ],
+          responsibilities: ["Satış işlemleri", "İderi süreç yönetimi"]
+        },
+        {
+          id: "tedarik-komisyonu",
+          title: "Tedarik Komisyonu",
+          people: [{ id: "d8", name: "Haluk Miraç", jobDescription: "Tedarik süreçlerinin yönetimi\nMalzeme takibi" }],
+          responsibilities: ["Tedarik süreçleri", "Malzeme takibi"]
+        },
+        {
+          id: "ogrenci-komisyonu",
+          title: "Öğrenci Komisyonu",
+          people: [{ id: "d9", name: "Yusuf Şakar", jobDescription: "Öğrenci seçme ve kayıt süreçleri\nOKS kayıt güncellemeleri ve koordinasyonu" }],
+          responsibilities: ["Öğrenci seçme ve kayıt", "OKS koordinasyonu"]
+        }
+      ]
     },
     {
       id: "deneyap-kart",
@@ -525,7 +638,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
   // Firebase'den verileri dinle - gerçek zamanlı senkronizasyon
   useEffect(() => {
     setIsLoading(true)
-    
+
     // Projeleri dinle
     const projectsRef = ref(database, 'projects')
     const unsubProjects = onValue(projectsRef, (snapshot) => {
@@ -536,7 +649,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
           ...(p as Omit<Project, 'id'>)
         }))
         setProjects(projectList)
-        
+
         // Eğer main proje yoksa oluştur
         if (!projectList.find(p => p.id === 'main')) {
           const mainProject: Project = { id: 'main', name: 'Ana Şema', createdAt: Date.now(), isMain: true }
@@ -703,7 +816,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     setData(prev => {
       const newData = {
         ...prev,
-        coordinators: prev.coordinators.map(c => 
+        coordinators: prev.coordinators.map(c =>
           c.id === id ? { ...c, ...updates } : c
         )
       }
@@ -721,8 +834,8 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     setData(prev => {
       const newData = {
         ...prev,
-        coordinators: prev.coordinators.map(c => 
-          c.id === coordinatorId 
+        coordinators: prev.coordinators.map(c =>
+          c.id === coordinatorId
             ? { ...c, subUnits: [...(c.subUnits || []), newSubUnit], hasDetailPage: true }
             : c
         )
@@ -741,8 +854,8 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     setData(prev => {
       const newData = {
         ...prev,
-        coordinators: prev.coordinators.map(c => 
-          c.id === coordinatorId 
+        coordinators: prev.coordinators.map(c =>
+          c.id === coordinatorId
             ? { ...c, deputies: [...(c.deputies || []), newDeputy], hasDetailPage: true }
             : c
         )
@@ -757,8 +870,8 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     setData(prev => {
       const newData = {
         ...prev,
-        coordinators: prev.coordinators.map(c => 
-          c.id === coordinatorId 
+        coordinators: prev.coordinators.map(c =>
+          c.id === coordinatorId
             ? { ...c, responsibilities: [...(c.responsibilities || []), responsibility] }
             : c
         )
@@ -777,16 +890,16 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     setData(prev => {
       const newData = {
         ...prev,
-        coordinators: prev.coordinators.map(c => 
-          c.id === coordinatorId 
+        coordinators: prev.coordinators.map(c =>
+          c.id === coordinatorId
             ? {
-                ...c,
-                subUnits: (c.subUnits || []).map(su =>
-                  su.id === subUnitId
-                    ? { ...su, people: [...(su.people || []), newPerson] }
-                    : su
-                )
-              }
+              ...c,
+              subUnits: (c.subUnits || []).map(su =>
+                su.id === subUnitId
+                  ? { ...su, people: [...(su.people || []), newPerson] }
+                  : su
+              )
+            }
             : c
         )
       }
@@ -800,21 +913,21 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     setData(prev => {
       const newData = {
         ...prev,
-        coordinators: prev.coordinators.map(c => 
-          c.id === coordinatorId 
+        coordinators: prev.coordinators.map(c =>
+          c.id === coordinatorId
             ? {
-                ...c,
-                subUnits: (c.subUnits || []).map(su =>
-                  su.id === subUnitId
-                    ? {
-                        ...su,
-                        people: (su.people || []).map(p =>
-                          p.id === personId ? { ...p, ...updates } : p
-                        )
-                      }
-                    : su
-                )
-              }
+              ...c,
+              subUnits: (c.subUnits || []).map(su =>
+                su.id === subUnitId
+                  ? {
+                    ...su,
+                    people: (su.people || []).map(p =>
+                      p.id === personId ? { ...p, ...updates } : p
+                    )
+                  }
+                  : su
+              )
+            }
             : c
         )
       }
@@ -828,19 +941,19 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     setData(prev => {
       const newData = {
         ...prev,
-        coordinators: prev.coordinators.map(c => 
-          c.id === coordinatorId 
+        coordinators: prev.coordinators.map(c =>
+          c.id === coordinatorId
             ? {
-                ...c,
-                subUnits: (c.subUnits || []).map(su =>
-                  su.id === subUnitId
-                    ? {
-                        ...su,
-                        people: (su.people || []).filter(p => p.id !== personId)
-                      }
-                    : su
-                )
-              }
+              ...c,
+              subUnits: (c.subUnits || []).map(su =>
+                su.id === subUnitId
+                  ? {
+                    ...su,
+                    people: (su.people || []).filter(p => p.id !== personId)
+                  }
+                  : su
+              )
+            }
             : c
         )
       }
@@ -854,8 +967,8 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     setData(prev => {
       const newData = {
         ...prev,
-        coordinators: prev.coordinators.map(c => 
-          c.id === coordinatorId 
+        coordinators: prev.coordinators.map(c =>
+          c.id === coordinatorId
             ? { ...c, subUnits: (c.subUnits || []).filter(su => su.id !== subUnitId) }
             : c
         )
@@ -870,14 +983,14 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     setData(prev => {
       const newData = {
         ...prev,
-        coordinators: prev.coordinators.map(c => 
-          c.id === coordinatorId 
+        coordinators: prev.coordinators.map(c =>
+          c.id === coordinatorId
             ? {
-                ...c,
-                subUnits: (c.subUnits || []).map(su =>
-                  su.id === subUnitId ? { ...su, ...updates } : su
-                )
-              }
+              ...c,
+              subUnits: (c.subUnits || []).map(su =>
+                su.id === subUnitId ? { ...su, ...updates } : su
+              )
+            }
             : c
         )
       }
@@ -891,7 +1004,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     setData(prev => {
       const cityPersonnel = prev.cityPersonnel || []
       const existingCity = cityPersonnel.find(cp => cp.city === city)
-      
+
       const newPerson: Person = {
         ...person,
         id: `person-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
@@ -923,11 +1036,11 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       const newCityPersonnel = (prev.cityPersonnel || []).map(cp =>
         cp.city === city
           ? {
-              ...cp,
-              people: cp.people.map(p =>
-                p.id === personId ? { ...p, ...updates } : p
-              )
-            }
+            ...cp,
+            people: cp.people.map(p =>
+              p.id === personId ? { ...p, ...updates } : p
+            )
+          }
           : cp
       )
 
@@ -962,8 +1075,8 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     setData(prev => {
       const newData = {
         ...prev,
-        coordinators: prev.coordinators.map(c => 
-          c.id === coordinatorId 
+        coordinators: prev.coordinators.map(c =>
+          c.id === coordinatorId
             ? { ...c, deputies: (c.deputies || []).filter(d => d.id !== deputyId) }
             : c
         )
@@ -1014,10 +1127,10 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
   // Add new coordinator
   const addCoordinator = useCallback((parentId: string, coordinator: Omit<Coordinator, 'id'> & { position?: { x: number; y: number } }) => {
     const parent = data.coordinators.find(c => c.id === parentId) ||
-                   data.mainCoordinators.find(m => m.id === parentId)
-    
+      data.mainCoordinators.find(m => m.id === parentId)
+
     const siblingCount = data.coordinators.filter(c => c.parent === parentId).length
-    
+
     const newCoordinator: Coordinator = {
       ...coordinator,
       id: generateId(),
@@ -1029,7 +1142,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       deputies: coordinator.deputies || [],
       subUnits: coordinator.subUnits || [],
     }
-    
+
     setData(prev => {
       const newData = {
         ...prev,
@@ -1094,8 +1207,8 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     get(ref(database, 'orgData/main')).then(snapshot => {
       const mainData = snapshot.val() as OrgData
       if (mainData) {
-        const updatedCoordinators = mainData.coordinators.map(coord => 
-          coord.id === coordinatorId 
+        const updatedCoordinators = mainData.coordinators.map(coord =>
+          coord.id === coordinatorId
             ? { ...coord, linkedSchemaId: schemaId, hasDetailPage: true }
             : coord
         )

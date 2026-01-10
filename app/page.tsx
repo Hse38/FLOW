@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Network, ChevronDown, ChevronUp, Settings, Plus, Trash2, Menu, X, FileText, FolderOpen, Edit2 } from 'lucide-react'
+import { Network, ChevronDown, ChevronUp, Settings, Plus, Trash2, Menu, X, FileText, FolderOpen, Edit2, Eye, Download } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 // Dynamically import OrgCanvas to avoid SSR issues with React Flow
@@ -55,12 +55,15 @@ export default function Home() {
   const [currentProject, setCurrentProject] = useState<SavedProject | null>(null)
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
-  
+
   // Legend state
   const [isLegendOpen, setIsLegendOpen] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
   const [legendItems, setLegendItems] = useState(defaultLegendItems)
   const [editingItem, setEditingItem] = useState<string | null>(null)
+
+  // Presentation mode state
+  const [isPresentationMode, setIsPresentationMode] = useState(false)
 
   // Load saved projects on mount
   useEffect(() => {
@@ -99,13 +102,13 @@ export default function Home() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
-    
+
     const updatedProjects = [...savedProjects, newProject]
     setSavedProjects(updatedProjects)
     setCurrentProject(newProject)
     localStorage.setItem('orgProjects', JSON.stringify(updatedProjects))
     localStorage.setItem('activeProjectId', newProject.id)
-    
+
     // Clear current org data for blank canvas
     localStorage.setItem(`orgData_${newProject.id}`, JSON.stringify({
       management: [],
@@ -113,7 +116,7 @@ export default function Home() {
       mainCoordinators: [],
       coordinators: []
     }))
-    
+
     // Reload to apply blank canvas
     window.location.reload()
   }
@@ -132,7 +135,7 @@ export default function Home() {
       setSavedProjects(updatedProjects)
       localStorage.setItem('orgProjects', JSON.stringify(updatedProjects))
       localStorage.removeItem(`orgData_${projectId}`)
-      
+
       if (currentProject?.id === projectId) {
         setCurrentProject(null)
         localStorage.removeItem('activeProjectId')
@@ -142,12 +145,12 @@ export default function Home() {
 
   // Rename project
   const renameProject = (projectId: string, newName: string) => {
-    const updatedProjects = savedProjects.map(p => 
+    const updatedProjects = savedProjects.map(p =>
       p.id === projectId ? { ...p, name: newName, updatedAt: new Date().toISOString() } : p
     )
     setSavedProjects(updatedProjects)
     localStorage.setItem('orgProjects', JSON.stringify(updatedProjects))
-    
+
     if (currentProject?.id === projectId) {
       setCurrentProject({ ...currentProject, name: newName })
     }
@@ -169,7 +172,7 @@ export default function Home() {
   }
 
   const updateLegendItem = (id: string, updates: { color?: string; label?: string }) => {
-    setLegendItems(legendItems.map(item => 
+    setLegendItems(legendItems.map(item =>
       item.id === id ? { ...item, ...updates } : item
     ))
   }
@@ -188,7 +191,7 @@ export default function Home() {
               className="fixed inset-0 bg-black/20 z-40 lg:hidden"
               onClick={() => setIsSidebarOpen(false)}
             />
-            
+
             {/* Sidebar */}
             <motion.div
               initial={{ x: -300, opacity: 0 }}
@@ -226,11 +229,10 @@ export default function Home() {
               <div className="px-4 pb-2">
                 <button
                   onClick={loadMainSchema}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
-                    !currentProject 
-                      ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg' 
-                      : 'bg-gray-800 hover:bg-gray-700 text-gray-200'
-                  }`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${!currentProject
+                    ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg'
+                    : 'bg-gray-800 hover:bg-gray-700 text-gray-200'
+                    }`}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
@@ -252,7 +254,7 @@ export default function Home() {
                 <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
                   Önceki Çalışmalarınız
                 </h3>
-                
+
                 {savedProjects.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <FolderOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
@@ -264,11 +266,10 @@ export default function Home() {
                     {savedProjects.map((project) => (
                       <div
                         key={project.id}
-                        className={`group relative rounded-xl transition-colors ${
-                          currentProject?.id === project.id
-                            ? 'bg-indigo-600/20 border border-indigo-500/50'
-                            : 'hover:bg-gray-800 border border-transparent'
-                        }`}
+                        className={`group relative rounded-xl transition-colors ${currentProject?.id === project.id
+                          ? 'bg-indigo-600/20 border border-indigo-500/50'
+                          : 'hover:bg-gray-800 border border-transparent'
+                          }`}
                       >
                         {editingProjectId === project.id ? (
                           <div className="p-3">
@@ -299,7 +300,7 @@ export default function Home() {
                             </div>
                           </button>
                         )}
-                        
+
                         {/* Action buttons */}
                         {editingProjectId !== project.id && (
                           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -364,7 +365,7 @@ export default function Home() {
                 >
                   <Menu className="w-6 h-6 text-gray-700" />
                 </button>
-                
+
                 <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 p-2.5 rounded-xl shadow-lg">
                   <Network className="w-6 h-6 text-white" />
                 </div>
@@ -375,9 +376,29 @@ export default function Home() {
                   <p className="text-sm text-gray-600">İnteraktif Kurumsal Yapı Haritası</p>
                 </div>
               </div>
-              <div className="hidden md:flex items-center gap-4">
-                <div className="text-sm text-gray-600">
-                  <span className="font-medium">İpucu:</span> Fareyi kullanarak yakınlaştırın ve gezinin
+              <div className="flex items-center gap-3">
+                {/* Mode Toggle Buttons */}
+                <div className="flex items-center bg-gray-100 rounded-xl p-1 gap-1">
+                  <button
+                    onClick={() => setIsPresentationMode(false)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium text-sm ${!isPresentationMode
+                      ? 'bg-white text-indigo-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                  >
+                    <Edit2 className="w-4 h-4" />
+                    <span className="hidden lg:inline">Düzenle</span>
+                  </button>
+                  <button
+                    onClick={() => setIsPresentationMode(true)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium text-sm ${isPresentationMode
+                      ? 'bg-white text-indigo-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span className="hidden lg:inline">Sunum</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -386,9 +407,10 @@ export default function Home() {
 
         {/* Canvas with top padding for header */}
         <div className="w-full h-screen pt-20">
-          <OrgCanvas 
+          <OrgCanvas
             currentProjectId={currentProject?.id || null}
             currentProjectName={currentProject?.name}
+            isPresentationMode={isPresentationMode}
           />
         </div>
 

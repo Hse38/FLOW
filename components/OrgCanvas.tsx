@@ -30,6 +30,18 @@ import RightDetailPanel from './RightDetailPanel'
 import NormKadroModal from './NormKadroModal'
 import TurkeyMapPanel from './TurkeyMapPanel'
 import { useOrgData, Person } from '@/context/OrgDataContext'
+import { toPng, toSvg } from 'html-to-image'
+import { jsPDF } from 'jspdf'
+import { saveAs } from 'file-saver'
+
+const COLOR_PALETTE = [
+  { name: 'Mavi', value: 'from-blue-600 to-indigo-600', code: 'blue' },
+  { name: 'Kırmızı', value: 'from-red-600 to-rose-600', code: 'red' },
+  { name: 'Yeşil', value: 'from-green-600 to-emerald-600', code: 'green' },
+  { name: 'Mor', value: 'from-purple-600 to-violet-600', code: 'purple' },
+  { name: 'Turuncu', value: 'from-orange-500 to-amber-600', code: 'orange' },
+  { name: 'Pembe', value: 'from-pink-500 to-rose-500', code: 'pink' },
+]
 
 const nodeTypes = {
   chairman: ChairmanNode,
@@ -44,22 +56,23 @@ interface OrgCanvasProps {
   onNodeClick?: (nodeId: string, nodeType: string) => void
   currentProjectId?: string | null
   currentProjectName?: string
+  isPresentationMode?: boolean
 }
 
-const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: OrgCanvasProps) => {
-  const { 
-    data, 
-    addSubUnit, 
-    addDeputy, 
-    addResponsibility, 
-    addCoordinator, 
-    deleteCoordinator, 
-    deleteNode, 
-    updateCoordinator, 
-    addManagement, 
-    addExecutive, 
-    addMainCoordinator, 
-    updatePerson, 
+const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isPresentationMode = false }: OrgCanvasProps) => {
+  const {
+    data,
+    addSubUnit,
+    addDeputy,
+    addResponsibility,
+    addCoordinator,
+    deleteCoordinator,
+    deleteNode,
+    updateCoordinator,
+    addManagement,
+    addExecutive,
+    addMainCoordinator,
+    updatePerson,
     addPerson,
     deletePerson,
     updateSubUnit,
@@ -79,9 +92,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
     isLoading
   } = useOrgData()
   const reactFlowInstance = useReactFlow()
-  
+
   const [expandedCoordinator, setExpandedCoordinator] = useState<string | null>(null)
-  
+
   // Sağ panel için seçili koordinatör
   const [rightPanelCoordinatorId, setRightPanelCoordinatorId] = useState<string | null>(null)
 
@@ -90,19 +103,19 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
 
   // Türkiye Haritası Sol Panel (Toplumsal Çalışmalar için)
   const [turkeyMapOpen, setTurkeyMapOpen] = useState<boolean>(false)
-  
+
   // Kilitleme durumu - Firebase'den geliyor
   const isLocked = firebaseLocked
 
   // Özel pozisyonlar - Firebase'den geliyor
   const customPositions = firebasePositions
-  
+
   // Pozisyonları güncellemek için local state (drag sırasında)
   const [localPositions, setLocalPositions] = useState<Record<string, { x: number; y: number }>>({})
 
   // Boş alan context menu state - now includes position for adding nodes
   const [paneContextMenu, setPaneContextMenu] = useState<{ x: number; y: number; flowPosition?: { x: number; y: number } } | null>(null)
-  
+
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
     x: number
@@ -110,18 +123,18 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
     nodeId: string
     nodeType: string
   } | null>(null)
-  
+
   // New node form modal
   const [newNodeModal, setNewNodeModal] = useState<{
     isOpen: boolean
     type: 'management' | 'executive' | 'mainCoordinator' | 'coordinator'
     position: { x: number; y: number }
   } | null>(null)
-  
+
   // Form modal state
   const [formModal, setFormModal] = useState<{
     isOpen: boolean
-    type: 'subunit' | 'deputy' | 'responsibility' | 'person' | 'edit'
+    type: 'subunit' | 'deputy' | 'responsibility' | 'person' | 'edit' | 'edit-person'
     title: string
     nodeId: string
     initialData?: any
@@ -145,6 +158,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
     subUnitId: string
     coordinatorTitle: string
     subUnitTitle: string
+    type?: 'person' | 'coordinator' | 'deputy'
   } | null>(null)
 
   // Alt birim context menu (kişi ekle/sil için)
@@ -155,6 +169,17 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
     subUnitId: string
     subUnitTitle: string
     people: Person[]
+  } | null>(null)
+
+  // Personel sağ tık context menu (düzenleme için)
+  const [personContextMenu, setPersonContextMenu] = useState<{
+    x: number
+    y: number
+    person: Person
+    coordinatorId: string
+    subUnitId: string
+    coordinatorTitle: string
+    subUnitTitle: string
   } | null>(null)
 
   // Link to main schema modal state
@@ -183,10 +208,10 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
   })
 
   // Bağlantı yönü seçimi modal
-  const [connectionHandleModal, setConnectionHandleModal] = useState<{ 
-    isOpen: boolean; 
-    nodeId: string; 
-    nodeName: string 
+  const [connectionHandleModal, setConnectionHandleModal] = useState<{
+    isOpen: boolean;
+    nodeId: string;
+    nodeName: string
   } | null>(null)
 
   // Connection list modal (bağlantı listesi)
@@ -196,7 +221,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
   const isInNewSchema = !!currentProjectId
 
   // Handler using ref to avoid stale closures
-  const handleUnitClickRef = useRef<(unitId: string) => void>(() => {})
+  const handleUnitClickRef = useRef<(unitId: string) => void>(() => { })
 
   handleUnitClickRef.current = (unitId: string) => {
     // Bağlantı modundaysa hedef seçimi için modal aç
@@ -207,7 +232,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
 
     const coordinator = data.coordinators.find((c) => c.id === unitId)
     const mainCoord = data.mainCoordinators.find((m) => m.id === unitId)
-    
+
     const item = coordinator || mainCoord
     if (item) {
       // Her zaman toggle et - içi boş bile olsa açılabilmeli (düzenleme için)
@@ -292,13 +317,13 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
           return subTotal + (subUnit.people?.length || 0)
         }, 0) || 0)
       }, 0)
-      
+
       const normKadro = childCoordinators.reduce((total, childCoord) => {
         return total + (childCoord.normKadro || childCoord.subUnits?.reduce((subTotal, subUnit) => {
           return subTotal + (subUnit.normKadro || 0)
         }, 0) || 0)
       }, 0)
-      
+
       nodeList.push({
         id: coord.id,
         type: 'mainCoordinator',
@@ -318,17 +343,17 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
     // Add sub-coordinators
     data.coordinators.forEach((coord) => {
       const hasDetails = (coord.deputies?.length || 0) > 0 || (coord.subUnits?.length || 0) > 0
-      
+
       // Koordinatöre bağlı tüm personel sayısını hesapla
       const personnelCount = coord.subUnits?.reduce((total, subUnit) => {
         return total + (subUnit.people?.length || 0)
       }, 0) || 0
-      
+
       // normKadro: koordinatör düzeyinde veya tüm subUnitlerin normKadro toplamı
       const normKadro = coord.normKadro || coord.subUnits?.reduce((total, subUnit) => {
         return total + (subUnit.normKadro || 0)
       }, 0) || 0
-      
+
       nodeList.push({
         id: coord.id,
         type: 'subCoordinator',
@@ -348,15 +373,22 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
     })
 
     // If a coordinator is expanded, add detail nodes
+    // If a coordinator is expanded, add detail nodes
     if (expandedCoordinatorData) {
-      const baseX = expandedCoordinatorData.position.x
-      const baseY = expandedCoordinatorData.position.y + 100
+      // Varsayılan pozisyon (custom position yoksa)
+      const basePos = expandedCoordinatorData.position
+      const defaultBaseX = basePos.x
+      const defaultBaseY = basePos.y + 350
+
+      const coordId = expandedCoordinatorData.id
 
       // Koordinatör node
+      const rootId = `detail-${coordId}-root`
       nodeList.push({
-        id: 'detail-coordinator',
+        id: rootId,
         type: 'detail',
-        position: { x: baseX - 50, y: baseY },
+        position: getPosition(rootId, { x: defaultBaseX - 50, y: defaultBaseY }),
+        draggable: !isLocked,
         data: {
           label: expandedCoordinatorData.title,
           type: 'coordinator',
@@ -364,28 +396,17 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
         },
       })
 
-      // Sorumluluklar node
-      if (expandedCoordinatorData.responsibilities?.length > 0) {
-        nodeList.push({
-          id: 'detail-responsibilities',
-          type: 'detail',
-          position: { x: baseX - 50, y: baseY + 100 },
-          data: {
-            label: 'Sorumluluklar',
-            type: 'responsibility',
-            responsibilities: expandedCoordinatorData.responsibilities,
-          },
-        })
-      }
-
       // Deputy nodes
       expandedCoordinatorData.deputies?.forEach((deputy, idx) => {
-        const xOffset = expandedCoordinatorData.deputies!.length === 1 ? 0 : 
-                        idx === 0 ? -150 : 150
+        const xOffset = expandedCoordinatorData.deputies!.length === 1 ? 0 :
+          idx === 0 ? -150 : 150
+
+        const deputyId = `detail-${coordId}-deputy-${idx}`
         nodeList.push({
-          id: `detail-deputy-${idx}`,
+          id: deputyId,
           type: 'detail',
-          position: { x: baseX + xOffset - 50, y: baseY + 220 },
+          position: getPosition(deputyId, { x: defaultBaseX + xOffset - 50, y: defaultBaseY + 120 }),
+          draggable: !isLocked,
           data: {
             label: deputy.name,
             type: 'deputy',
@@ -401,11 +422,13 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
         const totalWidth = (cols - 1) * 200
         const xOffset = (col * 200) - (totalWidth / 2)
         const yOffset = row * 200
-        
+
+        const subUnitId = `detail-${coordId}-subunit-${idx}`
         nodeList.push({
-          id: `detail-subunit-${idx}`,
+          id: subUnitId,
           type: 'detail',
-          position: { x: baseX + xOffset - 50, y: baseY + 340 + yOffset },
+          position: getPosition(subUnitId, { x: defaultBaseX + xOffset - 50, y: defaultBaseY + 240 + yOffset }),
+          draggable: !isLocked,
           data: {
             label: subUnit.title,
             type: 'subunit',
@@ -413,10 +436,22 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
             responsibilities: subUnit.responsibilities,
             coordinatorId: expandedCoordinatorData.id,
             subUnitId: subUnit.id,
-            normKadro: subUnit.normKadro,  // Norm kadro bilgisi
+            normKadro: subUnit.normKadro,
             onPersonClick: (person: Person) => {
-              // Şema üzerinden tıklayınca sağda görüntüleme kartı aç
               setViewPersonCard({
+                person,
+                coordinatorId: expandedCoordinatorData.id,
+                subUnitId: subUnit.id,
+                coordinatorTitle: expandedCoordinatorData.title,
+                subUnitTitle: subUnit.title,
+              })
+            },
+            onPersonContextMenu: (e: React.MouseEvent, person: Person) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setPersonContextMenu({
+                x: e.clientX,
+                y: e.clientY,
                 person,
                 coordinatorId: expandedCoordinatorData.id,
                 subUnitId: subUnit.id,
@@ -434,6 +469,58 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
                 subUnitId: subUnit.id,
                 subUnitTitle: subUnit.title,
                 people: subUnit.people || [],
+              })
+            },
+          },
+        })
+      })
+
+
+      // People nodes (direct employees)
+      const subUnitCount = expandedCoordinatorData.subUnits?.length || 0
+      const subUnitRows = Math.ceil(subUnitCount / 3)
+      const peopleStartY = subUnitRows > 0 ? (subUnitRows * 220) : 0 // Add extra spacing if subunits exist
+
+      expandedCoordinatorData.people?.forEach((person, idx) => {
+        const cols = 3
+        const col = idx % cols
+        const row = Math.floor(idx / cols)
+        const totalWidth = (cols - 1) * 200
+        const xOffset = (col * 200) - (totalWidth / 2)
+        const yOffset = row * 200
+
+        const personId = `detail-${coordId}-person-${idx}`
+        nodeList.push({
+          id: personId,
+          type: 'detail',
+          position: getPosition(personId, { x: defaultBaseX + xOffset - 50, y: defaultBaseY + 240 + peopleStartY + yOffset }),
+          draggable: !isLocked,
+          data: {
+            label: person.name,
+            type: 'person',
+            subtitle: person.title || 'Ekip Üyesi',
+            people: [person], // Pass as array for context menu compatibility
+            coordinatorId: expandedCoordinatorData.id,
+            onPersonClick: (p: Person) => {
+              setViewPersonCard({
+                person: p,
+                coordinatorId: expandedCoordinatorData.id,
+                subUnitId: '',
+                coordinatorTitle: expandedCoordinatorData.title,
+                subUnitTitle: 'Doğrudan Bağlı'
+              })
+            },
+            onPersonContextMenu: (e: React.MouseEvent, p: Person) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setPersonContextMenu({
+                x: e.clientX,
+                y: e.clientY,
+                person: p,
+                coordinatorId: expandedCoordinatorData.id,
+                subUnitId: '',
+                coordinatorTitle: expandedCoordinatorData.title,
+                subUnitTitle: 'Doğrudan Bağlı'
               })
             },
           },
@@ -489,32 +576,24 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
 
     // Detail edges if expanded
     if (expandedCoordinatorData) {
+      const coordId = expandedCoordinatorData.id
+      const rootId = `detail-${coordId}-root`
+
       // Main to coordinator detail
       edgeList.push({
-        id: 'detail-main-to-coord',
+        id: `detail-main-to-coord-${coordId}`,
         source: expandedCoordinator!,
-        target: 'detail-coordinator',
+        target: rootId,
         type: 'smoothstep',
         style: { stroke: '#3b82a0', strokeWidth: 2 },
       })
 
-      // Coordinator to responsibilities
-      if (expandedCoordinatorData.responsibilities?.length > 0) {
-        edgeList.push({
-          id: 'detail-coord-to-resp',
-          source: 'detail-coordinator',
-          target: 'detail-responsibilities',
-          type: 'smoothstep',
-          style: { stroke: '#3b82a0', strokeWidth: 2 },
-        })
-      }
-
-      // Responsibilities to deputies
+      // Coordinator to deputies
       expandedCoordinatorData.deputies?.forEach((_, idx) => {
         edgeList.push({
-          id: `detail-resp-to-deputy-${idx}`,
-          source: expandedCoordinatorData.responsibilities?.length > 0 ? 'detail-responsibilities' : 'detail-coordinator',
-          target: `detail-deputy-${idx}`,
+          id: `detail-coord-to-deputy-${coordId}-${idx}`,
+          source: rootId,
+          target: `detail-${coordId}-deputy-${idx}`,
           type: 'smoothstep',
           style: { stroke: '#9ca3af', strokeWidth: 1.5 },
         })
@@ -523,18 +602,33 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
       // Deputies to sub-units
       const deputyCount = expandedCoordinatorData.deputies?.length || 0
       expandedCoordinatorData.subUnits?.forEach((_, idx) => {
-        let sourceId = 'detail-coordinator'
+        let sourceId = rootId
         if (deputyCount > 0) {
-          const deputyIdx = deputyCount === 1 ? 0 : (idx < 3 ? 0 : 1)
-          sourceId = `detail-deputy-${deputyIdx}`
-        } else if (expandedCoordinatorData.responsibilities?.length > 0) {
-          sourceId = 'detail-responsibilities'
+          const deputyIdx = idx % deputyCount
+          sourceId = `detail-${coordId}-deputy-${deputyIdx}`
         }
-        
+
         edgeList.push({
-          id: `detail-to-subunit-${idx}`,
+          id: `detail-to-subunit-${coordId}-${idx}`,
           source: sourceId,
-          target: `detail-subunit-${idx}`,
+          target: `detail-${coordId}-subunit-${idx}`,
+          type: 'smoothstep',
+          style: { stroke: '#9ca3af', strokeWidth: 1.5 },
+        })
+      })
+
+      // Deputies to people (or root to people)
+      expandedCoordinatorData.people?.forEach((_, idx) => {
+        let sourceId = rootId
+        if (deputyCount > 0) {
+          const deputyIdx = idx % deputyCount
+          sourceId = `detail-${coordId}-deputy-${deputyIdx}`
+        }
+
+        edgeList.push({
+          id: `detail-to-person-${coordId}-${idx}`,
+          source: sourceId,
+          target: `detail-${coordId}-person-${idx}`,
           type: 'smoothstep',
           style: { stroke: '#9ca3af', strokeWidth: 1.5 },
         })
@@ -572,19 +666,17 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
   // Node sürüklendiğinde pozisyonu Firebase'e kaydet
   const handleNodesChange = useCallback((changes: NodeChange[]) => {
     onNodesChange(changes)
-    
+
     // Sürükleme bittiğinde pozisyonu kaydet
     changes.forEach((change) => {
       if (change.type === 'position' && change.position && !change.dragging) {
         const nodeId = change.id
-        // Detail node'ları kaydetme
-        if (!nodeId.startsWith('detail-')) {
-          const updated = {
-            ...customPositions,
-            [nodeId]: { x: change.position!.x, y: change.position!.y }
-          }
-          updateFirebasePositions(updated)
+        // Detail node'ları da kaydet (unique ID kullandığımız için sorun yok)
+        const updated = {
+          ...customPositions,
+          [nodeId]: { x: change.position!.x, y: change.position!.y }
         }
+        updateFirebasePositions(updated)
       }
     })
   }, [onNodesChange, customPositions, updateFirebasePositions])
@@ -600,6 +692,32 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
     updateFirebasePositions({})
     setPaneContextMenu(null)
   }, [updateFirebasePositions])
+
+  // Kişi/Koordinatör/Yardımcı renk güncelleme
+  const handleUpdatePersonColor = useCallback((color: string) => {
+    if (!viewPersonCard) return
+
+    const { type, coordinatorId, subUnitId, person } = viewPersonCard
+
+    // Anlık UI güncelleme
+    setViewPersonCard(prev => prev ? { ...prev, person: { ...prev.person, color } } : null)
+
+    if (!type || type === 'person') {
+      updatePerson(coordinatorId, subUnitId, person.id, { color })
+    } else if (type === 'coordinator') {
+      const coord = data.coordinators.find(c => c.id === coordinatorId)
+      if (coord && coord.coordinator) {
+        updateCoordinator(coordinatorId, { coordinator: { ...coord.coordinator, color } } as any)
+      }
+    } else if (type === 'deputy') {
+      const coord = data.coordinators.find(c => c.id === coordinatorId)
+      if (coord && coord.deputies) {
+        // Deputy'yi ismine göre bul
+        const updatedDeputies = coord.deputies.map(d => d.name === person.name ? { ...d, color } : d)
+        updateCoordinator(coordinatorId, { deputies: updatedDeputies } as any)
+      }
+    }
+  }, [viewPersonCard, data.coordinators, updatePerson, updateCoordinator])
 
   // Custom connection (bağlantı) oluşturma - önce yön seçimi modal açılır
   const startConnection = useCallback((nodeId: string, nodeName: string, sourceHandle: 'top' | 'bottom') => {
@@ -648,9 +766,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
   // Yeni node ekleme fonksiyonları
   const handleAddNewNode = useCallback((type: 'management' | 'executive' | 'mainCoordinator' | 'coordinator') => {
     if (!paneContextMenu?.flowPosition) return
-    
+
     const position = paneContextMenu.flowPosition
-    
+
     if (type === 'management') {
       addManagement({
         name: 'Yeni Yönetici',
@@ -686,7 +804,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
         position
       })
     }
-    
+
     setPaneContextMenu(null)
   }, [paneContextMenu, addManagement, addExecutive, addMainCoordinator, addCoordinator, data])
 
@@ -822,7 +940,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
       const coord = data.coordinators.find(c => c.id === contextMenu.nodeId)
       const mainCoord = data.mainCoordinators.find(m => m.id === contextMenu.nodeId)
       const item = coord || mainCoord
-      
+
       setFormModal({
         isOpen: true,
         type: 'edit',
@@ -842,6 +960,72 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
       setContextMenu(null)
     }
   }
+
+  // Export functions
+  const exportToPng = useCallback(async () => {
+    const flowElement = document.querySelector('.react-flow') as HTMLElement
+    if (!flowElement) return
+
+    try {
+      const dataUrl = await toPng(flowElement, {
+        backgroundColor: '#e0f2fe',
+        quality: 1.0,
+        pixelRatio: 2,
+      })
+
+      const link = document.createElement('a')
+      link.download = `${currentProjectName || 'org-chart'}.png`
+      link.href = dataUrl
+      link.click()
+    } catch (error) {
+      console.error('PNG export failed:', error)
+      alert('PNG dışa aktarma başarısız oldu')
+    }
+  }, [currentProjectName])
+
+  const exportToSvg = useCallback(async () => {
+    const flowElement = document.querySelector('.react-flow') as HTMLElement
+    if (!flowElement) return
+
+    try {
+      const dataUrl = await toSvg(flowElement, {
+        backgroundColor: '#e0f2fe',
+      })
+
+      const link = document.createElement('a')
+      link.download = `${currentProjectName || 'org-chart'}.svg`
+      link.href = dataUrl
+      link.click()
+    } catch (error) {
+      console.error('SVG export failed:', error)
+      alert('SVG dışa aktarma başarısız oldu')
+    }
+  }, [currentProjectName])
+
+  const exportToPdf = useCallback(async () => {
+    const flowElement = document.querySelector('.react-flow') as HTMLElement
+    if (!flowElement) return
+
+    try {
+      const dataUrl = await toPng(flowElement, {
+        backgroundColor: '#e0f2fe',
+        quality: 1.0,
+        pixelRatio: 2,
+      })
+
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [flowElement.offsetWidth, flowElement.offsetHeight],
+      })
+
+      pdf.addImage(dataUrl, 'PNG', 0, 0, flowElement.offsetWidth, flowElement.offsetHeight)
+      pdf.save(`${currentProjectName || 'org-chart'}.pdf`)
+    } catch (error) {
+      console.error('PDF export failed:', error)
+      alert('PDF dışa aktarma başarısız oldu')
+    }
+  }, [currentProjectName])
 
   const handleFormSave = (formData: any) => {
     if (!formModal) return
@@ -880,8 +1064,19 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
           })
         }
         break
+      case 'edit-person':
+        if (formData.personId && formData.subUnitId) {
+          updatePerson(formModal.nodeId, formData.subUnitId, formData.personId, {
+            name: formData.name,
+            title: formData.title || '',
+            university: formData.university || '',
+            department: formData.department || '',
+            jobDescription: formData.jobDescription || '',
+          })
+        }
+        break
     }
-    
+
     setFormModal(null)
   }
 
@@ -916,794 +1111,421 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName }: O
               setTurkeyMapOpen(prev => !prev)
               return
             }
-          // Bağlantı modundaysa hedef yönü seçimi için modal aç
-          if (connectionMode.active && node.id !== connectionMode.sourceId) {
-            setPendingTarget({ targetId: node.id })
-          }
-        }}
-        nodesDraggable={!isLocked}
-        fitView
-        minZoom={0.2}
-        maxZoom={1.5}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.7 }}
-        className="react-flow-custom"
-        // Çoklu seçim özellikleri (masaüstü gibi)
-        selectionOnDrag={true}
-        panOnDrag={[1, 2]}
-        selectNodesOnDrag={true}
-        selectionKeyCode={null}
-      >
-        <Background
-          variant={BackgroundVariant.Dots}
-          gap={30}
-          size={1.5}
-          color="#60a5fa"
-          className="opacity-20"
-        />
-        <Controls
-          className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-lg shadow-lg"
-          showInteractive={false}
-        />
-      </ReactFlow>
+            // Bağlantı modundaysa hedef yönü seçimi için modal aç
+            if (connectionMode.active && node.id !== connectionMode.sourceId) {
+              setPendingTarget({ targetId: node.id })
+            }
+          }}
+          nodesDraggable={!isLocked}
+          fitView
+          minZoom={0.2}
+          maxZoom={1.5}
+          defaultViewport={{ x: 0, y: 0, zoom: 0.7 }}
+          className="react-flow-custom"
+          // Çoklu seçim özellikleri (masaüstü gibi)
+          selectionOnDrag={true}
+          panOnDrag={[1, 2]}
+          selectNodesOnDrag={true}
+          selectionKeyCode={null}
+        >
+          <Background
+            variant={BackgroundVariant.Dots}
+            gap={30}
+            size={1.5}
+            color="#60a5fa"
+            className="opacity-20"
+          />
+          <Controls
+            className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-lg shadow-lg"
+            showInteractive={false}
+          />
+        </ReactFlow>
 
-      {/* Expanded indicator + Kilit durumu göstergesi */}
-      <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-        <div className="flex items-center gap-2">
-          {/* Kilit ikonu */}
-          <div className={`backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform ${
-            isLocked 
-              ? 'bg-red-50 border-red-200' 
+        {/* Expanded indicator + Kilit durumu göstergesi */}
+        <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            {/* Kilit ikonu */}
+            <div className={`backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform ${isLocked
+              ? 'bg-red-50 border-red-200'
               : 'bg-green-50 border-green-200'
-          }`} onClick={toggleLock} title={isLocked ? 'Kilidi Aç' : 'Kilitle'}>
-            {isLocked ? (
-              <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              }`} onClick={toggleLock} title={isLocked ? 'Kilidi Aç' : 'Kilitle'}>
+              {isLocked ? (
+                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                </svg>
+              )}
+            </div>
+
+            {/* Pozisyonları Kaydet butonu */}
+            {!isLocked && (
+              <button
+                onClick={() => {
+                  // Mevcut node pozisyonlarını al ve kaydet
+                  const currentPositions: Record<string, { x: number; y: number }> = {}
+                  flowNodes.forEach(node => {
+                    if (!node.id.startsWith('detail-')) {
+                      currentPositions[node.id] = { x: node.position.x, y: node.position.y }
+                    }
+                  })
+                  updateFirebasePositions(currentPositions)
+                  alert('Pozisyonlar kaydedildi!')
+                }}
+                className="backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform bg-blue-50 border-blue-200"
+                title="Pozisyonları Kaydet"
+              >
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                </svg>
+              </button>
+            )}
+
+            {/* Norm Kadro Butonu - Her zaman görünür */}
+            <button
+              onClick={() => setNormKadroModal(true)}
+              className="backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform bg-indigo-600 border-indigo-700 flex items-center gap-2"
+              title="Norm Kadro Yönetimi"
+            >
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-            ) : (
-              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
-              </svg>
+              <span className="text-sm font-bold text-white">Norm</span>
+            </button>
+
+            {/* Detayları Kapat butonu */}
+            {expandedCoordinator && (
+              <button
+                onClick={() => setExpandedCoordinator(null)}
+                className="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200 flex items-center gap-2 hover:bg-gray-50 transition-colors"
+              >
+                <span className="text-sm font-medium text-gray-700">Detayları Kapat</span>
+                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             )}
           </div>
-
-          {/* Pozisyonları Kaydet butonu */}
-          {!isLocked && (
-            <button
-              onClick={() => {
-                // Mevcut node pozisyonlarını al ve kaydet
-                const currentPositions: Record<string, { x: number; y: number }> = {}
-                flowNodes.forEach(node => {
-                  if (!node.id.startsWith('detail-')) {
-                    currentPositions[node.id] = { x: node.position.x, y: node.position.y }
-                  }
-                })
-                updateFirebasePositions(currentPositions)
-                alert('Pozisyonlar kaydedildi!')
-              }}
-              className="backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform bg-blue-50 border-blue-200"
-              title="Pozisyonları Kaydet"
-            >
-              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-              </svg>
-            </button>
-          )}
-
-          {/* Norm Kadro Butonu - Her zaman görünür */}
-          <button
-            onClick={() => setNormKadroModal(true)}
-            className="backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform bg-indigo-600 border-indigo-700 flex items-center gap-2"
-            title="Norm Kadro Yönetimi"
-          >
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-            <span className="text-sm font-bold text-white">Norm</span>
-          </button>
-
-          {/* Detayları Kapat butonu */}
-          {expandedCoordinator && (
-            <button
-              onClick={() => setExpandedCoordinator(null)}
-              className="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200 flex items-center gap-2 hover:bg-gray-50 transition-colors"
-            >
-              <span className="text-sm font-medium text-gray-700">Detayları Kapat</span>
-              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          )}
         </div>
-      </div>
 
-      {/* Düzenle Butonu - Koordinatör seçiliyken görünür */}
-      {expandedCoordinator && expandedCoordinatorData && (
-        <button
-          onClick={() => setRightPanelCoordinatorId(expandedCoordinator)}
-          className="absolute top-20 left-4 z-10 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 px-4 py-3 flex items-center gap-3 hover:bg-blue-50 hover:border-blue-300 transition-all group"
-        >
-          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-          </div>
-          <div className="text-left">
-            <p className="text-sm font-bold text-gray-800 group-hover:text-blue-700 truncate max-w-[180px]">{expandedCoordinatorData.title}</p>
-            <p className="text-xs text-gray-500">Detayları Düzenle</p>
-          </div>
-          <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-      )}
-
-      {/* Sağ Detay Paneli */}
-      <RightDetailPanel
-        isOpen={!!rightPanelCoordinatorId}
-        onClose={() => setRightPanelCoordinatorId(null)}
-        coordinator={data.coordinators.find(c => c.id === rightPanelCoordinatorId) || null}
-        onUpdateCoordinator={updateCoordinator}
-        onAddDeputy={addDeputy}
-        onAddSubUnit={addSubUnit}
-        onAddPerson={addPerson}
-        onUpdatePerson={updatePerson}
-        onDeletePerson={deletePerson}
-      />
-
-      {/* Norm Kadro Modal */}
-      <NormKadroModal
-        isOpen={normKadroModal}
-        onClose={() => setNormKadroModal(false)}
-        coordinators={data.coordinators}
-        onUpdateCoordinator={updateCoordinator}
-        onUpdateSubUnit={updateSubUnit}
-      />
-
-      {/* Logo */}
-      <div className="absolute top-4 right-4 z-10">
-        <img 
-          src="/images/mth-logo.png" 
-          alt="Milli Teknoloji Hamlesi" 
-          className="h-12 w-auto"
-        />
-      </div>
-
-      {/* Connection Mode Indicator */}
-      {connectionMode.active && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[100] bg-amber-500 text-white px-6 py-3 rounded-xl shadow-xl flex items-center gap-3">
-          <div className="animate-pulse w-3 h-3 bg-white rounded-full"></div>
-          <span className="font-medium">
-            "{connectionMode.sourceName}" için hedef seçin
-          </span>
+        {/* Düzenle Butonu - Koordinatör seçiliyken görünür */}
+        {expandedCoordinator && expandedCoordinatorData && (
           <button
-            onClick={cancelConnection}
-            className="ml-2 bg-amber-600 hover:bg-amber-700 px-3 py-1 rounded-lg text-sm"
+            onClick={() => setRightPanelCoordinatorId(expandedCoordinator)}
+            className="absolute top-20 left-4 z-10 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 px-4 py-3 flex items-center gap-3 hover:bg-blue-50 hover:border-blue-300 transition-all group"
           >
-            İptal
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-bold text-gray-800 group-hover:text-blue-700 truncate max-w-[180px]">{expandedCoordinatorData.title}</p>
+              <p className="text-xs text-gray-500">Detayları Düzenle</p>
+            </div>
+            <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </button>
-        </div>
-      )}
+        )}
 
-      {/* Context Menu */}
-      <ContextMenu
-        x={contextMenu?.x || 0}
-        y={contextMenu?.y || 0}
-        isOpen={!!contextMenu}
-        onClose={() => setContextMenu(null)}
-        nodeId={contextMenu?.nodeId || ''}
-        nodeType={contextMenu?.nodeType || ''}
-        onAddSubCoordinator={handleAddSubUnit}
-        onAddDeputy={handleAddDeputy}
-        onAddResponsibility={handleAddResponsibility}
-        onAddPerson={handleAddPerson}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onAddExecutive={handleAddExecutiveToChairman}
-        onAddMainCoordinator={handleAddMainCoordinatorToExecutive}
-        onAddCoordinator={handleAddCoordinatorToMainCoordinator}
-        onLinkToMainSchema={() => {
-          if (contextMenu) {
-            setLinkModal({ isOpen: true, nodeId: contextMenu.nodeId })
-          }
-        }}
-        isInNewSchema={isInNewSchema}
-        onStartConnection={() => {
-          if (contextMenu) {
-            // Node adını bul
-            const coord = data.coordinators.find(c => c.id === contextMenu.nodeId)
-            const mainCoord = data.mainCoordinators.find(m => m.id === contextMenu.nodeId)
-            const exec = data.executives.find(e => e.id === contextMenu.nodeId)
-            const mgmt = data.management.find(m => m.id === contextMenu.nodeId)
-            const nodeName = coord?.title || mainCoord?.title || exec?.name || mgmt?.name || 'Bilinmeyen'
-            // Önce kaynak yönü seçimi için modal aç
-            setConnectionHandleModal({ isOpen: true, nodeId: contextMenu.nodeId, nodeName })
-            setContextMenu(null)
-          }
-        }}
-        hasConnections={customConnections.some(c => c.source === contextMenu?.nodeId || c.target === contextMenu?.nodeId)}
-        onShowConnections={() => {
-          if (contextMenu) {
-            setConnectionListModal({ isOpen: true, nodeId: contextMenu.nodeId })
-          }
-        }}
-      />
-
-      {/* Form Modal */}
-      {formModal && (
-        <FormModal
-          isOpen={formModal.isOpen}
-          onClose={() => setFormModal(null)}
-          title={formModal.title}
-          type={formModal.type}
-          initialData={formModal.initialData}
-          onSave={handleFormSave}
-          subUnits={
-            formModal.type === 'person' 
-              ? (data.coordinators.find(c => c.id === formModal.nodeId)?.subUnits || [])
-              : []
-          }
+        {/* Sağ Detay Paneli */}
+        <RightDetailPanel
+          isOpen={!!rightPanelCoordinatorId}
+          onClose={() => setRightPanelCoordinatorId(null)}
+          coordinator={data.coordinators.find(c => c.id === rightPanelCoordinatorId) || null}
+          onUpdateCoordinator={updateCoordinator}
+          onAddDeputy={addDeputy}
+          onAddSubUnit={addSubUnit}
+          onAddPerson={addPerson}
+          onUpdatePerson={updatePerson}
+          onDeletePerson={deletePerson}
         />
-      )}
 
-      {/* Personel Detay Modal */}
-      {personDetailModal && (
-        <PersonDetailModal
-          isOpen={personDetailModal.isOpen}
-          onClose={() => setPersonDetailModal(null)}
-          person={personDetailModal.person}
-          onSave={(updates) => {
-            updatePerson(
-              personDetailModal.coordinatorId,
-              personDetailModal.subUnitId,
-              personDetailModal.person.id,
-              updates
-            )
+        {/* Norm Kadro Modal */}
+        <NormKadroModal
+          isOpen={normKadroModal}
+          onClose={() => setNormKadroModal(false)}
+          coordinators={data.coordinators}
+          onUpdateCoordinator={updateCoordinator}
+          onUpdateSubUnit={updateSubUnit}
+        />
+
+        {/* Logo */}
+        <div className="absolute top-4 right-4 z-10">
+          <img
+            src="/images/mth-logo.png"
+            alt="Milli Teknoloji Hamlesi"
+            className="h-12 w-auto"
+          />
+        </div>
+
+        {/* Connection Mode Indicator */}
+        {connectionMode.active && (
+          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[100] bg-amber-500 text-white px-6 py-3 rounded-xl shadow-xl flex items-center gap-3">
+            <div className="animate-pulse w-3 h-3 bg-white rounded-full"></div>
+            <span className="font-medium">
+              "{connectionMode.sourceName}" için hedef seçin
+            </span>
+            <button
+              onClick={cancelConnection}
+              className="ml-2 bg-amber-600 hover:bg-amber-700 px-3 py-1 rounded-lg text-sm"
+            >
+              İptal
+            </button>
+          </div>
+        )}
+
+        {/* Context Menu */}
+        <ContextMenu
+          x={contextMenu?.x || 0}
+          y={contextMenu?.y || 0}
+          isOpen={!!contextMenu}
+          onClose={() => setContextMenu(null)}
+          nodeId={contextMenu?.nodeId || ''}
+          nodeType={contextMenu?.nodeType || ''}
+          onAddSubCoordinator={handleAddSubUnit}
+          onAddDeputy={handleAddDeputy}
+          onAddResponsibility={handleAddResponsibility}
+          onAddPerson={handleAddPerson}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onAddExecutive={handleAddExecutiveToChairman}
+          onAddMainCoordinator={handleAddMainCoordinatorToExecutive}
+          onAddCoordinator={handleAddCoordinatorToMainCoordinator}
+          onLinkToMainSchema={() => {
+            if (contextMenu) {
+              setLinkModal({ isOpen: true, nodeId: contextMenu.nodeId })
+            }
+          }}
+          isInNewSchema={isInNewSchema}
+          onStartConnection={() => {
+            if (contextMenu) {
+              // Node adını bul
+              const coord = data.coordinators.find(c => c.id === contextMenu.nodeId)
+              const mainCoord = data.mainCoordinators.find(m => m.id === contextMenu.nodeId)
+              const exec = data.executives.find(e => e.id === contextMenu.nodeId)
+              const mgmt = data.management.find(m => m.id === contextMenu.nodeId)
+              const nodeName = coord?.title || mainCoord?.title || exec?.name || mgmt?.name || 'Bilinmeyen'
+              // Önce kaynak yönü seçimi için modal aç
+              setConnectionHandleModal({ isOpen: true, nodeId: contextMenu.nodeId, nodeName })
+              setContextMenu(null)
+            }
+          }}
+          hasConnections={customConnections.some(c => c.source === contextMenu?.nodeId || c.target === contextMenu?.nodeId)}
+          onShowConnections={() => {
+            if (contextMenu) {
+              setConnectionListModal({ isOpen: true, nodeId: contextMenu.nodeId })
+            }
           }}
         />
-      )}
 
-      {/* Şema Üzerinden Kişi Görüntüleme Kartı */}
-      {viewPersonCard && (
-        <div className="fixed right-4 top-1/2 -translate-y-1/2 w-[320px] bg-white rounded-2xl shadow-2xl z-50 overflow-hidden border border-gray-200">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">Personel Bilgisi</span>
-              <button 
-                onClick={() => setViewPersonCard(null)} 
-                className="hover:bg-white/20 p-1.5 rounded-lg transition-colors"
+        {/* Form Modal */}
+        {formModal && (
+          <FormModal
+            isOpen={formModal.isOpen}
+            onClose={() => setFormModal(null)}
+            title={formModal.title}
+            type={formModal.type}
+            initialData={formModal.initialData}
+            onSave={handleFormSave}
+            subUnits={
+              formModal.type === 'person'
+                ? (data.coordinators.find(c => c.id === formModal.nodeId)?.subUnits || [])
+                : []
+            }
+          />
+        )}
+
+        {/* Person Card (Minimal Floating Card - Sağda) */}
+        {viewPersonCard && (
+          <div className="fixed top-1/2 right-6 -translate-y-1/2 w-[300px] z-[100] bg-white rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-right duration-300">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-indigo-600 to-blue-500 px-4 py-2.5 flex items-center justify-between">
+              <span className="text-white text-xs font-semibold">Personel Bilgisi</span>
+              <button
+                onClick={() => setViewPersonCard(null)}
+                className="text-white/80 hover:text-white transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-2xl font-bold border-2 border-white/30">
-                {viewPersonCard.person.name.charAt(0)}
-              </div>
-              <div>
-                <h4 className="font-bold text-lg">{viewPersonCard.person.name}</h4>
-                <p className="text-blue-200 text-sm">{viewPersonCard.person.title || 'Personel'}</p>
-              </div>
-            </div>
-          </div>
 
-          {/* Birim Bilgisi */}
-          <div className="bg-gray-50 px-4 py-2 border-b flex items-center gap-2 text-xs text-gray-600">
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-            <span>{viewPersonCard.coordinatorTitle}</span>
-            <span className="text-gray-300">›</span>
-            <span className="text-blue-600 font-medium">{viewPersonCard.subUnitTitle}</span>
-          </div>
-
-          {/* Content */}
-          <div className="p-4 space-y-4">
-            {/* İletişim Bilgileri */}
-            {(viewPersonCard.person.email || viewPersonCard.person.phone) && (
-              <div className="space-y-2">
-                <h5 className="text-xs font-semibold text-gray-400 uppercase">İletişim</h5>
-                {viewPersonCard.person.email && (
-                  <div className="flex items-center gap-2 text-sm bg-gray-50 px-3 py-2 rounded-lg">
-                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <span className="text-gray-700">{viewPersonCard.person.email}</span>
-                  </div>
-                )}
-                {viewPersonCard.person.phone && (
-                  <div className="flex items-center gap-2 text-sm bg-gray-50 px-3 py-2 rounded-lg">
-                    <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                    <span className="text-gray-700">{viewPersonCard.person.phone}</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Görevler / Notlar */}
-            {viewPersonCard.person.notes && (
-              <div className="space-y-2">
-                <h5 className="text-xs font-semibold text-gray-400 uppercase">Görevler</h5>
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-3 border border-amber-200">
-                  <p className="text-sm text-gray-700 whitespace-pre-line">{viewPersonCard.person.notes}</p>
+            {/* Content */}
+            <div className="p-4">
+              {/* Avatar and Name */}
+              <div className="flex items-center gap-3 mb-3">
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold shadow-md"
+                  style={{ backgroundColor: viewPersonCard.person.color || '#6366f1' }}
+                >
+                  {viewPersonCard.person.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-gray-800">{viewPersonCard.person.name}</h3>
+                  <p className="text-xs text-gray-500">{viewPersonCard.person.title || 'Personel'}</p>
                 </div>
               </div>
-            )}
 
-            {/* CV */}
-            {viewPersonCard.person.cvFileName ? (
-              <div className="space-y-2">
-                <h5 className="text-xs font-semibold text-gray-400 uppercase">Özgeçmiş (CV)</h5>
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border border-green-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-700 truncate">{viewPersonCard.person.cvFileName}</p>
-                      <p className="text-xs text-gray-500">CV Dosyası</p>
-                    </div>
-                    {viewPersonCard.person.cvData && (
-                      <button
-                        onClick={() => {
-                          // Base64 veriyi indir
-                          const link = document.createElement('a')
-                          link.href = viewPersonCard.person.cvData!
-                          link.download = viewPersonCard.person.cvFileName!
-                          link.click()
-                        }}
-                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-                      >
-                        İndir
-                      </button>
+              {/* Department Info */}
+              <div className="bg-gray-50 rounded-lg px-3 py-2.5 mb-3">
+                <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span className="truncate max-w-[130px] font-medium">{viewPersonCard.coordinatorTitle}</span>
+                  </div>
+                  <a href="#" className="text-blue-600 hover:underline text-xs">Web Siteleri</a>
+                </div>
+                <div className="text-xs text-gray-500 ml-5">{viewPersonCard.subUnitTitle}</div>
+              </div>
+
+              {/* Üniversite ve Bölüm */}
+              <div className="bg-indigo-50 rounded-lg px-3 py-2.5 mb-3">
+                <h4 className="text-xs font-semibold text-indigo-600 mb-1 flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14v7" />
+                  </svg>
+                  Üniversite / Bölüm
+                </h4>
+                {viewPersonCard.person.university || viewPersonCard.person.department ? (
+                  <div className="text-xs text-gray-700">
+                    {viewPersonCard.person.university && (
+                      <div className="font-medium">{viewPersonCard.person.university}</div>
+                    )}
+                    {viewPersonCard.person.department && (
+                      <div className="text-gray-500">{viewPersonCard.person.department}</div>
                     )}
                   </div>
+                ) : (
+                  <p className="text-xs text-gray-400 italic">Belirtilmemiş</p>
+                )}
+              </div>
+
+              {/* İş Kalemleri / Görev Tanımı */}
+              <div className="mb-3">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1.5 flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                  İş Kalemleri / Görev Tanımı
+                </h4>
+                <div className="bg-amber-50 border border-amber-100 rounded-lg p-3">
+                  {viewPersonCard.person.jobDescription ? (
+                    <p className="text-xs text-gray-700 whitespace-pre-line">{viewPersonCard.person.jobDescription}</p>
+                  ) : (
+                    <p className="text-xs text-gray-400 italic text-center">Görev tanımı belirtilmemiş</p>
+                  )}
                 </div>
               </div>
-            ) : (
-              <div className="space-y-2">
-                <h5 className="text-xs font-semibold text-gray-400 uppercase">Özgeçmiş (CV)</h5>
-                <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">
-                  <svg className="w-8 h-8 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+              {/* CV Section */}
+              <div>
+                <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1.5">ÖZGEÇMİŞ (CV)</h4>
+                <div className="border-2 border-dashed border-gray-200 rounded-lg p-3 text-center">
+                  <svg className="w-6 h-6 mx-auto text-gray-300 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                   <p className="text-xs text-gray-400">CV yüklenmemiş</p>
                 </div>
               </div>
-            )}
-
-            {/* Düzenle Butonu */}
+            </div>
+          </div>
+        )}        {/* Person Context Menu (Sağ Tık Menüsü) */}
+        {personContextMenu && (
+          <div
+            className="fixed z-[300] bg-white rounded-xl shadow-2xl border border-gray-100 py-2 min-w-[180px] animate-in fade-in zoom-in-95 duration-150"
+            style={{ left: personContextMenu.x, top: personContextMenu.y }}
+            onClick={() => setPersonContextMenu(null)}
+          >
+            <div className="px-3 py-2 border-b border-gray-100">
+              <p className="text-xs text-gray-400">Personel</p>
+              <p className="text-sm font-semibold text-gray-800 truncate">{personContextMenu.person.name}</p>
+            </div>
             <button
               onClick={() => {
-                setPersonDetailModal({
+                setFormModal({
                   isOpen: true,
-                  person: viewPersonCard.person,
-                  coordinatorId: viewPersonCard.coordinatorId,
-                  subUnitId: viewPersonCard.subUnitId,
+                  type: 'edit-person' as any,
+                  title: 'Personeli Düzenle',
+                  nodeId: personContextMenu.coordinatorId,
+                  initialData: {
+                    personId: personContextMenu.person.id,
+                    name: personContextMenu.person.name,
+                    title: personContextMenu.person.title,
+                    subUnitId: personContextMenu.subUnitId,
+                    university: personContextMenu.person.university,
+                    department: personContextMenu.person.department,
+                    jobDescription: personContextMenu.person.jobDescription,
+                  }
                 })
-                setViewPersonCard(null)
+                setPersonContextMenu(null)
               }}
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2"
+              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 flex items-center gap-2 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
               Düzenle
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* Link to Main Schema Modal */}
-      {linkModal && (
-        <LinkToMainSchemaModal
-          isOpen={linkModal.isOpen}
-          onClose={() => setLinkModal(null)}
-          currentSchemaId={currentProjectId || ''}
-          currentSchemaName={currentProjectName || 'Yeni Şema'}
-          onLink={(coordinatorId) => {
-            linkSchemaToCoordinator(currentProjectId || '', coordinatorId)
-            alert('Şema başarıyla bağlandı! Ana şemada ilgili koordinatörlüğe tıkladığınızda bu şema görünecek.')
-          }}
-        />
-      )}
-
-      {/* Alt Birim Context Menu - Kişi Ekle/Sil */}
-      {subUnitContextMenu && (
-        <>
-          <div className="fixed inset-0 z-50" onClick={() => setSubUnitContextMenu(null)} />
-          <div
-            className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 py-2 min-w-[200px]"
-            style={{ left: subUnitContextMenu.x, top: subUnitContextMenu.y }}
-          >
-            <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase border-b mb-1">
-              {subUnitContextMenu.subUnitTitle}
-            </div>
-            
-            {/* Kişi Ekle */}
             <button
               onClick={() => {
-                setFormModal({
-                  isOpen: true,
-                  type: 'person',
-                  title: `${subUnitContextMenu.subUnitTitle} - Kişi Ekle`,
-                  nodeId: subUnitContextMenu.coordinatorId,
-                  initialData: { subUnitId: subUnitContextMenu.subUnitId }
+                setViewPersonCard({
+                  person: personContextMenu.person,
+                  coordinatorId: personContextMenu.coordinatorId,
+                  subUnitId: personContextMenu.subUnitId,
+                  coordinatorTitle: personContextMenu.coordinatorTitle,
+                  subUnitTitle: personContextMenu.subUnitTitle,
                 })
-                setSubUnitContextMenu(null)
+                setPersonContextMenu(null)
               }}
-              className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 flex items-center gap-2"
+              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2 transition-colors"
             >
-              <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
-              <span>Kişi Ekle</span>
+              Detayları Görüntüle
             </button>
-
-            {/* Kişileri Listele ve Sil */}
-            {subUnitContextMenu.people.length > 0 && (
-              <>
-                <div className="border-t my-1"></div>
-                <div className="px-3 py-1 text-xs font-semibold text-gray-500">Kişiler</div>
-                {subUnitContextMenu.people.map((person) => (
-                  <div 
-                    key={person.id}
-                    className="w-full px-4 py-2 text-sm flex items-center justify-between hover:bg-gray-50 group"
-                  >
-                    <span className="text-gray-700">{person.name}</span>
-                    <button
-                      onClick={() => {
-                        if (confirm(`"${person.name}" silinecek. Emin misiniz?`)) {
-                          deletePerson(
-                            subUnitContextMenu.coordinatorId,
-                            subUnitContextMenu.subUnitId,
-                            person.id
-                          )
-                          setSubUnitContextMenu(null)
-                        }
-                      }}
-                      className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 p-1 rounded transition-opacity"
-                      title="Kişiyi Sil"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
-        </>
-      )}
-
-      {/* Boş Alan Context Menu */}
-      {paneContextMenu && (
-        <div
-          className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 py-2 min-w-[220px]"
-          style={{ left: paneContextMenu.x, top: paneContextMenu.y }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Yeni birim ekleme bölümü - sadece mantıklı seçenekleri göster */}
-          <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase">Yeni Ekle</div>
-          
-          {/* Yönetici (Chairman) - Eğer hiç yoksa veya birden fazla olabilir */}
-          <button
-            onClick={() => handleAddNewNode('management')}
-            className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 flex items-center gap-2"
-          >
-            <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>Yönetici (Başkan)</span>
-          </button>
-          
-          {/* Genel Müdür Yardımcısı - Chairman varsa */}
-          {data.management.length > 0 && (
-            <button
-              onClick={() => handleAddNewNode('executive')}
-              className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 flex items-center gap-2"
-            >
-              <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              <span>Genel Müdür Yardımcısı</span>
-            </button>
-          )}
-          
-          {/* Ana Koordinatörlük - Executive varsa */}
-          {data.executives.length > 0 && (
-            <button
-              onClick={() => handleAddNewNode('mainCoordinator')}
-              className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 flex items-center gap-2"
-            >
-              <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-              <span>Ana Koordinatörlük</span>
-            </button>
-          )}
-          
-          {/* Koordinatörlük - MainCoordinator varsa */}
-          {data.mainCoordinators.length > 0 && (
-            <button
-              onClick={() => handleAddNewNode('coordinator')}
-              className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 flex items-center gap-2"
-            >
-              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              <span>Koordinatörlük</span>
-            </button>
-          )}
-          
-          <div className="border-t border-gray-200 my-2"></div>
-          
-          {/* Kilitleme bölümü */}
-          <button
-            onClick={toggleLock}
-            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
-          >
-            {isLocked ? (
-              <>
-                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+            <div className="border-t border-gray-100 mt-1 pt-1">
+              <button
+                onClick={() => {
+                  if (confirm(`${personContextMenu.person.name} adlı personeli silmek istediğinize emin misiniz?`)) {
+                    deletePerson(personContextMenu.coordinatorId, personContextMenu.subUnitId, personContextMenu.person.id)
+                  }
+                  setPersonContextMenu(null)
+                }}
+                className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
-                <span>Kilidi Aç</span>
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                <span>Kilitle</span>
-              </>
-            )}
-          </button>
-          <button
-            onClick={resetPositions}
-            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 text-orange-600"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <span>Pozisyonları Sıfırla</span>
-          </button>
-        </div>
-      )}
-
-      {/* Video Modal */}
-      {videoModal && (
-        <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80"
-          onClick={() => setVideoModal(false)}
-        >
-          <div 
-            className="relative bg-black rounded-2xl overflow-hidden shadow-2xl max-w-4xl w-full mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Kapatma butonu */}
-            <button
-              onClick={() => setVideoModal(false)}
-              className="absolute top-4 right-4 z-10 bg-white/20 hover:bg-white/40 text-white rounded-full p-2 transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            
-            {/* Video player */}
-            <video 
-              controls 
-              autoPlay
-              playsInline
-              className="w-full aspect-video"
-            >
-              <source src="/videos/abim.mp4" type="video/mp4" />
-              Tarayıcınız video oynatmayı desteklemiyor.
-            </video>
-            
-            {/* Başlık */}
-            <div className="p-4 bg-gradient-to-r from-yellow-500 to-yellow-600 text-center">
-              <h3 className="text-lg font-bold text-gray-900">Selçuk Bayraktar</h3>
-              <p className="text-sm text-yellow-900">T3 Vakfı Mütevelli Heyeti Başkanı</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Kaynak Bağlantı Noktası Seçim Modal */}
-      {connectionHandleModal && (
-        <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
-          onClick={() => setConnectionHandleModal(null)}
-        >
-          <div 
-            className="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4">
-              <h3 className="text-lg font-bold text-white">Bağlantı Noktası Seçin</h3>
-              <p className="text-sm text-blue-100">"{connectionHandleModal.nodeName}" için çıkış yönü</p>
-            </div>
-            <div className="p-4 space-y-3">
-              <button
-                onClick={() => startConnection(connectionHandleModal.nodeId, connectionHandleModal.nodeName, 'top')}
-                className="w-full p-4 bg-gray-50 hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-400 rounded-xl transition-all flex items-center gap-3"
-              >
-                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold text-gray-800">Üstten Çıkış</div>
-                  <div className="text-sm text-gray-500">Bağlantı üst noktadan başlar</div>
-                </div>
-              </button>
-              <button
-                onClick={() => startConnection(connectionHandleModal.nodeId, connectionHandleModal.nodeName, 'bottom')}
-                className="w-full p-4 bg-gray-50 hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-400 rounded-xl transition-all flex items-center gap-3"
-              >
-                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold text-gray-800">Alttan Çıkış</div>
-                  <div className="text-sm text-gray-500">Bağlantı alt noktadan başlar</div>
-                </div>
-              </button>
-            </div>
-            <div className="p-4 border-t bg-gray-50">
-              <button
-                onClick={() => setConnectionHandleModal(null)}
-                className="w-full py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition-colors"
-              >
-                İptal
+                Sil
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Hedef Bağlantı Noktası Seçim Modal */}
-      {pendingTarget && connectionMode.active && (
-        <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
-          onClick={cancelConnection}
-        >
-          <div 
-            className="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="bg-gradient-to-r from-green-500 to-green-600 p-4">
-              <h3 className="text-lg font-bold text-white">Hedef Bağlantı Noktası</h3>
-              <p className="text-sm text-green-100">Hedef node için giriş yönü seçin</p>
-            </div>
-            <div className="p-4 space-y-3">
-              <button
-                onClick={() => completeConnection(pendingTarget.targetId, 'top')}
-                className="w-full p-4 bg-gray-50 hover:bg-green-50 border-2 border-gray-200 hover:border-green-400 rounded-xl transition-all flex items-center gap-3"
-              >
-                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold text-gray-800">Üstten Giriş</div>
-                  <div className="text-sm text-gray-500">Bağlantı üst noktaya bağlanır</div>
-                </div>
-              </button>
-              <button
-                onClick={() => completeConnection(pendingTarget.targetId, 'bottom')}
-                className="w-full p-4 bg-gray-50 hover:bg-green-50 border-2 border-gray-200 hover:border-green-400 rounded-xl transition-all flex items-center gap-3"
-              >
-                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold text-gray-800">Alttan Giriş</div>
-                  <div className="text-sm text-gray-500">Bağlantı alt noktaya bağlanır</div>
-                </div>
-              </button>
-            </div>
-            <div className="p-4 border-t bg-gray-50">
-              <button
-                onClick={cancelConnection}
-                className="w-full py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition-colors"
-              >
-                İptal
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Connection List Modal */}
-      {connectionListModal && (
-        <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
-          onClick={() => setConnectionListModal(null)}
-        >
-          <div 
-            className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="bg-gradient-to-r from-amber-500 to-amber-600 p-4">
-              <h3 className="text-lg font-bold text-white">Bağlantılar</h3>
-              <p className="text-sm text-amber-100">Bu node'a bağlı olan bağlantılar</p>
-            </div>
-            <div className="p-4 max-h-80 overflow-y-auto">
-              {customConnections.filter(c => c.source === connectionListModal.nodeId || c.target === connectionListModal.nodeId).map(conn => {
-                // Bağlı node adını bul
-                const isSource = conn.source === connectionListModal.nodeId
-                const otherId = isSource ? conn.target : conn.source
-                const otherCoord = data.coordinators.find(c => c.id === otherId)
-                const otherMainCoord = data.mainCoordinators.find(m => m.id === otherId)
-                const otherExec = data.executives.find(e => e.id === otherId)
-                const otherMgmt = data.management.find(m => m.id === otherId)
-                const otherName = otherCoord?.title || otherMainCoord?.title || otherExec?.name || otherMgmt?.name || 'Bilinmeyen'
 
-                return (
-                  <div key={conn.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg mb-2">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                      </svg>
-                      <div>
-                        <span className="font-medium">{otherName}</span>
-                        <span className="text-xs text-gray-500 ml-2">({isSource ? 'Hedef' : 'Kaynak'})</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleRemoveConnection(conn.source, conn.target)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors"
-                      title="Bağlantıyı Kaldır"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </div>
-                )
-              })}
-              {customConnections.filter(c => c.source === connectionListModal.nodeId || c.target === connectionListModal.nodeId).length === 0 && (
-                <p className="text-gray-500 text-center py-4">Bu node'a bağlı bağlantı yok</p>
-              )}
-            </div>
-            <div className="p-4 border-t bg-gray-50">
-              <button
-                onClick={() => setConnectionListModal(null)}
-                className="w-full py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition-colors"
-              >
-                Kapat
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       </div>
     </div>
   )
 }
 
-const OrgCanvas = (props: OrgCanvasProps) => {
-  return (
-    <ReactFlowProvider>
-      <OrgCanvasInner {...props} />
-    </ReactFlowProvider>
-  )
-}
+// Wrap with ReactFlowProvider
+const OrgCanvas = (props: OrgCanvasProps) => (
+  <ReactFlowProvider>
+    <OrgCanvasInner {...props} />
+  </ReactFlowProvider>
+)
 
 export default OrgCanvas
+
