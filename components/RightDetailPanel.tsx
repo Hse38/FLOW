@@ -67,12 +67,7 @@ export default function RightDetailPanel({
     })
   }
 
-  const handleSaveCoordinator = (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault()
-      e.stopPropagation()
-    }
-    
+  const handleSaveCoordinator = () => {
     if (editData) {
       onUpdateCoordinator(coordinator.id, {
         coordinator: {
@@ -86,12 +81,7 @@ export default function RightDetailPanel({
     }
   }
 
-  const handleAddDeputy = (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault()
-      e.stopPropagation()
-    }
-    
+  const handleAddDeputy = () => {
     if (!newDeputyForm.name) return
 
     const addKey = `deputy-${coordinator.id}-${newDeputyForm.name}`
@@ -122,12 +112,7 @@ export default function RightDetailPanel({
     }
   }
 
-  const handleAddSubUnit = (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault()
-      e.stopPropagation()
-    }
-    
+  const handleAddSubUnit = () => {
     if (!newSubUnitForm.title) return
 
     const addKey = `subunit-${coordinator.id}-${newSubUnitForm.title}`
@@ -227,7 +212,11 @@ export default function RightDetailPanel({
               </h3>
               <button
                 type="button"
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSetCoordinator(e) }}
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  e.stopPropagation(); 
+                  handleSetCoordinator();
+                }}
                 className="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg transition-colors"
               >
                 {coordinator.coordinator ? 'Düzenle' : 'Ata'}
@@ -286,7 +275,11 @@ export default function RightDetailPanel({
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={handleSaveCoordinator}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleSaveCoordinator();
+                    }}
                     className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg text-sm font-medium"
                   >
                     Kaydet
@@ -346,7 +339,17 @@ export default function RightDetailPanel({
                   className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-purple-400"
                 />
                 <div className="flex gap-2">
-                  <button type="button" onClick={handleAddDeputy} className="flex-1 bg-purple-500 hover:bg-purple-600 text-white py-2 rounded-lg text-sm font-medium">Ekle</button>
+                  <button 
+                    type="button" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleAddDeputy();
+                    }} 
+                    className="flex-1 bg-purple-500 hover:bg-purple-600 text-white py-2 rounded-lg text-sm font-medium"
+                  >
+                    Ekle
+                  </button>
                   <button type="button" onClick={() => setEditMode(null)} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium">İptal</button>
                 </div>
               </div>
@@ -427,7 +430,17 @@ export default function RightDetailPanel({
                   className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-400"
                 />
                 <div className="flex gap-2">
-                  <button type="button" onClick={handleAddSubUnit} className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg text-sm font-medium">Ekle</button>
+                  <button 
+                    type="button" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleAddSubUnit();
+                    }} 
+                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg text-sm font-medium"
+                  >
+                    Ekle
+                  </button>
                   <button type="button" onClick={() => setEditMode(null)} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium">İptal</button>
                 </div>
               </div>
@@ -495,7 +508,17 @@ export default function RightDetailPanel({
                           className="w-full px-2 py-1.5 border rounded text-sm"
                         />
                         <div className="flex gap-2">
-                          <button type="button" onClick={handleAddPerson} className="flex-1 bg-blue-500 text-white py-1 rounded text-xs">Ekle</button>
+                          <button 
+                            type="button" 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleAddPerson();
+                            }} 
+                            className="flex-1 bg-blue-500 text-white py-1 rounded text-xs"
+                          >
+                            Ekle
+                          </button>
                           <button type="button" onClick={() => setEditMode(null)} className="flex-1 bg-gray-200 text-gray-700 py-1 rounded text-xs">İptal</button>
                         </div>
                       </div>
@@ -832,7 +855,11 @@ function PersonMiniCard({ person, type, onClose, onUpdate }: PersonMiniCardProps
 
             <div className="flex gap-2">
               <button
-                onClick={handleSave}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSave();
+                }}
                 className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg text-sm font-medium"
               >
                 Kaydet
