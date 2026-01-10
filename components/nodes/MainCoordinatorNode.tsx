@@ -9,8 +9,6 @@ interface MainCoordinatorNodeProps {
     id: string
     onClick?: (id: string) => void
     onContextMenu?: (event: React.MouseEvent, id: string, type: string) => void
-    personnelCount?: number  // Mevcut personel sayısı
-    normKadro?: number       // Olması gereken personel sayısı
   }
 }
 
@@ -21,25 +19,8 @@ const MainCoordinatorNode = memo(({ data }: MainCoordinatorNodeProps) => {
     data.onContextMenu?.(e, data.id, 'mainCoordinator')
   }
 
-  // Badge renk hesaplama
-  const getBadgeColor = () => {
-    const current = data.personnelCount || 0
-    const target = data.normKadro || 0
-    if (target === 0) return current > 0 ? 'bg-blue-500' : 'bg-gray-400'
-    const ratio = current / target
-    if (ratio >= 1) return 'bg-green-500'
-    if (ratio >= 0.5) return 'bg-yellow-500'
-    return 'bg-red-500'
-  }
-
   return (
     <div className="relative group">
-      {/* Personel sayısı badge - her zaman göster */}
-      <div 
-        className={`absolute -top-2 -right-2 z-10 ${getBadgeColor()} text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md border border-white min-w-[32px] text-center`}
-      >
-        {data.personnelCount || 0}/{data.normKadro || 0}
-      </div>
       <Handle
         type="target"
         position={Position.Top}

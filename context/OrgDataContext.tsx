@@ -8,6 +8,10 @@ import {
   set,
   get
 } from '@/lib/firebase'
+import orgJsonData from '@/data/org.json'
+
+// Lokal çalışmak için Firebase'i kapat
+const USE_LOCAL_ONLY = true
 
 // Types
 export interface Person {
@@ -151,7 +155,7 @@ interface OrgDataContextType {
 const OrgDataContext = createContext<OrgDataContextType | null>(null)
 
 // Initial data from org.json structure
-const initialData: OrgData = {
+const initialDataLegacy: OrgData = {
   management: [
     {
       id: "selcuk-bayraktar",
@@ -621,6 +625,9 @@ const initialData: OrgData = {
   ]
 }
 
+// Lokal org.json'dan oku
+const initialData: OrgData = orgJsonData as unknown as OrgData
+
 export function OrgDataProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<OrgData>(initialData)
   const [projects, setProjects] = useState<Project[]>([])
@@ -637,6 +644,13 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
   // Firebase'den verileri dinle - gerçek zamanlı senkronizasyon
   useEffect(() => {
+    if (USE_LOCAL_ONLY) {
+      setIsLoading(false)
+      setProjects([])
+      setActiveProjectId('main')
+      setIsLocked(false)
+      return
+    }
     setIsLoading(true)
 
     // Projeleri dinle
@@ -689,6 +703,13 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
   // Aktif projenin verilerini dinle
   useEffect(() => {
+    if (USE_LOCAL_ONLY) {
+      setData(initialData)
+      setPositions({})
+      setCustomConnections([])
+      setIsLoading(false)
+      return
+    }
     if (!activeProjectId) return
 
     // Org data dinle
@@ -731,6 +752,10 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
   // Firebase'e veri kaydet
   const saveToFirebase = useCallback((newData: OrgData) => {
+    if (USE_LOCAL_ONLY) {
+      setData(newData)
+      return
+    }
     if (activeProjectId) {
       set(ref(database, `orgData/${activeProjectId}`), newData)
     }
@@ -738,6 +763,10 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
   // Pozisyonları kaydet
   const updatePositions = useCallback((newPositions: Record<string, { x: number; y: number }>) => {
+    if (USE_LOCAL_ONLY) {
+      setPositions(newPositions)
+      return
+    }
     if (activeProjectId) {
       set(ref(database, `positions/${activeProjectId}`), newPositions)
     }
@@ -746,6 +775,10 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
   // Bağlantı ekle
   const addConnection = useCallback((connection: { source: string; target: string; sourceHandle?: string; targetHandle?: string }) => {
     const newConnections = [...customConnections, connection]
+    if (USE_LOCAL_ONLY) {
+      setCustomConnections(newConnections)
+      return
+    }
     if (activeProjectId) {
       set(ref(database, `connections/${activeProjectId}`), newConnections)
     }
@@ -754,6 +787,10 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
   // Bağlantı kaldır
   const removeConnection = useCallback((source: string, target: string) => {
     const newConnections = customConnections.filter(c => !(c.source === source && c.target === target))
+    if (USE_LOCAL_ONLY) {
+      setCustomConnections(newConnections)
+      return
+    }
     if (activeProjectId) {
       set(ref(database, `connections/${activeProjectId}`), newConnections)
     }
@@ -761,16 +798,25 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
   // Kilit durumunu değiştir
   const setLocked = useCallback((locked: boolean) => {
+    if (USE_LOCAL_ONLY) {
+      setIsLocked(locked)
+      return
+    }
     set(ref(database, 'settings/locked'), locked)
   }, [])
 
   // Aktif projeyi değiştir
   const setActiveProject = useCallback((projectId: string) => {
+    if (USE_LOCAL_ONLY) {
+      setActiveProjectId(projectId)
+      return
+    }
     set(ref(database, 'settings/activeProjectId'), projectId)
   }, [])
 
   // Yeni proje oluştur
   const createProject = useCallback((name: string, isMain?: boolean) => {
+    if (USE_LOCAL_ONLY) return
     const id = isMain ? 'main' : generateId()
     const project: Project = { id, name, createdAt: Date.now(), isMain }
     set(ref(database, `projects/${id}`), project)
@@ -779,6 +825,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
   // Proje sil
   const deleteProject = useCallback((projectId: string) => {
+    if (USE_LOCAL_ONLY) return
     if (projectId === 'main') return // Ana şema silinemez
     set(ref(database, `projects/${projectId}`), null)
     set(ref(database, `orgData/${projectId}`), null)
@@ -808,7 +855,9 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       coordinators: []
     }
     setData(emptyData)
-    saveToFirebase(emptyData)
+    if (!USE_LOCAL_ONLY) {
+      saveToFirebase(emptyData)
+    }
   }, [saveToFirebase])
 
   // Update coordinator
@@ -1203,6 +1252,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
   // Link schema to coordinator
   const linkSchemaToCoordinator = useCallback((schemaId: string, coordinatorId: string) => {
+    if (USE_LOCAL_ONLY) return
     // Ana şema verisini al ve güncelle
     get(ref(database, 'orgData/main')).then(snapshot => {
       const mainData = snapshot.val() as OrgData
@@ -1219,6 +1269,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
   // Unlink schema from coordinator
   const unlinkSchemaFromCoordinator = useCallback((coordinatorId: string) => {
+    if (USE_LOCAL_ONLY) return
     setData(prev => {
       const newData = {
         ...prev,

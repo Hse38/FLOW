@@ -27,12 +27,12 @@ import FormModal from './FormModal'
 import PersonDetailModal from './PersonDetailModal'
 import LinkToMainSchemaModal from './LinkToMainSchemaModal'
 import RightDetailPanel from './RightDetailPanel'
-import NormKadroModal from './NormKadroModal'
 import TurkeyMapPanel from './TurkeyMapPanel'
 import { useOrgData, Person } from '@/context/OrgDataContext'
 import { toPng, toSvg } from 'html-to-image'
 import { jsPDF } from 'jspdf'
 import { saveAs } from 'file-saver'
+import dagre from '@dagrejs/dagre'
 
 const COLOR_PALETTE = [
   { name: 'Mavi', value: 'from-blue-600 to-indigo-600', code: 'blue' },
@@ -50,6 +50,16 @@ const nodeTypes = {
   subCoordinator: SubCoordinatorNode,
   unit: UnitNode,
   detail: DetailNode,
+}
+
+// Basit node boyutları - dagre yerleşimi için
+const NODE_SIZE: Record<string, { width: number; height: number }> = {
+  chairman: { width: 320, height: 140 },
+  executive: { width: 280, height: 120 },
+  mainCoordinator: { width: 280, height: 120 },
+  subCoordinator: { width: 260, height: 110 },
+  detail: { width: 220, height: 100 },
+  default: { width: 260, height: 110 }
 }
 
 interface OrgCanvasProps {
@@ -98,9 +108,6 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   // Sağ panel için seçili koordinatör
   const [rightPanelCoordinatorId, setRightPanelCoordinatorId] = useState<string | null>(null)
 
-  // Norm Kadro Modal
-  const [normKadroModal, setNormKadroModal] = useState<boolean>(false)
-
   // Türkiye Haritası Sol Panel (Toplumsal Çalışmalar için)
   const [turkeyMapOpen, setTurkeyMapOpen] = useState<boolean>(false)
 
@@ -110,7 +117,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   // Özel pozisyonlar - Firebase'den geliyor
   const customPositions = firebasePositions
 
-  // Pozisyonları güncellemek için local state (drag sırasında)
+  // Yerel pozisyon cache (hemen ekrana yansıtmak için)
   const [localPositions, setLocalPositions] = useState<Record<string, { x: number; y: number }>>({})
 
   // Boş alan context menu state - now includes position for adding nodes
@@ -273,9 +280,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   const nodes: Node[] = useMemo(() => {
     const nodeList: Node[] = []
 
-    // Pozisyon al (özel veya varsayılan)
+    // Pozisyon al (yerel öncelikli)
     const getPosition = (id: string, defaultPos: { x: number; y: number }) => {
-      return customPositions[id] || defaultPos
+      return localPositions[id] || customPositions[id] || defaultPos
     }
 
     // Add chairman
@@ -311,19 +318,6 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     // Add main coordinators
     data.mainCoordinators.forEach((coord) => {
       // Bu ana koordinatörlüğe bağlı tüm koordinatörlerin personel sayısını hesapla
-      const childCoordinators = data.coordinators.filter(c => c.parent === coord.id)
-      const personnelCount = childCoordinators.reduce((total, childCoord) => {
-        return total + (childCoord.subUnits?.reduce((subTotal, subUnit) => {
-          return subTotal + (subUnit.people?.length || 0)
-        }, 0) || 0)
-      }, 0)
-
-      const normKadro = childCoordinators.reduce((total, childCoord) => {
-        return total + (childCoord.normKadro || childCoord.subUnits?.reduce((subTotal, subUnit) => {
-          return subTotal + (subUnit.normKadro || 0)
-        }, 0) || 0)
-      }, 0)
-
       nodeList.push({
         id: coord.id,
         type: 'mainCoordinator',
@@ -334,8 +328,6 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           id: coord.id,
           onClick: handleUnitClick,
           onContextMenu: handleContextMenu,
-          personnelCount,
-          normKadro,
         },
       })
     })
@@ -343,16 +335,6 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     // Add sub-coordinators
     data.coordinators.forEach((coord) => {
       const hasDetails = (coord.deputies?.length || 0) > 0 || (coord.subUnits?.length || 0) > 0
-
-      // Koordinatöre bağlı tüm personel sayısını hesapla
-      const personnelCount = coord.subUnits?.reduce((total, subUnit) => {
-        return total + (subUnit.people?.length || 0)
-      }, 0) || 0
-
-      // normKadro: koordinatör düzeyinde veya tüm subUnitlerin normKadro toplamı
-      const normKadro = coord.normKadro || coord.subUnits?.reduce((total, subUnit) => {
-        return total + (subUnit.normKadro || 0)
-      }, 0) || 0
 
       nodeList.push({
         id: coord.id,
@@ -366,8 +348,6 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           onContextMenu: handleContextMenu,
           isExpanded: expandedCoordinator === coord.id,
           hasDetails,
-          personnelCount,
-          normKadro,
         },
       })
     })
@@ -436,7 +416,6 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             responsibilities: subUnit.responsibilities,
             coordinatorId: expandedCoordinatorData.id,
             subUnitId: subUnit.id,
-            normKadro: subUnit.normKadro,
             onPersonClick: (person: Person) => {
               setViewPersonCard({
                 person,
@@ -663,6 +642,74 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     setFlowEdges(edges)
   }, [edges, setFlowEdges])
 
+  // Firebase pozisyonu değişince yereli senkronize et
+  useEffect(() => {
+    if (!customPositions) {
+      setLocalPositions({})
+      return
+    }
+    // Firebase'den geleni mevcut yerel ile birleştir (detail pozisyonları kaybolmasın)
+    setLocalPositions(prev => ({ ...prev, ...customPositions }))
+  }, [customPositions])
+
+  // Otomatik yerleşim - dagre ile
+  const applyAutoLayout = useCallback((direction: 'TB' | 'LR' = 'TB') => {
+    const g = new dagre.graphlib.Graph()
+    g.setGraph({
+      rankdir: direction,
+      // Çakışmayı engellemek için aralıkları artır
+      nodesep: 240,
+      ranksep: 260,
+      ranker: 'tight-tree',
+      marginx: 80,
+      marginy: 80
+    })
+    g.setDefaultEdgeLabel(() => ({}))
+
+    // Tüm mevcut node'ları (detaylar dahil) yerleşime dahil et
+    const layoutNodes = flowNodes
+    layoutNodes.forEach(node => {
+      const size = NODE_SIZE[node.type || 'default'] || NODE_SIZE.default
+      g.setNode(node.id, { width: size.width, height: size.height })
+    })
+
+    const layoutEdges = flowEdges
+    layoutEdges.forEach(edge => {
+      g.setEdge(edge.source, edge.target)
+    })
+
+    if (layoutNodes.length === 0) return
+
+    dagre.layout(g)
+
+    const newPositions: Record<string, { x: number; y: number }> = {}
+    const updatedNodes = flowNodes.map(node => {
+      if (!g.hasNode(node.id)) return node
+      const { x, y } = g.node(node.id)
+      const size = NODE_SIZE[node.type || 'default'] || NODE_SIZE.default
+      const position = { x: x - size.width / 2, y: y - size.height / 2 }
+      newPositions[node.id] = position
+      return {
+        ...node,
+        position,
+        positionAbsolute: undefined // React Flow yeniden hesaplasın
+      }
+    })
+
+    setFlowNodes(updatedNodes)
+    setLocalPositions(prev => ({ ...prev, ...newPositions }))
+    updateFirebasePositions({ ...customPositions, ...newPositions })
+
+    // Yerleşim sonrası tuvale odaklan
+    requestAnimationFrame(() => {
+      try {
+        reactFlowInstance.fitView({ padding: 0.2 })
+      } catch (error) {
+        console.warn('fitView başarısız:', error)
+      }
+    })
+  }, [flowNodes, flowEdges, customPositions, updateFirebasePositions, reactFlowInstance])
+
   // Node sürüklendiğinde pozisyonu Firebase'e kaydet
   const handleNodesChange = useCallback((changes: NodeChange[]) => {
     onNodesChange(changes)
@@ -676,6 +723,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           ...customPositions,
           [nodeId]: { x: change.position!.x, y: change.position!.y }
         }
+        setLocalPositions(prev => ({ ...prev, [nodeId]: { x: change.position!.x, y: change.position!.y } }))
         updateFirebasePositions(updated)
       }
     })
@@ -1164,14 +1212,14 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             {!isLocked && (
               <button
                 onClick={() => {
-                  // Mevcut node pozisyonlarını al ve kaydet
+                  // Mevcut node pozisyonlarını al ve kaydet (detail dahil)
                   const currentPositions: Record<string, { x: number; y: number }> = {}
                   flowNodes.forEach(node => {
-                    if (!node.id.startsWith('detail-')) {
-                      currentPositions[node.id] = { x: node.position.x, y: node.position.y }
-                    }
+                    currentPositions[node.id] = { x: node.position.x, y: node.position.y }
                   })
-                  updateFirebasePositions(currentPositions)
+                  const merged = { ...customPositions, ...currentPositions }
+                  setLocalPositions(merged)
+                  updateFirebasePositions(merged)
                   alert('Pozisyonlar kaydedildi!')
                 }}
                 className="backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform bg-blue-50 border-blue-200"
@@ -1183,16 +1231,16 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               </button>
             )}
 
-            {/* Norm Kadro Butonu - Her zaman görünür */}
+            {/* Otomatik yerleşim */}
             <button
-              onClick={() => setNormKadroModal(true)}
-              className="backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform bg-indigo-600 border-indigo-700 flex items-center gap-2"
-              title="Norm Kadro Yönetimi"
+              onClick={() => applyAutoLayout()}
+              className="backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform bg-emerald-50 border-emerald-200 flex items-center gap-2"
+              title="Bağlantılara göre otomatik konumlandır"
             >
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v4a2 2 0 002 2h2a2 2 0 002-2V3m0 18v-4a2 2 0 00-2-2h-2a2 2 0 00-2 2v4M4 9h4a2 2 0 012 2v2a2 2 0 01-2 2H4m16-6h-4a2 2 0 00-2 2v2a2 2 0 002 2h4" />
               </svg>
-              <span className="text-sm font-bold text-white">Norm</span>
+              <span className="text-sm font-semibold text-emerald-700">Oto Yerleştir</span>
             </button>
 
             {/* Detayları Kapat butonu */}
@@ -1242,15 +1290,6 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           onAddPerson={addPerson}
           onUpdatePerson={updatePerson}
           onDeletePerson={deletePerson}
-        />
-
-        {/* Norm Kadro Modal */}
-        <NormKadroModal
-          isOpen={normKadroModal}
-          onClose={() => setNormKadroModal(false)}
-          coordinators={data.coordinators}
-          onUpdateCoordinator={updateCoordinator}
-          onUpdateSubUnit={updateSubUnit}
         />
 
         {/* Logo */}

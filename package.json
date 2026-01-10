@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@dagrejs/dagre": "^1.1.8",
     "@headlessui/react": "^2.2.0",
     "file-saver": "^2.0.5",
     "firebase": "^12.7.0",
