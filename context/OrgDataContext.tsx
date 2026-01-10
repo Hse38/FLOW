@@ -15,38 +15,39 @@ import orgJsonData from '@/data/org.json'
 // Production'da (Vercel) otomatik Firebase kullanılır
 const getUseLocalOnly = () => {
   if (typeof window === 'undefined') {
-    // SSR: Sadece env variable kontrolü
+    // SSR: Sadece env variable kontrolü - production'da her zaman Firebase
     const useLocal = process.env.NEXT_PUBLIC_USE_LOCAL_ONLY === 'true'
-    console.log('🔍 [SSR] USE_LOCAL_ONLY:', useLocal, '| NEXT_PUBLIC_USE_LOCAL_ONLY:', process.env.NEXT_PUBLIC_USE_LOCAL_ONLY)
     return useLocal
   }
   
-  // Client-side: hostname ve env kontrolleri
+  // Client-side: hostname kontrolü - localhost değilse her zaman Firebase kullan!
   const hostname = window.location.hostname
   const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('127.')
-  const isDevelopment = process.env.NODE_ENV === 'development'
   const forceLocal = process.env.NEXT_PUBLIC_USE_LOCAL_ONLY === 'true'
   
-  // Production'da (vercel.app veya başka domain) Firebase kullan
-  // Sadece localhost ve development modunda localStorage kullan
   // ÖNEMLİ: Production'da (localhost değilse) her zaman Firebase kullan!
-  const useLocal = forceLocal || (isDevelopment && isLocalhost)
+  // Sadece localhost'ta ve forceLocal true ise localStorage kullan
+  const useLocal = forceLocal || isLocalhost
   
   // Debug log - Production'da özellikle önemli
-  console.log('🔍 Data Storage Mode Detection:')
-  console.log('  - USE_LOCAL_ONLY:', useLocal)
-  console.log('  - Storage Mode:', useLocal ? '⚠️ localStorage (lokalde)' : '✅ Firebase (production)')
-  console.log('  - NODE_ENV:', process.env.NODE_ENV)
-  console.log('  - Hostname:', hostname)
-  console.log('  - Is Localhost:', isLocalhost)
-  console.log('  - Is Development:', isDevelopment)
-  console.log('  - Force Local:', forceLocal)
-  console.log('  - NEXT_PUBLIC_USE_LOCAL_ONLY:', process.env.NEXT_PUBLIC_USE_LOCAL_ONLY || '(not set)')
+  const isProduction = !isLocalhost
+  console.log('═══════════════════════════════════════════════════════════')
+  console.log('🔍 DATA STORAGE MODE DETECTION')
+  console.log('═══════════════════════════════════════════════════════════')
+  console.log('  📍 Hostname:', hostname)
+  console.log('  🔧 USE_LOCAL_ONLY:', useLocal)
+  console.log('  💾 Storage Mode:', useLocal ? '⚠️ localStorage' : '✅ Firebase')
+  console.log('  🌐 Environment:', isProduction ? 'PRODUCTION' : 'DEVELOPMENT')
+  console.log('  🎯 Force Local:', forceLocal)
+  console.log('  ⚙️  NEXT_PUBLIC_USE_LOCAL_ONLY:', process.env.NEXT_PUBLIC_USE_LOCAL_ONLY || '(not set)')
+  console.log('═══════════════════════════════════════════════════════════')
   
-  if (!useLocal) {
-    console.log('✅ Production modu: Firebase aktif!')
-  } else {
-    console.log('⚠️ Local modu: localStorage kullanılıyor (sadece development)')
+  if (isProduction && !useLocal) {
+    console.log('✅✅✅ PRODUCTION MODU: FIREBASE AKTİF! ✅✅✅')
+    console.log('   Veriler Firebase\'den yüklenecek')
+  } else if (useLocal) {
+    console.log('⚠️ LOCAL MODU: localStorage kullanılıyor')
+    console.log('   Veriler localStorage\'dan yüklenecek')
   }
   
   return useLocal
@@ -806,20 +807,38 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    // Org data dinle
+    // Org data dinle - Production'da Firebase'den otomatik yükle
     const orgDataRef = ref(database, `orgData/${activeProjectId}`)
+    console.log('🔍 [PRODUCTION] Firebase\'den veri dinleniyor:', `orgData/${activeProjectId}`)
     const unsubData = onValue(orgDataRef, (snapshot) => {
       const val = snapshot.val()
-      if (val) {
+      if (val && val.coordinators && val.coordinators.length > 0) {
+        console.log('✅✅✅ [PRODUCTION] Firebase\'den veri yüklendi! ✅✅✅')
+        console.log('  - Project ID:', activeProjectId)
+        console.log('  - Coordinators:', val.coordinators.length)
+        val.coordinators.forEach((coord: any, idx: number) => {
+          console.log(`    ${idx + 1}. ${coord.title}`)
+          if (coord.deputies && coord.deputies.length > 0) {
+            console.log(`       - Deputies: ${coord.deputies.length}`)
+          }
+          if (coord.subUnits && coord.subUnits.length > 0) {
+            console.log(`       - SubUnits: ${coord.subUnits.length}`)
+          }
+        })
         setData(val)
-      } else if (activeProjectId === 'main') {
-        // Ana şema için varsayılan verileri yükle
-        setData(initialData)
-        set(orgDataRef, initialData)
       } else {
-        // Yeni proje için boş veri
-        setData({ management: [], executives: [], mainCoordinators: [], coordinators: [] })
+        // Firebase'de veri yoksa - boş veri göster (üzerine yazma!)
+        console.log('⚠️⚠️⚠️ [PRODUCTION] Firebase\'de veri yok! ⚠️⚠️⚠️')
+        console.log('  - Project ID:', activeProjectId)
+        console.log('  - Boş veri gösteriliyor.')
+        console.log('  - ÇÖZÜM: Lokalde "Firebase\'e Yükle" butonuna basın!')
+        // Sadece boş veri göster, Firebase'e yazma (kullanıcının verileri üzerine yazılmasın)
+        const emptyData: OrgData = { management: [], executives: [], mainCoordinators: [], coordinators: [] }
+        setData(emptyData)
       }
+      setIsLoading(false)
+    }, (error) => {
+      console.error('❌❌❌ [PRODUCTION] Firebase veri okuma hatası:', error)
       setIsLoading(false)
     })
 
