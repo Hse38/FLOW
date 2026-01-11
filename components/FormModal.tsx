@@ -2,11 +2,19 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Plus, Trash2 } from 'lucide-react'
+import { X, Plus, Trash2, Upload, FileText, Mail, Phone, StickyNote, GraduationCap, Building2 } from 'lucide-react'
+import { showToast } from './Toast'
 
 interface SubUnit {
   id: string
   title: string
+}
+
+interface Deputy {
+  id: string
+  name: string
+  title: string
+  color?: string
 }
 
 interface FormModalProps {
@@ -17,6 +25,7 @@ interface FormModalProps {
   initialData?: any
   onSave: (data: any) => void
   subUnits?: SubUnit[]
+  deputies?: Deputy[]
 }
 
 export default function FormModal({
@@ -27,22 +36,50 @@ export default function FormModal({
   initialData,
   onSave,
   subUnits = [],
+  deputies = [],
 }: FormModalProps) {
   const [formData, setFormData] = useState<any>({})
   const [responsibilities, setResponsibilities] = useState<string[]>([''])
+  const [cvFileName, setCvFileName] = useState<string>('')
+  const [cvData, setCvData] = useState<string>('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const isSubmittingRef = useRef(false) // Çift submit'i önlemek için
 
   // Reset form when modal opens with new data
   useEffect(() => {
     if (isOpen) {
-      setFormData(initialData || {})
-      setResponsibilities(initialData?.responsibilities || [''])
+      const data = initialData || {}
+      setFormData(data)
+      setResponsibilities(data?.responsibilities || [''])
+      setCvFileName(data?.cvFileName || '')
+      setCvData(data?.cvData || '')
       isSubmittingRef.current = false // Modal açıldığında submit flag'ini sıfırla
     } else {
       // Modal kapandığında da sıfırla
       isSubmittingRef.current = false
+      setCvFileName('')
+      setCvData('')
     }
   }, [isOpen, initialData])
+
+  // CV yükleme
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Max 5MB
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Dosya boyutu 5MB\'dan küçük olmalıdır.', 'error')
+        return
+      }
+      
+      const reader = new FileReader()
+      reader.onload = () => {
+        setCvData(reader.result as string)
+        setCvFileName(file.name)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault()
@@ -61,7 +98,9 @@ export default function FormModal({
       const submitData = { 
         ...formData, 
         id: initialData?.id || formData.id, // Düzenleme için id'yi koru
-        responsibilities: responsibilities.filter(r => r && r.trim()) 
+        responsibilities: responsibilities.filter(r => r && r.trim()),
+        cvFileName: cvFileName || undefined,
+        cvData: cvData || undefined,
       }
       
       // onSave'yi çağır
@@ -153,6 +192,26 @@ export default function FormModal({
                     placeholder="Birim hakkında kısa açıklama"
                   />
                 </div>
+                {deputies.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <UserPlus className="w-4 h-4 inline mr-1" /> Koordinatör Yardımcısı (İsteğe Bağlı)
+                    </label>
+                    <select
+                      value={formData.deputyId || ''}
+                      onChange={(e) => setFormData({ ...formData, deputyId: e.target.value || undefined })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    >
+                      <option value="">Bağlantı Yok</option>
+                      {deputies.map((deputy) => (
+                        <option key={deputy.id} value={deputy.id}>
+                          {deputy.name} {deputy.title ? `(${deputy.title})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">Birimi belirli bir koordinatör yardımcısına bağlayabilirsiniz</p>
+                  </div>
+                )}
               </>
             )}
 
@@ -213,6 +272,151 @@ export default function FormModal({
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     placeholder="Koordinatör Yardımcısı (isteğe bağlı)"
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Mail className="w-4 h-4 inline mr-1" /> E-posta
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email || ''}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    placeholder="ornek@email.com"
+                  />
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Phone className="w-4 h-4 inline mr-1" /> Telefon
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.phone || ''}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    placeholder="+90 5XX XXX XX XX"
+                  />
+                </div>
+
+                {/* University */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <GraduationCap className="w-4 h-4 inline mr-1" /> Üniversite
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.university || ''}
+                    onChange={(e) => setFormData({ ...formData, university: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    placeholder="Örn: İTÜ"
+                  />
+                </div>
+
+                {/* Department */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Building2 className="w-4 h-4 inline mr-1" /> Bölüm
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.department || ''}
+                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    placeholder="Örn: Bilgisayar Mühendisliği"
+                  />
+                </div>
+
+                {/* Responsibilities (for deputy) */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Görevler / Sorumluluklar
+                  </label>
+                  <div className="space-y-2">
+                    {responsibilities.map((resp, idx) => (
+                      <div key={idx} className="flex gap-2">
+                        <input
+                          type="text"
+                          value={resp}
+                          onChange={(e) => updateResponsibility(idx, e.target.value)}
+                          className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                          placeholder={`Görev ${idx + 1}`}
+                        />
+                        {responsibilities.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeResponsibility(idx)}
+                            className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={addResponsibility}
+                      className="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-blue-500 hover:text-blue-500 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Görev Ekle</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* CV Upload */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <FileText className="w-4 h-4 inline mr-1" /> CV / Özgeçmiş
+                  </label>
+                  {cvFileName ? (
+                    <div className="flex items-center gap-2 px-4 py-3 bg-green-50 border border-green-200 rounded-xl">
+                      <FileText className="w-4 h-4 text-green-600" />
+                      <span className="text-sm text-green-700 truncate flex-1">{cvFileName}</span>
+                      <button
+                        type="button"
+                        onClick={() => { setCvFileName(''); setCvData(''); }}
+                        className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                      >
+                        Sil
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-blue-500 hover:text-blue-500 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Upload className="w-5 h-5" />
+                        <span>CV Yükle (PDF, DOC - Max 5MB)</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Notes */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <StickyNote className="w-4 h-4 inline mr-1" /> Notlar
+                  </label>
+                  <textarea
+                    value={formData.notes || ''}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none"
+                    placeholder="Personel hakkında notlar..."
                   />
                 </div>
               </>

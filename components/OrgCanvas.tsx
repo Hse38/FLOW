@@ -30,6 +30,9 @@ import RightDetailPanel from './RightDetailPanel'
 import TurkeyMapPanel from './TurkeyMapPanel'
 import ConfirmationModal from './ConfirmationModal'
 import AutoLayoutSelectionModal from './AutoLayoutSelectionModal'
+import PersonnelPanel from './PersonnelPanel'
+import SubUnitDeputyChangeModal from './SubUnitDeputyChangeModal'
+import AddPersonSelectionModal from './AddPersonSelectionModal'
 import { showToast } from './Toast'
 import { useOrgData, Person, OrgData } from '@/context/OrgDataContext'
 import { toPng, toSvg } from 'html-to-image'
@@ -88,6 +91,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     updatePerson,
     addPerson,
     deletePerson,
+    movePerson,
     deleteDeputy,
     deleteSubUnit,
     updateSubUnit,
@@ -95,6 +99,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     updateCityPerson,
     deleteCityPerson,
     getCityPersonnel,
+    getAllPersonnel,
     linkSchemaToCoordinator,
     restoreData,
     // Firebase senkronizasyon
@@ -216,6 +221,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   // Türkiye Haritası Sol Panel (Toplumsal Çalışmalar için)
   const [turkeyMapOpen, setTurkeyMapOpen] = useState<boolean>(false)
 
+  // Personel Paneli (yan menü)
+  const [personnelPanelOpen, setPersonnelPanelOpen] = useState<boolean>(false)
+
   // Kilitleme durumu - Firebase'den geliyor
   const isLocked = firebaseLocked
 
@@ -250,6 +258,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     title: string
     nodeId: string
     initialData?: any
+    deputies?: Array<{ id: string; name: string; title: string; color?: string }>
   } | null>(null)
 
   // Video modal state
@@ -270,7 +279,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     subUnitId: string
     coordinatorTitle: string
     subUnitTitle: string
-    type?: 'person' | 'coordinator' | 'deputy'
+    city?: string
+    type?: 'person' | 'coordinator' | 'deputy' | 'subunit-person' | 'city-person'
   } | null>(null)
 
   // Alt birim context menu (kişi ekle/sil için)
@@ -281,6 +291,19 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     subUnitId: string
     subUnitTitle: string
     people: Person[]
+  } | null>(null)
+
+  // Birim koordinatör yardımcısı değiştirme modal
+  const [subUnitDeputyChangeModal, setSubUnitDeputyChangeModal] = useState<{
+    coordinatorId: string
+    subUnitId: string
+    subUnitTitle: string
+  } | null>(null)
+
+  // Personel ekleme seçim modal (var olan / yeni)
+  const [addPersonSelectionModal, setAddPersonSelectionModal] = useState<{
+    coordinatorId: string
+    subUnitId: string
   } | null>(null)
 
   // Personel sağ tık context menu (düzenleme için)
@@ -565,7 +588,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                 coordinatorId: expandedCoordinatorData.id,
                 subUnitId: '',
                 coordinatorTitle: expandedCoordinatorData.title,
-                subUnitTitle: deputy.title || 'Koordinatör Yardımcısı',
+                subUnitTitle: 'Koordinatör Yardımcısı', // Seviye etiketi (görev/unvan değil)
                 type: 'deputy'
               })
             },
@@ -589,7 +612,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                 coordinatorId: expandedCoordinatorData.id,
                 subUnitId: '',
                 coordinatorTitle: expandedCoordinatorData.title,
-                subUnitTitle: deputy.title || 'Koordinatör Yardımcısı',
+                subUnitTitle: 'Koordinatör Yardımcısı', // Seviye etiketi (görev/unvan değil)
                 type: 'deputy',
                 deputyId: deputy.id
               })
@@ -1156,11 +1179,13 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   // Form handlers
   const handleAddSubUnit = () => {
     if (contextMenu) {
+      const coordinator = data.coordinators.find(c => c.id === contextMenu.nodeId)
       setFormModal({
         isOpen: true,
         type: 'subunit',
         title: 'Alt Birim Ekle',
         nodeId: contextMenu.nodeId,
+        deputies: coordinator?.deputies || [],
       })
     }
   }
@@ -1463,6 +1488,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               title: formData.title,
               description: formData.description || '',
               responsibilities: responsibilitiesArray,
+              deputyId: formData.deputyId || undefined,
             })
             // Koordinatörü tekrar expand et (güncellenmiş verilerin görünmesi için)
             setTimeout(() => {
@@ -1480,6 +1506,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               people: [],
               responsibilities: responsibilitiesArrayNew,
               description: formData.description || '',
+              deputyId: formData.deputyId || undefined,
             })
             // Koordinatörü expand et (yeni birimin görünmesi için)
             setTimeout(() => {
@@ -1519,6 +1546,14 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             addPerson(currentModal.nodeId, formData.subUnitId, {
               name: formData.name,
               title: formData.title || '',
+              email: formData.email || undefined,
+              phone: formData.phone || undefined,
+              university: formData.university || undefined,
+              department: formData.department || undefined,
+              jobDescription: formData.jobDescription || undefined,
+              cvFileName: formData.cvFileName || undefined,
+              cvData: formData.cvData || undefined,
+              notes: formData.notes || undefined,
             })
             if (shouldAutoLayoutAfter) setShouldAutoLayout(true)
           }
@@ -1627,6 +1662,20 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               )}
             </div>
 
+            {/* Personel butonu */}
+            <button
+              onClick={() => {
+                setPersonnelPanelOpen(true)
+                setRightPanelCoordinatorId(null) // Sağ paneli kapat
+              }}
+              className="backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform bg-indigo-50 border-indigo-200 hover:bg-indigo-100"
+              title="Tüm Personel"
+            >
+              <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </button>
+
             {/* Pozisyonları Kaydet butonu */}
             {!isLocked && (
               <button
@@ -1711,26 +1760,6 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           </div>
         </div>
 
-        {/* Düzenle Butonu - Koordinatör seçiliyken görünür */}
-        {expandedCoordinator && expandedCoordinatorData && (
-          <button
-            onClick={() => setRightPanelCoordinatorId(expandedCoordinator)}
-            className="absolute top-20 left-4 z-10 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 px-4 py-3 flex items-center gap-3 hover:bg-blue-50 hover:border-blue-300 transition-all group"
-          >
-            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            </div>
-            <div className="text-left">
-              <p className="text-sm font-bold text-gray-800 group-hover:text-blue-700 truncate max-w-[180px]">{expandedCoordinatorData.title}</p>
-              <p className="text-xs text-gray-500">Detayları Düzenle</p>
-            </div>
-            <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        )}
 
         {/* Sağ Detay Paneli */}
         <RightDetailPanel
@@ -1829,6 +1858,25 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                 ? (data.coordinators.find(c => c.id === formModal.nodeId)?.subUnits || [])
                 : []
             }
+            deputies={formModal.deputies || []}
+          />
+        )}
+
+        {/* Person Detail Modal */}
+        {personDetailModal && (
+          <PersonDetailModal
+            isOpen={personDetailModal.isOpen}
+            person={personDetailModal.person}
+            onClose={() => setPersonDetailModal(null)}
+            onSave={(updates) => {
+              updatePerson(personDetailModal.coordinatorId, personDetailModal.subUnitId, personDetailModal.person.id, updates)
+              showToast('Personel bilgileri güncellendi', 'success')
+              setPersonDetailModal(null)
+              // Koordinatörü tekrar expand et (güncellenmiş verilerin görünmesi için)
+              setTimeout(() => {
+                setExpandedCoordinator(personDetailModal.coordinatorId)
+              }, 200)
+            }}
           />
         )}
 
@@ -1875,7 +1923,16 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                   </div>
                   <a href="#" className="text-blue-600 hover:underline text-xs">Web Siteleri</a>
                 </div>
-                <div className="text-xs text-gray-500 ml-5">{viewPersonCard.subUnitTitle}</div>
+                {/* Deputy için seviye etiketi göster, normal person için subUnitTitle göster */}
+                {viewPersonCard.type === 'deputy' ? (
+                  <div className="mt-2 flex justify-end">
+                    <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700 font-medium">
+                      Koordinatör Yardımcısı
+                    </span>
+                  </div>
+                ) : viewPersonCard.subUnitTitle ? (
+                  <div className="text-xs text-gray-500 ml-5">{viewPersonCard.subUnitTitle}</div>
+                ) : null}
               </div>
 
               {/* Üniversite ve Bölüm */}
@@ -1951,34 +2008,32 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           </div>
         )}        {/* Person Context Menu (Sağ Tık Menüsü) */}
         {personContextMenu && (
-          <div
-            className="fixed z-[300] bg-white rounded-xl shadow-2xl border border-gray-100 py-2 min-w-[180px] animate-in fade-in zoom-in-95 duration-150"
-            style={{ left: personContextMenu.x, top: personContextMenu.y }}
-            onClick={() => setPersonContextMenu(null)}
-          >
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 z-[299]"
+              onClick={() => setPersonContextMenu(null)}
+            />
+            {/* Menu */}
+            <div
+              className="fixed z-[300] bg-white rounded-xl shadow-2xl border border-gray-100 py-2 min-w-[180px] animate-in fade-in zoom-in-95 duration-150"
+              style={{ left: personContextMenu.x, top: personContextMenu.y }}
+              onClick={(e) => e.stopPropagation()}
+            >
             <div className="px-3 py-2 border-b border-gray-100">
               <p className="text-xs text-gray-400">
                 {personContextMenu.type === 'deputy' ? 'Koordinatör Yardımcısı' : 'Personel'}
               </p>
               <p className="text-sm font-semibold text-gray-800 truncate">{personContextMenu.person.name}</p>
             </div>
-            {personContextMenu.type !== 'deputy' && (
+            {personContextMenu.type !== 'deputy' && personContextMenu.type !== 'coordinator' && (
               <button
                 onClick={() => {
-                  setFormModal({
+                  setPersonDetailModal({
                     isOpen: true,
-                    type: 'edit-person' as any,
-                    title: 'Personeli Düzenle',
-                    nodeId: personContextMenu.coordinatorId,
-                    initialData: {
-                      personId: personContextMenu.person.id,
-                      name: personContextMenu.person.name,
-                      title: personContextMenu.person.title,
-                      subUnitId: personContextMenu.subUnitId,
-                      university: personContextMenu.person.university,
-                      department: personContextMenu.person.department,
-                      jobDescription: personContextMenu.person.jobDescription,
-                    }
+                    person: personContextMenu.person,
+                    coordinatorId: personContextMenu.coordinatorId,
+                    subUnitId: personContextMenu.subUnitId,
                   })
                   setPersonContextMenu(null)
                 }}
@@ -2072,15 +2127,23 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               </button>
             </div>
           </div>
+          </>
         )}
 
         {/* SubUnit Context Menu */}
         {subUnitContextMenu && (
-          <div
-            className="fixed z-[300] bg-white rounded-xl shadow-2xl border border-gray-100 py-2 min-w-[180px] animate-in fade-in zoom-in-95 duration-150"
-            style={{ left: subUnitContextMenu.x, top: subUnitContextMenu.y }}
-            onClick={() => setSubUnitContextMenu(null)}
-          >
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 z-[299]"
+              onClick={() => setSubUnitContextMenu(null)}
+            />
+            {/* Menu */}
+            <div
+              className="fixed z-[300] bg-white rounded-xl shadow-2xl border border-gray-100 py-2 min-w-[180px] animate-in fade-in zoom-in-95 duration-150"
+              style={{ left: subUnitContextMenu.x, top: subUnitContextMenu.y }}
+              onClick={(e) => e.stopPropagation()}
+            >
             <div className="px-3 py-2 border-b border-gray-100">
               <p className="text-xs text-gray-400">Alt Birim</p>
               <p className="text-sm font-semibold text-gray-800 truncate">{subUnitContextMenu.subUnitTitle}</p>
@@ -2122,8 +2185,10 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                     id: subUnitContextMenu.subUnitId,
                     title: existingSubUnit?.title || subUnitContextMenu.subUnitTitle,
                     description: existingSubUnit?.description || '',
-                    responsibilities: existingSubUnit?.responsibilities || []
-                  }
+                    responsibilities: existingSubUnit?.responsibilities || [],
+                    deputyId: existingSubUnit?.deputyId || undefined,
+                  },
+                  deputies: coordinator?.deputies || [],
                 })
                 setSubUnitContextMenu(null)
               }}
@@ -2133,6 +2198,23 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
               Düzenle
+            </button>
+
+            <button
+              onClick={() => {
+                setSubUnitDeputyChangeModal({
+                  coordinatorId: subUnitContextMenu.coordinatorId,
+                  subUnitId: subUnitContextMenu.subUnitId,
+                  subUnitTitle: subUnitContextMenu.subUnitTitle,
+                })
+                setSubUnitContextMenu(null)
+              }}
+              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 flex items-center gap-2 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+              Koordinatör Yardımcısı Değiştir
             </button>
 
             <div className="border-t border-gray-100 mt-1 pt-1">
@@ -2180,6 +2262,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               </button>
             </div>
           </div>
+          </>
         )}
 
         {/* Confirmation Modal */}
@@ -2212,6 +2295,199 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           }}
           onCancel={() => setAutoLayoutSelectionModal(false)}
         />
+
+        {/* Personel Paneli */}
+        <PersonnelPanel
+          isOpen={personnelPanelOpen}
+          onClose={() => setPersonnelPanelOpen(false)}
+          personnel={getAllPersonnel()}
+          onPersonClick={(person, metadata) => {
+            // Personel kartını aç - tüm durumlar için viewPersonCard aç
+            setViewPersonCard({
+              person: person,
+              coordinatorId: metadata.coordinatorId || '',
+              subUnitId: metadata.subUnitId || '',
+              coordinatorTitle: metadata.coordinatorTitle || '',
+              subUnitTitle: metadata.subUnitTitle || metadata.city || '',
+              city: metadata.city,
+              type: metadata.type,
+            })
+            setPersonnelPanelOpen(false)
+          }}
+          onPersonUpdate={(person, metadata, updates) => {
+            // Personel güncelleme işlemi
+            if (metadata.type === 'subunit-person' && metadata.coordinatorId && metadata.subUnitId && person.id) {
+              updatePerson(metadata.coordinatorId, metadata.subUnitId, person.id, updates)
+              showToast('Personel bilgileri güncellendi!', 'success')
+            } else if (metadata.type === 'city-person' && metadata.city && person.id) {
+              updateCityPerson(metadata.city, person.id, updates)
+              showToast('Personel bilgileri güncellendi!', 'success')
+            } else if (metadata.type === 'coordinator' && metadata.coordinatorId) {
+              // Koordinatör güncelleme - coordinator field'ını güncelle
+              updateCoordinator(metadata.coordinatorId, {
+                coordinator: {
+                  name: updates.name || person.name,
+                  title: updates.title || person.title || 'Koordinatör',
+                  color: updates.color || person.color,
+                }
+              })
+              showToast('Koordinatör bilgileri güncellendi!', 'success')
+            } else if (metadata.type === 'deputy' && metadata.coordinatorId) {
+              // Deputy güncelleme - deputy array'inde güncelle
+              const coordinator = data.coordinators.find(c => c.id === metadata.coordinatorId)
+              if (coordinator) {
+                const deputy = coordinator.deputies?.find(d => d.id === person.id)
+                if (deputy) {
+                  const updatedDeputies = coordinator.deputies?.map(d =>
+                    d.id === person.id
+                      ? {
+                          ...d,
+                          name: updates.name || d.name,
+                          title: updates.title || d.title || '',
+                          color: updates.color || d.color,
+                        }
+                      : d
+                  )
+                  updateCoordinator(metadata.coordinatorId, {
+                    deputies: updatedDeputies || []
+                  })
+                  showToast('Koordinatör yardımcısı bilgileri güncellendi!', 'success')
+                }
+              }
+            }
+          }}
+          onPersonMove={(person, metadata, toCoordinatorId, toSubUnitId) => {
+            // Personel taşıma işlemi
+            if (metadata.type === 'subunit-person' && metadata.coordinatorId && metadata.subUnitId && person.id) {
+              movePerson(metadata.coordinatorId, metadata.subUnitId, person.id, toCoordinatorId, toSubUnitId)
+              showToast(`${person.name} başka bir birime taşındı!`, 'success')
+            }
+          }}
+          onPersonDelete={(person, metadata) => {
+            // Personel silme işlemi
+            try {
+              if (metadata.type === 'subunit-person' && metadata.coordinatorId && metadata.subUnitId) {
+                // person.id kontrolü - eğer yoksa person.name kullan
+                const personId = person.id || person.name
+                if (personId) {
+                  deletePerson(metadata.coordinatorId, metadata.subUnitId, personId)
+                  showToast(`${person.name} silindi!`, 'success')
+                } else {
+                  console.error('Person ID bulunamadı:', { person, metadata })
+                  showToast('Personel ID bulunamadı', 'error')
+                }
+              } else if (metadata.type === 'deputy' && metadata.coordinatorId) {
+                // Deputy için person.id kullan (getAllPersonnel'da deputy.id person.id olarak set ediliyor)
+                const deputyId = person.id
+                if (deputyId) {
+                  deleteDeputy(metadata.coordinatorId, deputyId)
+                  showToast(`${person.name} silindi!`, 'success')
+                } else {
+                  console.error('Deputy ID bulunamadı:', { person, metadata })
+                  showToast('Koordinatör yardımcısı ID bulunamadı', 'error')
+                }
+              } else if (metadata.type === 'city-person' && metadata.city) {
+                const personId = person.id || person.name
+                if (personId) {
+                  deleteCityPerson(metadata.city, personId)
+                  showToast(`${person.name} silindi!`, 'success')
+                } else {
+                  console.error('City person ID bulunamadı:', { person, metadata })
+                  showToast('Personel ID bulunamadı', 'error')
+                }
+              } else {
+                console.error('Silme işlemi için gerekli bilgiler eksik:', { person, metadata })
+                showToast('Personel silinirken bir hata oluştu', 'error')
+              }
+            } catch (error) {
+              console.error('Personel silme hatası:', error)
+              showToast('Personel silinirken bir hata oluştu', 'error')
+            }
+          }}
+        />
+
+      {/* Add Person Selection Modal */}
+      {addPersonSelectionModal && (
+        <AddPersonSelectionModal
+          isOpen={!!addPersonSelectionModal}
+          onClose={() => setAddPersonSelectionModal(null)}
+          coordinatorId={addPersonSelectionModal.coordinatorId}
+          subUnitId={addPersonSelectionModal.subUnitId}
+          allPersonnel={getAllPersonnel().map(item => ({
+            person: item.person,
+            metadata: {
+              type: item.type,
+              coordinatorId: item.coordinatorId,
+              coordinatorTitle: item.coordinatorTitle,
+              subUnitId: item.subUnitId,
+              subUnitTitle: item.subUnitTitle,
+              city: item.city,
+            },
+          }))}
+          onAddExisting={(personId, sourceCoordinatorId, sourceSubUnitId) => {
+            // Kaynak birimden personeli bul
+            const sourceCoordinator = data.coordinators.find(c => c.id === sourceCoordinatorId)
+            const sourceSubUnit = sourceCoordinator?.subUnits?.find(su => su.id === sourceSubUnitId)
+            const existingPerson = sourceSubUnit?.people?.find(p => p.id === personId)
+            
+            if (existingPerson) {
+              // Personeli yeni birime ekle (aynı kişi, farklı birimlerde olabilir)
+              // addPerson fonksiyonu Omit<Person, 'id'> bekliyor, yani ID'yi kendisi oluşturuyor
+              // Ama biz aynı kişiyi eklemek istiyoruz, bu yüzden mevcut person verisini kullanıyoruz
+              const { id, ...personWithoutId } = existingPerson
+              addPerson(addPersonSelectionModal.coordinatorId, addPersonSelectionModal.subUnitId, personWithoutId)
+              showToast(`${existingPerson.name} birime eklendi`, 'success')
+              setTimeout(() => {
+                setExpandedCoordinator(addPersonSelectionModal.coordinatorId)
+                setShouldAutoLayout(true)
+              }, 200)
+            }
+          }}
+          onAddNew={() => {
+            // Yeni personel ekleme modalını aç
+            setFormModal({
+              isOpen: true,
+              type: 'person',
+              title: 'Kişi Ekle',
+              nodeId: addPersonSelectionModal.coordinatorId,
+              initialData: {
+                subUnitId: addPersonSelectionModal.subUnitId
+              }
+            })
+          }}
+        />
+      )}
+
+      {/* SubUnit Deputy Change Modal */}
+      {subUnitDeputyChangeModal && (() => {
+        const coordinator = data.coordinators.find(c => c.id === subUnitDeputyChangeModal.coordinatorId)
+        const subUnit = coordinator?.subUnits?.find(su => su.id === subUnitDeputyChangeModal.subUnitId)
+        const deputies = coordinator?.deputies || []
+
+        return (
+          <SubUnitDeputyChangeModal
+            isOpen={!!subUnitDeputyChangeModal}
+            onClose={() => setSubUnitDeputyChangeModal(null)}
+            subUnitTitle={subUnitDeputyChangeModal.subUnitTitle}
+            currentDeputyId={subUnit?.deputyId}
+            deputies={deputies}
+            onSave={(deputyId) => {
+              if (subUnitDeputyChangeModal) {
+                updateSubUnit(subUnitDeputyChangeModal.coordinatorId, subUnitDeputyChangeModal.subUnitId, {
+                  deputyId: deputyId || undefined,
+                })
+                showToast('Koordinatör yardımcısı bağlantısı güncellendi', 'success')
+                // Koordinatörü tekrar expand et
+                setTimeout(() => {
+                  setExpandedCoordinator(subUnitDeputyChangeModal.coordinatorId)
+                  setShouldAutoLayout(true)
+                }, 200)
+              }
+              setSubUnitDeputyChangeModal(null)
+            }}
+          />
+        )
+      })()}
 
       </div>
     </div>

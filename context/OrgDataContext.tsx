@@ -78,6 +78,7 @@ export interface SubUnit {
   responsibilities: string[]
   description?: string  // Birim açıklaması
   normKadro?: number  // Olması gereken kişi sayısı
+  deputyId?: string  // Hangi koordinatör yardımcısına bağlı (opsiyonel)
 }
 
 export interface Deputy {
@@ -166,6 +167,7 @@ interface OrgDataContextType {
   addPerson: (coordinatorId: string, subUnitId: string, person: Omit<Person, 'id'>) => void
   updatePerson: (coordinatorId: string, subUnitId: string, personId: string, updates: Partial<Person>) => void
   deletePerson: (coordinatorId: string, subUnitId: string, personId: string) => void
+  movePerson: (fromCoordinatorId: string, fromSubUnitId: string, personId: string, toCoordinatorId: string, toSubUnitId: string) => void // Personel taşıma (birim değiştirme)
   deleteSubUnit: (coordinatorId: string, subUnitId: string) => void
   deleteDeputy: (coordinatorId: string, deputyId: string) => void
   deleteCoordinator: (id: string) => void
@@ -183,6 +185,15 @@ interface OrgDataContextType {
   updateCityPerson: (city: string, personId: string, updates: Partial<Person>) => void
   deleteCityPerson: (city: string, personId: string) => void
   getCityPersonnel: () => CityPersonnel[]
+  getAllPersonnel: () => Array<{
+    person: Person
+    type: 'coordinator' | 'deputy' | 'subunit-person' | 'city-person'
+    coordinatorId?: string
+    coordinatorTitle?: string
+    subUnitId?: string
+    subUnitTitle?: string
+    city?: string
+  }> // Tüm personeli getir (koordinatör, deputy, alt birim personeli, şehir personeli)
   resetToEmpty: () => void
   restoreData: (data: OrgData) => void // Undo/Redo için
   saveData: () => void
@@ -1282,18 +1293,74 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
         coordinators: prev.coordinators.map(c =>
           c.id === coordinatorId
             ? {
+                ...c,
+                subUnits: (c.subUnits || []).map(su =>
+                  su.id === subUnitId
+                    ? {
+                        ...su,
+                        people: (su.people || []).filter(p => p.id !== personId)
+                      }
+                    : su
+                )
+              }
+            : c
+        )
+      }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [saveToFirebase])
+
+  // Move person from one sub-unit to another
+  const movePerson = useCallback((fromCoordinatorId: string, fromSubUnitId: string, personId: string, toCoordinatorId: string, toSubUnitId: string) => {
+    setData(prev => {
+      // Find the person to move
+      let personToMove: Person | null = null
+      
+      const fromCoordinator = prev.coordinators.find(c => c.id === fromCoordinatorId)
+      if (fromCoordinator) {
+        const fromSubUnit = fromCoordinator.subUnits?.find(su => su.id === fromSubUnitId)
+        if (fromSubUnit) {
+          personToMove = fromSubUnit.people?.find(p => p.id === personId) || null
+        }
+      }
+
+      if (!personToMove) return prev
+
+      // Remove from old location and add to new location
+      const newData = {
+        ...prev,
+        coordinators: prev.coordinators.map(c => {
+          if (c.id === fromCoordinatorId) {
+            // Remove from old sub-unit
+            return {
               ...c,
               subUnits: (c.subUnits || []).map(su =>
-                su.id === subUnitId
+                su.id === fromSubUnitId
                   ? {
-                    ...su,
-                    people: (su.people || []).filter(p => p.id !== personId)
-                  }
+                      ...su,
+                      people: (su.people || []).filter(p => p.id !== personId)
+                    }
                   : su
               )
             }
-            : c
-        )
+          }
+          if (c.id === toCoordinatorId) {
+            // Add to new sub-unit
+            return {
+              ...c,
+              subUnits: (c.subUnits || []).map(su =>
+                su.id === toSubUnitId
+                  ? {
+                      ...su,
+                      people: [...(su.people || []), personToMove!]
+                    }
+                  : su
+              )
+            }
+          }
+          return c
+        })
       }
       saveToFirebase(newData)
       return newData
@@ -1407,6 +1474,87 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
   const getCityPersonnel = useCallback((): CityPersonnel[] => {
     return data.cityPersonnel || []
   }, [data.cityPersonnel])
+
+  // Tüm personeli getir (koordinatör, deputy, alt birim personeli, şehir personeli)
+  const getAllPersonnel = useCallback(() => {
+    const allPersonnel: Array<{
+      person: Person
+      type: 'coordinator' | 'deputy' | 'subunit-person' | 'city-person'
+      coordinatorId?: string
+      coordinatorTitle?: string
+      subUnitId?: string
+      subUnitTitle?: string
+      city?: string
+    }> = []
+
+    // Koordinatörler
+    data.coordinators.forEach(coord => {
+      if (coord.coordinator?.name) {
+        allPersonnel.push({
+          person: {
+            id: coord.coordinator.name || `coord-${coord.id}`,
+            name: coord.coordinator.name,
+            title: coord.coordinator.title || 'Koordinatör',
+            color: coord.coordinator.color,
+            jobDescription: coord.responsibilities?.join('\n') || '',
+          },
+          type: 'coordinator',
+          coordinatorId: coord.id,
+          coordinatorTitle: coord.title,
+        })
+      }
+    })
+
+    // Deputies (Koordinatör Yardımcıları)
+    data.coordinators.forEach(coord => {
+      coord.deputies?.forEach(deputy => {
+        allPersonnel.push({
+          person: {
+            id: deputy.id,
+            name: deputy.name,
+            title: deputy.title || '',
+            color: deputy.color,
+            jobDescription: deputy.responsibilities?.join('\n') || '',
+          },
+          type: 'deputy',
+          coordinatorId: coord.id,
+          coordinatorTitle: coord.title,
+        })
+      })
+    })
+
+    // Alt birim personeli
+    data.coordinators.forEach(coord => {
+      coord.subUnits?.forEach(subUnit => {
+        subUnit.people?.forEach(person => {
+          allPersonnel.push({
+            person: {
+              ...person,
+              jobDescription: person.jobDescription || subUnit.responsibilities?.join('\n') || '',
+            },
+            type: 'subunit-person',
+            coordinatorId: coord.id,
+            coordinatorTitle: coord.title,
+            subUnitId: subUnit.id,
+            subUnitTitle: subUnit.title,
+          })
+        })
+      })
+    })
+
+    // Şehir personeli (Toplumsal Çalışmalar için)
+    data.cityPersonnel?.forEach(cityData => {
+      cityData.people?.forEach(person => {
+        allPersonnel.push({
+          person,
+          type: 'city-person',
+          city: cityData.city,
+        })
+      })
+    })
+
+    return allPersonnel
+  }, [data])
 
   // Delete deputy
   const deleteDeputy = useCallback((coordinatorId: string, deputyId: string) => {
@@ -1596,12 +1744,14 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       addPerson,
       updatePerson,
       deletePerson,
+      movePerson,
       deleteSubUnit,
       updateSubUnit,
       addCityPerson,
       updateCityPerson,
       deleteCityPerson,
       getCityPersonnel,
+      getAllPersonnel,
       deleteDeputy,
       deleteCoordinator,
       deleteNode,

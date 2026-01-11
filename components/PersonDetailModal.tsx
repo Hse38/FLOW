@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { X, Upload, FileText, Save, User, Mail, Phone, StickyNote } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { X, Upload, FileText, Save, User, Mail, Phone, StickyNote, GraduationCap, Building2, Briefcase } from 'lucide-react'
 import { Person } from '@/context/OrgDataContext'
 import { showToast } from './Toast'
 
@@ -18,10 +18,29 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
   const [title, setTitle] = useState(person.title || '')
   const [email, setEmail] = useState(person.email || '')
   const [phone, setPhone] = useState(person.phone || '')
+  const [university, setUniversity] = useState(person.university || '')
+  const [department, setDepartment] = useState(person.department || '')
+  const [jobDescription, setJobDescription] = useState(person.jobDescription || '')
   const [notes, setNotes] = useState(person.notes || '')
   const [cvFileName, setCvFileName] = useState(person.cvFileName || '')
   const [cvData, setCvData] = useState(person.cvData || '')
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // person prop'u değiştiğinde state'leri güncelle
+  useEffect(() => {
+    if (isOpen && person) {
+      setName(person.name || '')
+      setTitle(person.title || '')
+      setEmail(person.email || '')
+      setPhone(person.phone || '')
+      setUniversity(person.university || '')
+      setDepartment(person.department || '')
+      setJobDescription(person.jobDescription || '')
+      setNotes(person.notes || '')
+      setCvFileName(person.cvFileName || '')
+      setCvData(person.cvData || '')
+    }
+  }, [isOpen, person])
 
   if (!isOpen) return null
 
@@ -58,6 +77,9 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
       title,
       email,
       phone,
+      university,
+      department,
+      jobDescription,
       notes,
       cvFileName,
       cvData,
@@ -143,6 +165,51 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
               disabled={readOnly}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
               placeholder="+90 5XX XXX XX XX"
+            />
+          </div>
+
+          {/* Üniversite */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              <GraduationCap className="w-4 h-4 inline mr-1" /> Üniversite
+            </label>
+            <input
+              type="text"
+              value={university}
+              onChange={(e) => setUniversity(e.target.value)}
+              disabled={readOnly}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+              placeholder="Örn: İstanbul Teknik Üniversitesi"
+            />
+          </div>
+
+          {/* Bölüm */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              <Building2 className="w-4 h-4 inline mr-1" /> Bölüm
+            </label>
+            <input
+              type="text"
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              disabled={readOnly}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+              placeholder="Örn: Bilgisayar Mühendisliği"
+            />
+          </div>
+
+          {/* İş Tanımı / Görevler */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              <Briefcase className="w-4 h-4 inline mr-1" /> İş Tanımı / Görevler
+            </label>
+            <textarea
+              value={jobDescription}
+              onChange={(e) => setJobDescription(e.target.value)}
+              disabled={readOnly}
+              rows={4}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 resize-none"
+              placeholder="İş tanımı ve görevler..."
             />
           </div>
 

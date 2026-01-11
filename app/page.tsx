@@ -71,6 +71,13 @@ export default function Home() {
   // Presentation mode state
   const [isPresentationMode, setIsPresentationMode] = useState(false)
   
+  // Client-side mount state (for hydration fix)
+  const [isMounted, setIsMounted] = useState(false)
+  
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+  
   // Sync to Firebase handler
   const handleSyncToFirebase = async () => {
     try {
@@ -428,7 +435,7 @@ export default function Home() {
               </div>
               <div className="flex items-center gap-3">
                 {/* Sync to Firebase Button (Development only) */}
-                {typeof window !== 'undefined' && process.env.NODE_ENV === 'development' && (
+                {isMounted && process.env.NODE_ENV === 'development' && (
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleSyncToFirebase}
