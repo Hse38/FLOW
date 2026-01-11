@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { X, Upload, FileText, Save, User, Mail, Phone, StickyNote, GraduationCap, Building2, Briefcase } from 'lucide-react'
+import { X, Upload, FileText, Save, User, Mail, Phone, StickyNote, GraduationCap, Building2, Briefcase, Image } from 'lucide-react'
 import { Person } from '@/context/OrgDataContext'
 import { showToast } from './Toast'
 
@@ -24,7 +24,9 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
   const [notes, setNotes] = useState(person.notes || '')
   const [cvFileName, setCvFileName] = useState(person.cvFileName || '')
   const [cvData, setCvData] = useState(person.cvData || '')
+  const [photoData, setPhotoData] = useState(person.photoData || '')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const photoInputRef = useRef<HTMLInputElement>(null)
 
   // person prop'u değiştiğinde state'leri güncelle
   useEffect(() => {
@@ -39,6 +41,7 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
       setNotes(person.notes || '')
       setCvFileName(person.cvFileName || '')
       setCvData(person.cvData || '')
+      setPhotoData(person.photoData || '')
     }
   }, [isOpen, person])
 
@@ -57,6 +60,30 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
       reader.onload = () => {
         setCvData(reader.result as string)
         setCvFileName(file.name)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Max 2MB for photos
+      if (file.size > 2 * 1024 * 1024) {
+        showToast('Fotoğraf boyutu 2MB\'dan küçük olmalıdır.', 'error')
+        return
+      }
+      
+      // Check if it's an image
+      if (!file.type.startsWith('image/')) {
+        showToast('Lütfen bir resim dosyası seçin.', 'error')
+        return
+      }
+      
+      const reader = new FileReader()
+      reader.onload = () => {
+        setPhotoData(reader.result as string)
+        showToast('Fotoğraf yüklendi!', 'success')
       }
       reader.readAsDataURL(file)
     }
@@ -83,6 +110,7 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
       notes,
       cvFileName,
       cvData,
+      photoData,
     })
     onClose()
   }
@@ -108,6 +136,60 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
 
         {/* Content */}
         <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+          {/* Fotoğraf Yükleme */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              <Image className="w-4 h-4 inline mr-1" /> Personel Fotoğrafı
+            </label>
+            <div className="flex items-center gap-4">
+              {/* Fotoğraf Önizleme */}
+              <div className="flex-shrink-0">
+                {photoData ? (
+                  <div className="relative">
+                    <img
+                      src={photoData}
+                      alt={name}
+                      className="w-20 h-20 rounded-full object-cover border-2 border-gray-300"
+                    />
+                    {!readOnly && (
+                      <button
+                        onClick={() => setPhotoData('')}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        title="Fotoğrafı Sil"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-400 to-blue-500 flex items-center justify-center text-white text-2xl font-bold border-2 border-gray-300">
+                    {name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              
+              {/* Yükleme Butonu */}
+              {!readOnly && (
+                <div className="flex-1">
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                  />
+                  <button
+                    onClick={() => photoInputRef.current?.click()}
+                    className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-indigo-500 hover:text-indigo-500 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Upload className="w-5 h-5" />
+                    <span>{photoData ? 'Fotoğrafı Değiştir' : 'Fotoğraf Yükle (Max 2MB)'}</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* İsim */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

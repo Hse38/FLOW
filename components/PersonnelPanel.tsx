@@ -293,9 +293,17 @@ export default function PersonnelPanel({ isOpen, onClose, personnel, onPersonCli
                 >
                   <div className="flex items-start gap-3">
                     {/* Avatar/İkon */}
-                    <div className={`flex-shrink-0 w-12 h-12 rounded-full ${getTypeColor(item.type)} flex items-center justify-center`}>
-                      {getTypeIcon(item.type)}
-                    </div>
+                    {item.person.photoData ? (
+                      <img
+                        src={item.person.photoData}
+                        alt={item.person.name}
+                        className="flex-shrink-0 w-12 h-12 rounded-full object-cover border-2 border-gray-200"
+                      />
+                    ) : (
+                      <div className={`flex-shrink-0 w-12 h-12 rounded-full ${getTypeColor(item.type)} flex items-center justify-center`}>
+                        {getTypeIcon(item.type)}
+                      </div>
+                    )}
 
                     {/* Bilgiler */}
                     <div className="flex-1 min-w-0">
@@ -309,7 +317,9 @@ export default function PersonnelPanel({ isOpen, onClose, personnel, onPersonCli
                           )}
                         </div>
                         <span className={`px-2 py-1 rounded-lg text-xs font-medium border ${getTypeColor(item.type)} whitespace-nowrap`}>
-                          {getTypeLabel(item.type)}
+                          {item.type === 'deputy' && item.person.title 
+                            ? item.person.title 
+                            : getTypeLabel(item.type)}
                         </span>
                       </div>
 

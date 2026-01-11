@@ -22,6 +22,7 @@ import MainCoordinatorNode from './nodes/MainCoordinatorNode'
 import SubCoordinatorNode from './nodes/SubCoordinatorNode'
 import UnitNode from './nodes/UnitNode'
 import DetailNode from './nodes/DetailNode'
+import TurkeyMapNode from './nodes/TurkeyMapNode'
 import ContextMenu from './ContextMenu'
 import FormModal from './FormModal'
 import PersonDetailModal from './PersonDetailModal'
@@ -56,6 +57,7 @@ const nodeTypes = {
   subCoordinator: SubCoordinatorNode,
   unit: UnitNode,
   detail: DetailNode,
+  turkeyMap: TurkeyMapNode,
 }
 
 // Basit node boyutları - dagre yerleşimi için
@@ -220,6 +222,11 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
 
   // Türkiye Haritası Sol Panel (Toplumsal Çalışmalar için)
   const [turkeyMapOpen, setTurkeyMapOpen] = useState<boolean>(false)
+  // Türkiye Haritası - Node altında gösterim (Toplumsal Çalışmalar için)
+  const [turkeyMapExpanded, setTurkeyMapExpanded] = useState<boolean>(false)
+  // İl personel modalı
+  const [selectedCity, setSelectedCity] = useState<string | null>(null)
+  const [cityPersonnelModalOpen, setCityPersonnelModalOpen] = useState<boolean>(false)
 
   // Personel Paneli (yan menü)
   const [personnelPanelOpen, setPersonnelPanelOpen] = useState<boolean>(false)
@@ -254,7 +261,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   // Form modal state
   const [formModal, setFormModal] = useState<{
     isOpen: boolean
-    type: 'subunit' | 'deputy' | 'responsibility' | 'person' | 'edit' | 'edit-person' | 'coordinator'
+    type: 'subunit' | 'deputy' | 'responsibility' | 'person' | 'edit' | 'edit-person' | 'coordinator' | 'city-person'
     title: string
     nodeId: string
     initialData?: any
@@ -466,6 +473,33 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         },
       })
     })
+
+    // Toplumsal Çalışmalar için harita node'unu ekle (expanded ise)
+    if (turkeyMapExpanded) {
+      const toplumsalNode = data.executives.find(e => e.id === 'toplumsal-calismalar')
+      if (toplumsalNode) {
+        const mapPosition = getPosition('turkey-map-node', {
+          x: toplumsalNode.position.x - 800,
+          y: toplumsalNode.position.y + 180
+        })
+        nodeList.push({
+          id: 'turkey-map-node',
+          type: 'turkeyMap',
+          position: mapPosition,
+          draggable: !isLocked,
+          data: {
+            id: 'turkey-map-node',
+            onCityClick: (cityName: string) => {
+              // Artık modal açmıyoruz, node içinde gösteriliyor
+            },
+            cityPersonnel: getCityPersonnel(),
+            onAddPerson: addCityPerson,
+            onUpdatePerson: updateCityPerson,
+            onDeletePerson: deleteCityPerson,
+          },
+        })
+      }
+    }
 
     // Add main coordinators
     data.mainCoordinators.forEach((coord) => {
@@ -735,7 +769,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     }
 
     return nodeList
-  }, [data, handleUnitClick, handleContextMenu, expandedCoordinator, expandedCoordinatorData, customPositions, isLocked])
+  }, [data, handleUnitClick, handleContextMenu, expandedCoordinator, expandedCoordinatorData, customPositions, isLocked, turkeyMapExpanded])
 
   // Convert data to React Flow edges
   const edges: Edge[] = useMemo(() => {
@@ -856,6 +890,17 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       })
     }
 
+    // Toplumsal Çalışmalar için harita edge'i
+    if (turkeyMapExpanded) {
+      edgeList.push({
+        id: 'toplumsal-calismalar-to-map',
+        source: 'toplumsal-calismalar',
+        target: 'turkey-map-node',
+        type: 'smoothstep',
+        style: { stroke: '#10b981', strokeWidth: 3 },
+      })
+    }
+
     // Custom connections (manuel bağlantılar) - beyaz çizgi, diğerleri gibi
     customConnections.forEach((conn) => {
       edgeList.push({
@@ -870,7 +915,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     })
 
     return edgeList
-  }, [data, expandedCoordinator, expandedCoordinatorData, customConnections])
+  }, [data, expandedCoordinator, expandedCoordinatorData, customConnections, turkeyMapExpanded])
 
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState(nodes)
   const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState(edges)
@@ -1569,6 +1614,24 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             })
           }
           break
+        case 'city-person':
+          if (formData.city && formData.name) {
+            addCityPerson(formData.city, {
+              name: formData.name,
+              title: formData.title || '',
+              email: formData.email || undefined,
+              phone: formData.phone || undefined,
+              university: formData.university || undefined,
+              department: formData.department || undefined,
+              jobDescription: formData.jobDescription || undefined,
+              cvFileName: formData.cvFileName || undefined,
+              cvData: formData.cvData || undefined,
+              notes: formData.notes || undefined,
+              photoData: formData.photoData || undefined,
+            })
+            showToast(`${formData.city} iline personel eklendi`, 'success')
+          }
+          break
       }
 
       // Modal'ı hemen kapat (çift çağrıyı önlemek için)
@@ -1579,7 +1642,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         formSaveInProgressRef.current = false
       }, 1000)
     }
-  }, [formModal, expandedCoordinator, addDeputy, addSubUnit, addPerson, addResponsibility, updateCoordinator, updatePerson, setShouldAutoLayout, setExpandedCoordinator])
+  }, [formModal, expandedCoordinator, addDeputy, addSubUnit, addPerson, addResponsibility, updateCoordinator, updatePerson, addCityPerson, setShouldAutoLayout, setExpandedCoordinator, showToast])
 
   return (
     <div className="w-full h-screen flex" style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 50%, #93c5fd 100%)' }}>
@@ -1608,9 +1671,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           onPaneContextMenu={handlePaneContextMenu}
           onSelectionChange={handleSelectionChange}
           onNodeClick={(_, node) => {
-            // Toplumsal Çalışmalar Koordinatörlüğü'ne tıklandığında sol panel aç/kapat
+            // Toplumsal Çalışmalar Koordinatörlüğü'ne tıklandığında haritayı node altında göster
             if (node.id === 'toplumsal-calismalar') {
-              setTurkeyMapOpen(prev => !prev)
+              setTurkeyMapExpanded(prev => !prev)
               return
             }
             // Bağlantı modundaysa hedef yönü seçimi için modal aç
@@ -1900,12 +1963,20 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             <div className="p-4">
               {/* Avatar and Name */}
               <div className="flex items-center gap-3 mb-3">
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold shadow-md"
-                  style={{ backgroundColor: viewPersonCard.person.color || '#6366f1' }}
-                >
-                  {viewPersonCard.person.name.charAt(0).toUpperCase()}
-                </div>
+                {viewPersonCard.person.photoData ? (
+                  <img
+                    src={viewPersonCard.person.photoData}
+                    alt={viewPersonCard.person.name}
+                    className="w-12 h-12 rounded-full object-cover shadow-md border-2 border-gray-200"
+                  />
+                ) : (
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold shadow-md"
+                    style={{ backgroundColor: viewPersonCard.person.color || '#6366f1' }}
+                  >
+                    {viewPersonCard.person.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
                 <div>
                   <h3 className="text-base font-bold text-gray-800">{viewPersonCard.person.name}</h3>
                   <p className="text-xs text-gray-500">{viewPersonCard.person.title || 'Personel'}</p>
@@ -1923,13 +1994,15 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                   </div>
                   <a href="#" className="text-blue-600 hover:underline text-xs">Web Siteleri</a>
                 </div>
-                {/* Deputy için seviye etiketi göster, normal person için subUnitTitle göster */}
+                {/* Deputy için ünvan göster, normal person için subUnitTitle göster */}
                 {viewPersonCard.type === 'deputy' ? (
-                  <div className="mt-2 flex justify-end">
-                    <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700 font-medium">
-                      Koordinatör Yardımcısı
-                    </span>
-                  </div>
+                  viewPersonCard.person.title ? (
+                    <div className="mt-2 flex justify-end">
+                      <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700 font-medium">
+                        {viewPersonCard.person.title}
+                      </span>
+                    </div>
+                  ) : null
                 ) : viewPersonCard.subUnitTitle ? (
                   <div className="text-xs text-gray-500 ml-5">{viewPersonCard.subUnitTitle}</div>
                 ) : null}
@@ -2488,6 +2561,124 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           />
         )
       })()}
+
+      {/* İl Personel Modalı */}
+      {cityPersonnelModalOpen && selectedCity && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-[90%] max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-white">{selectedCity} İl Personeli</h2>
+                <p className="text-sm text-green-100">Toplumsal Çalışmalar Koordinatörlüğü</p>
+              </div>
+              <button
+                onClick={() => {
+                  setCityPersonnelModalOpen(false)
+                  setSelectedCity(null)
+                }}
+                className="text-white/80 hover:text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {(() => {
+                const cityPersonnel = getCityPersonnel()
+                const cityData = cityPersonnel.find(cp => cp.city === selectedCity)
+                const personnel = cityData?.people || []
+
+                return (
+                  <>
+                    {/* Personel Listesi */}
+                    <div className="mb-4 flex items-center justify-between">
+                      <p className="text-sm text-gray-600">
+                        {personnel.length} personel bulundu
+                      </p>
+                      <button
+                        onClick={() => {
+                          setFormModal({
+                            isOpen: true,
+                            type: 'city-person',
+                            title: `${selectedCity} - Yeni Personel Ekle`,
+                            nodeId: 'toplumsal-calismalar',
+                            initialData: {
+                              city: selectedCity
+                            }
+                          })
+                        }}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Yeni Personel Ekle
+                      </button>
+                    </div>
+
+                    {personnel.length === 0 ? (
+                      <div className="text-center py-12 text-gray-500">
+                        <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <p>Henüz personel eklenmemiş</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {personnel.map((person) => (
+                          <div
+                            key={person.id}
+                            onClick={() => {
+                              setViewPersonCard({
+                                person: person,
+                                coordinatorId: 'toplumsal-calismalar',
+                                subUnitId: '',
+                                coordinatorTitle: 'Toplumsal Çalışmalar Koordinatörlüğü',
+                                subUnitTitle: selectedCity || '',
+                                city: selectedCity,
+                                type: 'city-person',
+                              })
+                            }}
+                            className="bg-white border-2 border-gray-200 rounded-xl p-4 cursor-pointer hover:border-green-300 hover:shadow-lg transition-all"
+                          >
+                            <div className="flex items-start gap-3">
+                              {person.photoData ? (
+                                <img
+                                  src={person.photoData}
+                                  alt={person.name}
+                                  className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
+                                />
+                              ) : (
+                                <div
+                                  className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold shadow-md"
+                                  style={{ backgroundColor: person.color || '#10b981' }}
+                                >
+                                  {person.name.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold text-gray-800 truncate">{person.name}</h3>
+                                <p className="text-sm text-gray-500 truncate">{person.title || 'Personel'}</p>
+                                {person.email && (
+                                  <p className="text-xs text-gray-400 truncate mt-1">{person.email}</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
 
       </div>
     </div>

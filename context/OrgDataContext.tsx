@@ -65,6 +65,7 @@ export interface Person {
   notes?: string
   cvFileName?: string
   cvData?: string  // Base64 encoded file
+  photoData?: string  // Base64 encoded photo
   color?: string // Kart rengi (blue, red, green, purple, orange, pink)
   university?: string // Üniversite
   department?: string // Bölüm

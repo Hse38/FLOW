@@ -21,7 +21,7 @@ interface FormModalProps {
   isOpen: boolean
   onClose: () => void
   title: string
-  type: 'subunit' | 'deputy' | 'responsibility' | 'person' | 'edit' | 'edit-person' | 'coordinator'
+  type: 'subunit' | 'deputy' | 'responsibility' | 'person' | 'edit' | 'edit-person' | 'coordinator' | 'city-person'
   initialData?: any
   onSave: (data: any) => void
   subUnits?: SubUnit[]
@@ -94,10 +94,11 @@ export default function FormModal({
     isSubmittingRef.current = true
     
     try {
-      // Form verisini hazırla - initialData'dan id'yi de ekle (düzenleme için)
+      // Form verisini hazırla - initialData'dan id'yi ve city'yi de ekle
       const submitData = { 
         ...formData, 
         id: initialData?.id || formData.id, // Düzenleme için id'yi koru
+        city: initialData?.city || formData.city, // city-person için city'yi ekle
         responsibilities: responsibilities.filter(r => r && r.trim()),
         cvFileName: cvFileName || undefined,
         cvData: cvData || undefined,
@@ -423,9 +424,9 @@ export default function FormModal({
             )}
 
             {/* Kişi Formu */}
-            {type === 'person' && (
+            {(type === 'person' || type === 'city-person') && (
               <>
-                {subUnits.length > 0 && (
+                {type === 'person' && subUnits.length > 0 && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Alt Birim Seçin *
@@ -441,6 +442,13 @@ export default function FormModal({
                         <option key={unit.id} value={unit.id}>{unit.title}</option>
                       ))}
                     </select>
+                  </div>
+                )}
+                {type === 'city-person' && initialData?.city && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                    <p className="text-sm text-green-800 font-medium">
+                      İl: <span className="font-bold">{initialData.city}</span>
+                    </p>
                   </div>
                 )}
                 <div>
@@ -468,6 +476,35 @@ export default function FormModal({
                     placeholder="Örn: Yazılım Geliştirici"
                   />
                 </div>
+                {/* Email ve Telefon - city-person için de */}
+                {(type === 'person' || type === 'city-person') && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <Mail className="w-4 h-4 inline mr-1" /> E-posta
+                      </label>
+                      <input
+                        type="email"
+                        value={formData.email || ''}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                        placeholder="ornek@email.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <Phone className="w-4 h-4 inline mr-1" /> Telefon
+                      </label>
+                      <input
+                        type="tel"
+                        value={formData.phone || ''}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                        placeholder="+90 555 123 45 67"
+                      />
+                    </div>
+                  </>
+                )}
               </>
             )}
 
