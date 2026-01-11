@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Plus, Trash2, Upload, FileText, Mail, Phone, StickyNote, GraduationCap, Building2 } from 'lucide-react'
+import { X, Plus, Trash2, Upload, FileText, Mail, Phone, StickyNote, GraduationCap, Building2, UserPlus } from 'lucide-react'
 import { showToast } from './Toast'
 
 interface SubUnit {
