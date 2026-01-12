@@ -215,6 +215,7 @@ interface OrgDataContextType {
   saveData: () => void
   loadData: () => void
   syncLocalToFirebase: () => Promise<{ success: boolean; projectId: string } | undefined> // Lokaldeki verileri Firebase'e yükle
+  syncInitialDataToFirebase: () => Promise<{ success: boolean; projectId: string } | undefined> // InitialData'yı direkt Firebase'e yükle
   setActiveProject: (projectId: string) => void
   createProject: (name: string, isMain?: boolean) => void
   deleteProject: (projectId: string) => void
@@ -1249,6 +1250,34 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     }
   }, [activeProjectId])
 
+  // InitialData'yı direkt Firebase'e yükle
+  const syncInitialDataToFirebase = useCallback(async () => {
+    const projectId = activeProjectId || 'main'
+    
+    try {
+      console.log('📤 InitialData Firebase\'e yükleniyor...')
+      console.log('  - Project ID:', projectId)
+      console.log('  - Coordinators:', initialData.coordinators?.length || 0)
+      console.log('  - Executives:', initialData.executives?.length || 0)
+      
+      // InitialData'yı Firebase'e yaz
+      await set(ref(database, `orgData/${projectId}`), initialData)
+      console.log('  ✅ InitialData Firebase\'e yüklendi')
+      
+      // localStorage'a da kaydet
+      try {
+        localStorage.setItem(`orgData_${projectId}`, JSON.stringify(initialData))
+      } catch (e) {
+        console.warn('localStorage kaydetme hatası:', e)
+      }
+      
+      return { success: true, projectId }
+    } catch (error) {
+      console.error('❌ InitialData Firebase yükleme hatası:', error)
+      throw error
+    }
+  }, [activeProjectId])
+
   // Lokaldeki verileri Firebase'e sync et
   const syncLocalToFirebase = useCallback(async () => {
     const projectId = activeProjectId || 'main'
@@ -2211,6 +2240,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       saveData,
       loadData,
       syncLocalToFirebase,
+      syncInitialDataToFirebase,
       setActiveProject,
       createProject,
       deleteProject,

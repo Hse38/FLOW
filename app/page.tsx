@@ -53,7 +53,7 @@ interface SavedProject {
 
 export default function Home() {
   // OrgData context
-  const { syncLocalToFirebase, loadData } = useOrgData()
+  const { syncLocalToFirebase, loadData, syncInitialDataToFirebase } = useOrgData()
   
   // Sidebar state
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -453,6 +453,23 @@ export default function Home() {
                     >
                       <Download className="w-4 h-4" />
                       <span className="hidden lg:inline">Firebase'den Yükle</span>
+                    </button>
+                    <button
+                      onClick={async () => {
+                        try {
+                          showToast('InitialData Firebase\'e yükleniyor...', 'info', 3000)
+                          await syncInitialDataToFirebase()
+                          showToast('✅ InitialData Firebase\'e yüklendi! Canlıda görünecek.', 'success', 5000)
+                        } catch (error) {
+                          console.error('InitialData yükleme hatası:', error)
+                          showToast('InitialData yükleme hatası. Console\'u kontrol edin.', 'error', 5000)
+                        }
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all font-medium text-sm shadow-sm"
+                      title="InitialData'yı (Küre dahil) direkt Firebase'e yükle"
+                    >
+                      <CloudUpload className="w-4 h-4" />
+                      <span className="hidden lg:inline">InitialData Yükle</span>
                     </button>
                     <button
                       onClick={handleSyncToFirebase}
