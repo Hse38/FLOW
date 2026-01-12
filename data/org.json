@@ -427,7 +427,169 @@
         "x": 700,
         "y": 1800
       },
-      "parent": "t3-teknofest-koordinatorlukleri"
+      "parent": "t3-teknofest-koordinatorlukleri",
+      "subUnits": [
+        {
+          "id": "teknik-destek-altyapi",
+          "title": "Teknik Destek ve Altyapı Birimi",
+          "description": "Teknik destek, altyapı operasyonları ve bina yönetimi",
+          "responsibilities": [
+            "Teknik destek ve altyapı operasyonlarının yürütülmesi",
+            "Bina ve donanım takip süreçlerinin yönetilmesi",
+            "Arıza ve bakım faaliyetlerinin planlanması ve takibi",
+            "Altyapı sürekliliğinin sağlanması"
+          ],
+          "people": [
+            {
+              "id": "nihat-kagit",
+              "name": "Nihat Kağıt",
+              "title": "Teknik Destek ve Altyapı Sorumlusu"
+            }
+          ]
+        },
+        {
+          "id": "deneyap-atolyeleri-itu-girisim",
+          "title": "Deneyap Atölyeleri ve İTÜ Girişim Merkezi",
+          "description": "Deneyap atölye operasyonları ve eğitim alanı lojistik desteği",
+          "responsibilities": [
+            "Deneyap atölye operasyonlarının yürütülmesi",
+            "Eğitim alanı lojistik destek süreçlerinin yönetilmesi",
+            "Atölye donanım yönetiminin sağlanması",
+            "Eğitim süreçleri operasyon takibinin yapılması"
+          ],
+          "people": [
+            {
+              "id": "yusuf-kirik",
+              "name": "Yusuf Kirik",
+              "title": "Deneyap Atölyeleri ve İTÜ Girişim Merkezi Sorumlusu"
+            },
+            {
+              "id": "abdulkadir-ayar",
+              "name": "Abdülkadir Ayar",
+              "title": "Deneyap Atölyeleri ve İTÜ Girişim Merkezi Sorumlusu"
+            },
+            {
+              "id": "muhammet-karagol",
+              "name": "Muhammet Karagöl",
+              "title": "Deneyap Atölyeleri ve İTÜ Girişim Merkezi Sorumlusu"
+            },
+            {
+              "id": "omur-sayili",
+              "name": "Ömür Sayılı",
+              "title": "Deneyap Atölyeleri ve İTÜ Girişim Merkezi Sorumlusu"
+            }
+          ]
+        },
+        {
+          "id": "hizmet-alimlari-depo-envanter-transfer",
+          "title": "Hizmet Alımları, Depo, Envanter ve Transfer",
+          "description": "Hizmet alımı, tedarik, depo ve lojistik operasyonları",
+          "responsibilities": [
+            "Hizmet alımı ve tedarik süreçlerinin yönetilmesi",
+            "Depo ve envanter yönetiminin yürütülmesi",
+            "Transfer ve lojistik operasyonlarının takibi",
+            "Mağaza ve stok süreçlerinin kontrol edilmesi"
+          ],
+          "people": [
+            {
+              "id": "mustafa-yildiz",
+              "name": "Mustafa Yıldız",
+              "title": "Hizmet Alımları, Depo, Envanter ve Transfer Sorumlusu"
+            },
+            {
+              "id": "soner-yeniay",
+              "name": "Soner Yeniay",
+              "title": "Hizmet Alımları, Depo, Envanter ve Transfer Sorumlusu"
+            },
+            {
+              "id": "eyup-akcakaya",
+              "name": "Eyüp Akçakaya",
+              "title": "Hizmet Alımları, Depo, Envanter ve Transfer Sorumlusu"
+            },
+            {
+              "id": "omer-ercel",
+              "name": "Ömer Erçel",
+              "title": "Hizmet Alımları, Depo, Envanter ve Transfer Sorumlusu"
+            },
+            {
+              "id": "yakup",
+              "name": "Yakup",
+              "title": "Hizmet Alımları, Depo, Envanter ve Transfer Sorumlusu"
+            }
+          ]
+        },
+        {
+          "id": "temizlik-operasyonlari",
+          "title": "Temizlik Operasyonları",
+          "description": "Temizlik, hijyen ve mekân düzeni hizmetleri",
+          "responsibilities": [
+            "Temizlik ve hizmet operasyonlarının yürütülmesi",
+            "Hijyen ve mekân düzeninin sağlanması",
+            "Günlük temizlik ve bakım faaliyetlerinin takibi",
+            "Ortak alan hizmetlerinin yönetilmesi"
+          ],
+          "people": [
+            {
+              "id": "rukiye-hortum",
+              "name": "Rukiye Hortum",
+              "title": "Temizlik Operasyonları Sorumlusu"
+            },
+            {
+              "id": "fatma-emeksiz",
+              "name": "Fatma Emeksiz",
+              "title": "Temizlik Operasyonları Sorumlusu"
+            },
+            {
+              "id": "dondu-over",
+              "name": "Döndü Över",
+              "title": "Temizlik Operasyonları Sorumlusu"
+            },
+            {
+              "id": "aysun-kul",
+              "name": "Aysun Kul",
+              "title": "Temizlik Operasyonları Sorumlusu"
+            },
+            {
+              "id": "esma",
+              "name": "Esma",
+              "title": "Temizlik Operasyonları Sorumlusu"
+            }
+          ]
+        },
+        {
+          "id": "cagri-merkezi-sekreterya",
+          "title": "Çağrı Merkezi ve Sekreterya Birimi",
+          "description": "Çağrı merkezi operasyonları, sekreterya ve resepsiyon hizmetleri",
+          "responsibilities": [
+            "Çağrı merkezi operasyonlarının yürütülmesi",
+            "Sekreterya ve resepsiyon hizmetlerinin sağlanması",
+            "Bilgi akışı ve yönlendirme süreçlerinin yönetilmesi",
+            "TEKNOFEST kulüpleri ile iletişim ve koordinasyonun sağlanması"
+          ],
+          "people": [
+            {
+              "id": "hilal-celik",
+              "name": "Hilal Çelik",
+              "title": "Çağrı Merkezi ve Sekreterya Sorumlusu"
+            },
+            {
+              "id": "osman-ozdemir",
+              "name": "Osman Özdemir",
+              "title": "Çağrı Merkezi ve Sekreterya Sorumlusu"
+            },
+            {
+              "id": "busra-akbas",
+              "name": "Büşra Akbaş",
+              "title": "Çağrı Merkezi ve Sekreterya Sorumlusu"
+            },
+            {
+              "id": "bahar-kilic",
+              "name": "Bahar Kılıç",
+              "title": "Çağrı Merkezi ve Sekreterya Sorumlusu"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "kurumsal-iletisim",
