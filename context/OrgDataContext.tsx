@@ -216,6 +216,7 @@ interface OrgDataContextType {
   loadData: () => void
   syncLocalToFirebase: () => Promise<{ success: boolean; projectId: string } | undefined> // Lokaldeki verileri Firebase'e yükle
   syncInitialDataToFirebase: () => Promise<{ success: boolean; projectId: string } | undefined> // InitialData'yı direkt Firebase'e yükle
+  addKureToFirebase: () => Promise<{ success: boolean } | undefined> // Firebase'deki executives'e Küre Koordinatörlüğü ekle
   setActiveProject: (projectId: string) => void
   createProject: (name: string, isMain?: boolean) => void
   deleteProject: (projectId: string) => void
@@ -1317,6 +1318,68 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     }
   }, [activeProjectId])
 
+  // Firebase'deki executives array'ine Küre Koordinatörlüğü ekle
+  const addKureToFirebase = useCallback(async () => {
+    if (USE_LOCAL_ONLY) {
+      console.log('⚠️ localStorage modu aktif, Firebase işlemi yapılamaz')
+      return
+    }
+    
+    const projectId = activeProjectId || 'main'
+    
+    try {
+      console.log('🔍 Firebase\'deki executives kontrol ediliyor...')
+      
+      // Firebase'deki mevcut verileri oku
+      const snapshot = await get(ref(database, `orgData/${projectId}`))
+      
+      if (!snapshot.exists()) {
+        console.log('⚠️ Firebase\'de veri yok, InitialData yükleniyor...')
+        await set(ref(database, `orgData/${projectId}`), initialData)
+        console.log('✅ InitialData (Küre dahil) Firebase\'e yüklendi')
+        return { success: true }
+      }
+      
+      const existingData = snapshot.val()
+      let updatedData = { ...existingData }
+      
+      // Executives array'ini normalize et
+      if (!updatedData.executives) {
+        updatedData.executives = []
+      } else if (!Array.isArray(updatedData.executives)) {
+        updatedData.executives = Object.values(updatedData.executives)
+      }
+      
+      // Küre Koordinatörlüğü var mı kontrol et
+      const kureExists = updatedData.executives.some((exec: any) => 
+        exec.id === 'kure' || exec.name?.includes('Küre')
+      )
+      
+      if (kureExists) {
+        console.log('✅ Küre Koordinatörlüğü zaten Firebase\'de mevcut')
+        return { success: true }
+      }
+      
+      // Küre Koordinatörlüğü'nü ekle
+      const kureFromInitial = initialData.executives.find(e => e.id === 'kure')
+      if (kureFromInitial) {
+        updatedData.executives.push(kureFromInitial)
+        console.log('➕ Küre Koordinatörlüğü executives array\'ine eklendi')
+        
+        // Firebase'e kaydet
+        await set(ref(database, `orgData/${projectId}`), updatedData)
+        console.log('✅✅✅ Küre Koordinatörlüğü Firebase\'e eklendi! ✅✅✅')
+        return { success: true }
+      } else {
+        console.error('❌ InitialData\'da Küre Koordinatörlüğü bulunamadı')
+        return { success: false }
+      }
+    } catch (error) {
+      console.error('❌ Küre ekleme hatası:', error)
+      throw error
+    }
+  }, [activeProjectId])
+
   // Lokaldeki verileri Firebase'e sync et
   const syncLocalToFirebase = useCallback(async () => {
     const projectId = activeProjectId || 'main'
@@ -2280,6 +2343,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       loadData,
       syncLocalToFirebase,
       syncInitialDataToFirebase,
+      addKureToFirebase,
       setActiveProject,
       createProject,
       deleteProject,

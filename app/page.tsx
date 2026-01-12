@@ -53,7 +53,7 @@ interface SavedProject {
 
 export default function Home() {
   // OrgData context
-  const { syncLocalToFirebase, loadData, syncInitialDataToFirebase } = useOrgData()
+  const { syncLocalToFirebase, loadData, syncInitialDataToFirebase, addKureToFirebase } = useOrgData()
   
   // Sidebar state
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -453,6 +453,23 @@ export default function Home() {
                     >
                       <Download className="w-4 h-4" />
                       <span className="hidden lg:inline">Firebase'den Yükle</span>
+                    </button>
+                    <button
+                      onClick={async () => {
+                        try {
+                          showToast('Küre Koordinatörlüğü ekleniyor...', 'info', 3000)
+                          await addKureToFirebase()
+                          showToast('✅ Küre Koordinatörlüğü Firebase\'e eklendi! Canlıda görünecek.', 'success', 5000)
+                        } catch (error: any) {
+                          console.error('Küre ekleme hatası:', error)
+                          showToast('Küre ekleme hatası. Console\'u kontrol edin.', 'error', 5000)
+                        }
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all font-medium text-sm shadow-sm"
+                      title="Küre Koordinatörlüğü'nü Firebase'deki executives'e ekle"
+                    >
+                      <CloudUpload className="w-4 h-4" />
+                      <span className="hidden lg:inline">Küre Ekle</span>
                     </button>
                     <button
                       onClick={async () => {
