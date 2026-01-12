@@ -217,6 +217,7 @@ interface OrgDataContextType {
   syncLocalToFirebase: () => Promise<{ success: boolean; projectId: string } | undefined> // Lokaldeki verileri Firebase'e yükle
   syncInitialDataToFirebase: () => Promise<{ success: boolean; projectId: string } | undefined> // InitialData'yı direkt Firebase'e yükle
   addKureToFirebase: () => Promise<{ success: boolean } | undefined> // Firebase'deki executives'e Küre Koordinatörlüğü ekle
+  addKureCoordinatorToFirebase: () => Promise<{ success: boolean } | undefined> // Firebase'e Küre Koordinatörlüğü coordinator'ını ekle
   setActiveProject: (projectId: string) => void
   createProject: (name: string, isMain?: boolean) => void
   deleteProject: (projectId: string) => void
@@ -701,6 +702,48 @@ const initialDataLegacy: OrgData = {
             "Dijital platformlarda medya, yayın ve canlı yayın koordinasyonu",
             "Dijital içerik kalite ve kullanıcı deneyimi iyileştirme"
           ]
+        }
+      ]
+    },
+    {
+      id: "kure-koordinatorlugu",
+      title: "Küre Koordinatörlüğü",
+      description: "İçerik üretimi, redaksiyon ve yayın standartları yönetimi",
+      responsibilities: [
+        "İçerik Üretimi ve Redaksiyon",
+        "Bilgi Doğrulama ve Kaynak Denetimi",
+        "Yapay Zeka İçerik Kontrolü",
+        "SEO ve Yayın Standartları"
+      ],
+      position: { x: 1350, y: 300 },
+      parent: "kure",
+      hasDetailPage: true,
+      deputies: [],
+      subUnits: [
+        {
+          id: "kure-birimi",
+          title: "Küre",
+          people: [
+            { id: "kure-1", name: "Duygu Şahinler" },
+            { id: "kure-2", name: "Ayşe Aslıhan Yoran" },
+            { id: "kure-3", name: "Meryem Şentürk Çoban" },
+            { id: "kure-4", name: "Burak Enes" },
+            { id: "kure-5", name: "Onur Çolak" },
+            { id: "kure-6", name: "Yusuf Bilal Akkaya" },
+            { id: "kure-7", name: "Nazlıcan Kemerkaya" },
+            { id: "kure-8", name: "Nurten Yalçın" },
+            { id: "kure-9", name: "Hamza Aktay" },
+            { id: "kure-10", name: "Burcu Sandıkçı" },
+            { id: "kure-11", name: "Zozan Demirci" },
+            { id: "kure-12", name: "Sadullah Bora Yıldırım" }
+          ],
+          responsibilities: [
+            "İçerik Üretimi ve Redaksiyon",
+            "Bilgi Doğrulama ve Kaynak Denetimi",
+            "Yapay Zeka İçerik Kontrolü",
+            "SEO ve Yayın Standartları"
+          ],
+          description: "Küre birimi içerik üretimi ve yayın standartları"
         }
       ]
     }
@@ -1525,6 +1568,86 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('❌ Küre ekleme hatası:', error)
+      throw error
+    }
+  }, [activeProjectId])
+
+  // Küre Koordinatörlüğü coordinator'ını Firebase'e ekle/güncelle
+  const addKureCoordinatorToFirebase = useCallback(async () => {
+    if (USE_LOCAL_ONLY) {
+      console.log('⚠️ localStorage modu aktif, Firebase işlemi yapılamaz')
+      return
+    }
+    
+    const projectId = activeProjectId || 'main'
+    
+    try {
+      console.log('🔍 Küre Koordinatörlüğü coordinator\'ı Firebase\'e ekleniyor...')
+      console.log('  - Project ID:', projectId)
+      
+      // Firebase'deki mevcut verileri oku
+      const snapshot = await get(ref(database, `orgData/${projectId}`))
+      
+      if (!snapshot.exists()) {
+        console.log('⚠️ Firebase\'de veri yok, InitialData yükleniyor...')
+        await set(ref(database, `orgData/${projectId}`), initialData)
+        console.log('✅ InitialData (Küre coordinator dahil) Firebase\'e yüklendi')
+        return { success: true }
+      }
+      
+      const existingData = snapshot.val()
+      let updatedData = { ...existingData }
+      
+      // Coordinators array'ini normalize et
+      if (!updatedData.coordinators) {
+        updatedData.coordinators = []
+      } else if (!Array.isArray(updatedData.coordinators)) {
+        console.log('🔄 Coordinators object formatında, array\'e çevriliyor...')
+        updatedData.coordinators = Object.values(updatedData.coordinators)
+      }
+      
+      // Küre coordinator'ını initialData'dan al
+      const kureCoordinator = initialData.coordinators.find((c: Coordinator) => c.id === 'kure-koordinatorlugu')
+      
+      if (!kureCoordinator) {
+        console.error('❌ InitialData\'da Küre coordinator bulunamadı')
+        return { success: false }
+      }
+      
+      // Küre coordinator'ı var mı kontrol et
+      const kureCoordExists = updatedData.coordinators.some((c: any) => c.id === 'kure-koordinatorlugu')
+      
+      if (kureCoordExists) {
+        console.log('✅ Küre Koordinatörlüğü coordinator\'ı zaten Firebase\'de mevcut, güncelleniyor...')
+        // Güncelle
+        updatedData.coordinators = updatedData.coordinators.map((c: any) =>
+          c.id === 'kure-koordinatorlugu' ? kureCoordinator : c
+        )
+      } else {
+        console.log('➕ Küre Koordinatörlüğü coordinator\'ı ekleniyor...')
+        // Ekle
+        updatedData.coordinators = [...updatedData.coordinators, kureCoordinator]
+      }
+      
+      console.log('📊 Küre coordinator detayları:')
+      console.log('  - ID:', kureCoordinator.id)
+      console.log('  - Title:', kureCoordinator.title)
+      console.log('  - Parent:', kureCoordinator.parent)
+      console.log('  - SubUnits:', kureCoordinator.subUnits?.length || 0)
+      if (kureCoordinator.subUnits && kureCoordinator.subUnits.length > 0) {
+        kureCoordinator.subUnits.forEach((subUnit: any, idx: number) => {
+          console.log(`    ${idx + 1}. ${subUnit.title} - ${subUnit.people?.length || 0} personel`)
+        })
+      }
+      
+      // Firebase'e kaydet
+      await set(ref(database, `orgData/${projectId}`), updatedData)
+      console.log('✅✅✅ Küre Koordinatörlüğü coordinator\'ı Firebase\'e kaydedildi! ✅✅✅')
+      console.log('  - 🌐 Canlıda otomatik olarak görünecek')
+      
+      return { success: true }
+    } catch (error) {
+      console.error('❌ Küre coordinator ekleme hatası:', error)
       throw error
     }
   }, [activeProjectId])
@@ -2493,6 +2616,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       syncLocalToFirebase,
       syncInitialDataToFirebase,
       addKureToFirebase,
+      addKureCoordinatorToFirebase,
       setActiveProject,
       createProject,
       deleteProject,

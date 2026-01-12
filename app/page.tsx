@@ -53,7 +53,7 @@ interface SavedProject {
 
 export default function Home() {
   // OrgData context
-  const { syncLocalToFirebase, loadData, syncInitialDataToFirebase, addKureToFirebase } = useOrgData()
+  const { syncLocalToFirebase, loadData, syncInitialDataToFirebase, addKureToFirebase, addKureCoordinatorToFirebase } = useOrgData()
   
   // Sidebar state
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -77,6 +77,30 @@ export default function Home() {
   useEffect(() => {
     setIsMounted(true)
   }, [])
+
+  // Küre Koordinatörlüğü coordinator'ını otomatik olarak Firebase'e ekle (sadece bir kez)
+  useEffect(() => {
+    if (isMounted && typeof window !== 'undefined') {
+      // Sadece production'da (localhost değilse) ve daha önce eklenmemişse
+      const hostname = window.location.hostname
+      const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
+      const alreadyAdded = localStorage.getItem('kure-coordinator-added')
+      
+      if (!isLocalhost && !alreadyAdded) {
+        // 2 saniye bekle (sayfa yüklensin)
+        setTimeout(async () => {
+          try {
+            console.log('🔍 Küre Koordinatörlüğü coordinator\'ı otomatik olarak Firebase\'e ekleniyor...')
+            await addKureCoordinatorToFirebase()
+            localStorage.setItem('kure-coordinator-added', 'true')
+            console.log('✅ Küre Koordinatörlüğü coordinator\'ı Firebase\'e eklendi!')
+          } catch (error) {
+            console.error('❌ Küre coordinator ekleme hatası:', error)
+          }
+        }, 2000)
+      }
+    }
+  }, [isMounted, addKureCoordinatorToFirebase])
   
   // Sync to Firebase handler
   const handleSyncToFirebase = async () => {
@@ -470,6 +494,23 @@ export default function Home() {
                     >
                       <CloudUpload className="w-4 h-4" />
                       <span className="hidden lg:inline">Küre Ekle</span>
+                    </button>
+                    <button
+                      onClick={async () => {
+                        try {
+                          showToast('Küre Koordinatörlüğü coordinator\'ı ekleniyor...', 'info', 3000)
+                          await addKureCoordinatorToFirebase()
+                          showToast('✅ Küre Koordinatörlüğü coordinator\'ı Firebase\'e eklendi! Canlıda görünecek.', 'success', 5000)
+                        } catch (error: any) {
+                          console.error('Küre coordinator ekleme hatası:', error)
+                          showToast('Küre coordinator ekleme hatası. Console\'u kontrol edin.', 'error', 5000)
+                        }
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all font-medium text-sm shadow-sm"
+                      title="Küre Koordinatörlüğü coordinator'ını (birim ve personellerle) Firebase'e ekle"
+                    >
+                      <CloudUpload className="w-4 h-4" />
+                      <span className="hidden lg:inline">Küre Coordinator Ekle</span>
                     </button>
                     <button
                       onClick={async () => {
