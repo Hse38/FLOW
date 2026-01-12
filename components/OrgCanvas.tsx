@@ -1880,6 +1880,29 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           edges={flowEdges}
           onNodesChange={handleNodesChange}
           onEdgesChange={onEdgesChange}
+          onConnect={(connection) => {
+            // React Flow'un Handle'lardan sürükleyerek bağlantı oluşturma
+            if (connection.source && connection.target && connection.source !== connection.target) {
+              const sourceHandle = (connection.sourceHandle as 'top' | 'bottom') || 'bottom'
+              const targetHandle = (connection.targetHandle as 'top' | 'bottom') || 'top'
+              
+              console.log('🔗 React Flow onConnect:', {
+                source: connection.source,
+                target: connection.target,
+                sourceHandle,
+                targetHandle
+              })
+              
+              addFirebaseConnection({
+                source: connection.source,
+                target: connection.target,
+                sourceHandle,
+                targetHandle
+              })
+              
+              showToast('Bağlantı oluşturuldu!', 'success')
+            }
+          }}
           nodeTypes={nodeTypes}
           connectionMode={ConnectionMode.Loose}
           onNodeContextMenu={handleNodeContextMenu}
@@ -2619,6 +2642,102 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           </>
         )}
 
+        {/* Connection Handle Modal - Kaynak yönü seçimi */}
+        {connectionHandleModal && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-[90%]">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">
+                Bağlantı Yönü Seç
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                <span className="font-semibold">{connectionHandleModal.nodeName}</span> için bağlantı çıkış yönünü seçin:
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    startConnection(connectionHandleModal.nodeId, connectionHandleModal.nodeName, 'top')
+                    setConnectionHandleModal(null)
+                  }}
+                  className="flex-1 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors font-medium"
+                >
+                  Üstten (Top)
+                </button>
+                <button
+                  onClick={() => {
+                    startConnection(connectionHandleModal.nodeId, connectionHandleModal.nodeName, 'bottom')
+                    setConnectionHandleModal(null)
+                  }}
+                  className="flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
+                >
+                  Alttan (Bottom)
+                </button>
+              </div>
+              <button
+                onClick={() => setConnectionHandleModal(null)}
+                className="mt-3 w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+              >
+                İptal
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Pending Target Modal - Hedef yönü seçimi */}
+        {pendingTarget && connectionMode.active && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-[90%]">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">
+                Hedef Yönü Seç
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                <span className="font-semibold">{connectionMode.sourceName}</span> → <span className="font-semibold">
+                  {(() => {
+                    const coord = data.coordinators.find(c => c.id === pendingTarget.targetId)
+                    const mainCoord = data.mainCoordinators.find(m => m.id === pendingTarget.targetId)
+                    const exec = data.executives.find(e => e.id === pendingTarget.targetId)
+                    const mgmt = data.management.find(m => m.id === pendingTarget.targetId)
+                    return coord?.title || mainCoord?.title || exec?.name || mgmt?.name || 'Bilinmeyen'
+                  })()}
+                </span>
+              </p>
+              <p className="text-xs text-gray-500 mb-4">
+                Hedef node için bağlantı giriş yönünü seçin:
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    completeConnection(pendingTarget.targetId, 'top')
+                    setPendingTarget(null)
+                    showToast('Bağlantı oluşturuldu!', 'success')
+                  }}
+                  className="flex-1 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors font-medium"
+                >
+                  Üstten (Top)
+                </button>
+                <button
+                  onClick={() => {
+                    completeConnection(pendingTarget.targetId, 'bottom')
+                    setPendingTarget(null)
+                    showToast('Bağlantı oluşturuldu!', 'success')
+                  }}
+                  className="flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
+                >
+                  Alttan (Bottom)
+                </button>
+              </div>
+              <button
+                onClick={() => {
+                  cancelConnection()
+                  setPendingTarget(null)
+                }}
+                className="mt-3 w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+              >
+                İptal
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Confirmation Modal */}
         {confirmationModal && (
           <ConfirmationModal
@@ -2631,6 +2750,83 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             onConfirm={confirmationModal.onConfirm}
             onCancel={() => setConfirmationModal(null)}
           />
+        )}
+
+        {/* Connection List Modal - Bağlantıları göster/kaldır */}
+        {connectionListModal && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-[90%] max-h-[80vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-800">
+                  Bağlantılar
+                </h3>
+                <button
+                  onClick={() => setConnectionListModal(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              {(() => {
+                const nodeConnections = customConnections.filter(
+                  c => c.source === connectionListModal.nodeId || c.target === connectionListModal.nodeId
+                )
+                
+                if (nodeConnections.length === 0) {
+                  return (
+                    <p className="text-sm text-gray-500 text-center py-8">
+                      Bu node için bağlantı bulunmuyor.
+                    </p>
+                  )
+                }
+                
+                return (
+                  <div className="space-y-2">
+                    {nodeConnections.map((conn, idx) => {
+                      const sourceNode = data.coordinators.find(c => c.id === conn.source) ||
+                        data.mainCoordinators.find(m => m.id === conn.source) ||
+                        data.executives.find(e => e.id === conn.source) ||
+                        data.management.find(m => m.id === conn.source)
+                      const targetNode = data.coordinators.find(c => c.id === conn.target) ||
+                        data.mainCoordinators.find(m => m.id === conn.target) ||
+                        data.executives.find(e => e.id === conn.target) ||
+                        data.management.find(m => m.id === conn.target)
+                      
+                      const sourceName = (sourceNode as any)?.title || (sourceNode as any)?.name || conn.source
+                      const targetName = (targetNode as any)?.title || (targetNode as any)?.name || conn.target
+                      
+                      return (
+                        <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-800">
+                              {sourceName} → {targetName}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {conn.sourceHandle} → {conn.targetHandle}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              handleRemoveConnection(conn.source, conn.target)
+                              showToast('Bağlantı kaldırıldı!', 'success')
+                              if (nodeConnections.length === 1) {
+                                setConnectionListModal(null)
+                              }
+                            }}
+                            className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm transition-colors"
+                          >
+                            Kaldır
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              })()}
+            </div>
+          </div>
         )}
 
         {/* Auto Layout Selection Modal */}
