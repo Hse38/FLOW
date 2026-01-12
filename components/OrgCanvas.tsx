@@ -445,9 +445,12 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   const nodes: Node[] = useMemo(() => {
     const nodeList: Node[] = []
 
-    // Pozisyon al (yerel öncelikli)
+    // Pozisyon al (Firebase öncelikli - kaydedilmiş pozisyonlar her zaman kullanılmalı)
     const getPosition = (id: string, defaultPos: { x: number; y: number }) => {
-      return localPositions[id] || customPositions[id] || defaultPos
+      // Önce Firebase'den gelen kaydedilmiş pozisyonları kullan (en önemli)
+      // Sonra lokal state (sürükleme sırasında)
+      // En son default pozisyon (InitialData)
+      return customPositions[id] || localPositions[id] || defaultPos
     }
 
     // Add chairman
@@ -1216,13 +1219,27 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         }
         
         positionSaveTimerRef.current = setTimeout(() => {
+          // Tüm pending pozisyonları birleştir
           const positionsToSave = {
             ...customPositions,
             ...pendingPositionsRef.current
           }
+          
+          console.log('💾 Pozisyonlar Firebase\'e kaydediliyor:', Object.keys(positionsToSave).length, 'node')
+          console.log('  - Güncellenen node\'lar:', Object.keys(pendingPositionsRef.current).join(', '))
+          
+          // Firebase'e kaydet - bu fonksiyon state'i de güncelleyecek
           updateFirebasePositions(positionsToSave)
+          
+          // Lokal state'i de güncelle (hemen görünsün)
+          setLocalPositions(prev => ({ ...prev, ...pendingPositionsRef.current }))
+          
+          // Pending positions'ı temizle
+          const savedNodeIds = Object.keys(pendingPositionsRef.current)
           pendingPositionsRef.current = {}
-          console.log('💾 Pozisyonlar Firebase\'e kaydedildi:', Object.keys(positionsToSave).length, 'node')
+          
+          console.log('✅ Pozisyonlar Firebase\'e kaydedildi:', savedNodeIds.length, 'node')
+          console.log('  - Kaydedilen node\'lar:', savedNodeIds.join(', '))
         }, 500)
       }
     })

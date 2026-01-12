@@ -987,7 +987,44 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
           console.log('  ⚠️ Coordinators array boş veya yok')
         }
         
-        setData(cleanedVal)
+        // State'i güncelle - sadece gerçekten değişiklik varsa
+        setData(prev => {
+          // JSON karşılaştırması yaparak gereksiz güncellemeleri önle
+          const prevStr = JSON.stringify(prev)
+          const newStr = JSON.stringify(cleanedVal)
+          if (prevStr === newStr) {
+            console.log('  ℹ️ Veri değişmedi, state güncellenmedi')
+            return prev
+          }
+          console.log('  🔄 Veri değişti, state güncelleniyor...')
+          return cleanedVal
+        })
+        
+        // Küre Koordinatörlüğü yoksa otomatik ekle
+        const kureExists = cleanedVal.executives?.some((exec: any) => 
+          exec.id === 'kure' || exec.name?.includes('Küre') || exec.name?.includes('KÜRE')
+        )
+        
+        if (!kureExists) {
+          console.log('➕ Küre Koordinatörlüğü bulunamadı, otomatik ekleniyor...')
+          const kureFromInitial = initialData.executives.find(e => e.id === 'kure')
+          if (kureFromInitial) {
+            const updatedExecutives = [...(cleanedVal.executives || []), kureFromInitial]
+            const updatedData = {
+              ...cleanedVal,
+              executives: updatedExecutives
+            }
+            // Firebase'e kaydet
+            set(ref(database, `orgData/${activeProjectId}`), updatedData)
+              .then(() => {
+                console.log('✅✅✅ Küre Koordinatörlüğü otomatik olarak Firebase\'e eklendi! ✅✅✅')
+                setData(updatedData)
+              })
+              .catch((error) => {
+                console.error('❌ Küre ekleme hatası:', error)
+              })
+          }
+        }
       } else {
         // Firebase'de veri yoksa - boş veri göster (üzerine yazma!)
         console.log('⚠️⚠️⚠️ [PRODUCTION] Firebase\'de veri yok! ⚠️⚠️⚠️')
@@ -1011,10 +1048,26 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     const unsubPos = onValue(posRef, (snapshot) => {
       const val = snapshot.val()
       if (val) {
-        console.log('📥 [PRODUCTION] Pozisyonlar güncellendi (başka kullanıcıdan):', Object.keys(val).length, 'node')
-        setPositions(val)
+        console.log('📥 [PRODUCTION] Pozisyonlar güncellendi (Firebase\'den):', Object.keys(val).length, 'node')
+        // State'i güncelle - sadece gerçekten değişiklik varsa
+        setPositions(prev => {
+          const prevStr = JSON.stringify(prev)
+          const newStr = JSON.stringify(val)
+          if (prevStr === newStr) {
+            console.log('  ℹ️ Pozisyonlar değişmedi, state güncellenmedi')
+            return prev
+          }
+          console.log('  🔄 Pozisyonlar değişti, state güncelleniyor...')
+          return val
+        })
       } else {
-        setPositions({})
+        setPositions(prev => {
+          if (Object.keys(prev).length === 0) {
+            return prev
+          }
+          console.log('📥 [PRODUCTION] Pozisyonlar temizlendi (Firebase\'den)')
+          return {}
+        })
       }
     })
 
@@ -1055,6 +1108,9 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
         return
       }
       if (activeProjectId) {
+        // ÖNEMLİ: State'i önce güncelle (UI responsive olsun)
+        setData(newData)
+        
         console.log('🔥 [PRODUCTION] Firebase\'e kaydediliyor (GERÇEK ZAMANLI SENKRONİZASYON)...')
         console.log('  - Project ID:', activeProjectId)
         console.log('  - Management:', newData.management?.length || 0)
@@ -1062,6 +1118,8 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
         console.log('  - Coordinators:', newData.coordinators?.length || 0)
         console.log('  - Main Coordinators:', newData.mainCoordinators?.length || 0)
         console.log('  - ⚡ Tüm kullanıcılar bu değişiklikleri anında görecek!')
+        
+        // Firebase'e yaz - başarılı olmasını bekle
         set(ref(database, `orgData/${activeProjectId}`), newData)
           .then(() => {
             console.log('✅✅✅ [PRODUCTION] Firebase\'e başarıyla kaydedildi! ✅✅✅')
@@ -1070,19 +1128,28 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
             console.log('  - 🌐 Gerçek zamanlı senkronizasyon aktif - tüm kullanıcılar güncel veriyi görecek')
           })
           .catch((error) => {
-            console.error('❌ Firebase kaydetme hatası:', error)
+            console.error('❌❌❌ Firebase kaydetme hatası:', error)
             console.error('Hata detayları:', {
               projectId: activeProjectId,
               error: error.message || String(error),
               code: error.code || undefined
             })
-            // Hata olsa bile state'i güncelle (offline mode için)
-            setData(newData)
+            // Hata durumunda tekrar dene (retry logic)
+            console.log('🔄 Firebase\'e tekrar yazma denemesi yapılıyor...')
+            set(ref(database, `orgData/${activeProjectId}`), newData)
+              .then(() => {
+                console.log('✅ Firebase\'e ikinci denemede başarıyla kaydedildi!')
+              })
+              .catch((retryError) => {
+                console.error('❌ Firebase\'e ikinci denemede de hata:', retryError)
+                // State zaten güncellendi, kullanıcı değişiklikleri görebilir
+                // Firebase bağlantısı düzelince listener otomatik senkronize edecek
+              })
           })
       }
     } catch (error) {
       console.error('❌ saveToFirebase genel hatası:', error)
-      // Hata olsa bile state'i güncelle
+      // Hata olsa bile state'i güncelle (offline mode için)
       setData(newData)
     }
   }, [activeProjectId])
@@ -1102,16 +1169,39 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       return
     }
     if (activeProjectId) {
+      // ÖNEMLİ: State'i önce güncelle (UI responsive olsun)
+      setPositions(newPositions)
+      
       console.log('💾 [PRODUCTION] Pozisyonlar Firebase\'e kaydediliyor (GERÇEK ZAMANLI)...')
       console.log('  - Project ID:', activeProjectId)
       console.log('  - Node sayısı:', Object.keys(newPositions).length)
+      console.log('  - Node ID\'leri:', Object.keys(newPositions).join(', '))
+      
+      // Firebase'e yaz - başarılı olmasını bekle
       set(ref(database, `positions/${activeProjectId}`), newPositions)
         .then(() => {
           console.log('✅✅✅ [PRODUCTION] Pozisyonlar Firebase\'e kaydedildi! ✅✅✅')
           console.log('  - 🌐 Tüm kullanıcılar bu pozisyonları anında görecek')
         })
         .catch((error) => {
-          console.error('❌ Firebase pozisyon kaydetme hatası:', error)
+          console.error('❌❌❌ Firebase pozisyon kaydetme hatası:', error)
+          console.error('Hata detayları:', {
+            projectId: activeProjectId,
+            error: error.message || String(error),
+            code: error.code || undefined,
+            nodeCount: Object.keys(newPositions).length
+          })
+          // Hata durumunda tekrar dene (retry logic)
+          console.log('🔄 Firebase\'e pozisyonlar tekrar yazma denemesi yapılıyor...')
+          set(ref(database, `positions/${activeProjectId}`), newPositions)
+            .then(() => {
+              console.log('✅ Firebase\'e pozisyonlar ikinci denemede başarıyla kaydedildi!')
+            })
+            .catch((retryError) => {
+              console.error('❌ Firebase\'e pozisyonlar ikinci denemede de hata:', retryError)
+              // State zaten güncellendi, kullanıcı değişiklikleri görebilir
+              // Firebase bağlantısı düzelince listener otomatik senkronize edecek
+            })
         })
     }
   }, [activeProjectId])
