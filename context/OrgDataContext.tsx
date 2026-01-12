@@ -247,6 +247,14 @@ const initialDataLegacy: OrgData = {
       parent: "selcuk-bayraktar"
     },
     {
+      id: "kure",
+      name: "Küre",
+      title: "Koordinatörlük",
+      type: "special",
+      position: { x: 1350, y: 50 },
+      parent: "selcuk-bayraktar"
+    },
+    {
       id: "elvan-kuzucu",
       name: "Elvan Kuzucu Hıdır",
       title: "Genel Müdür Yardımcısı",
