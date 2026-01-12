@@ -943,10 +943,21 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
         if (!normalizedVal.executives) normalizedVal.executives = []
         if (!normalizedVal.mainCoordinators) normalizedVal.mainCoordinators = []
         
+        // Executives array'i object ise array'e çevir
+        if (normalizedVal.executives && !Array.isArray(normalizedVal.executives) && typeof normalizedVal.executives === 'object') {
+          console.log('🔄 Executives object formatında, array\'e çevriliyor...')
+          normalizedVal.executives = Object.values(normalizedVal.executives)
+        }
+        
         console.log('✅✅✅ [PRODUCTION] Firebase\'den veri yüklendi! ✅✅✅')
         console.log('  - Project ID:', activeProjectId)
         console.log('  - Management:', normalizedVal.management?.length || 0)
         console.log('  - Executives:', normalizedVal.executives?.length || 0)
+        if (normalizedVal.executives && normalizedVal.executives.length > 0) {
+          normalizedVal.executives.forEach((exec: any, idx: number) => {
+            console.log(`    ${idx + 1}. ${exec.name || exec.id || 'İsimsiz'}`)
+          })
+        }
         console.log('  - Main Coordinators:', normalizedVal.mainCoordinators?.length || 0)
         console.log('  - Coordinators:', normalizedVal.coordinators?.length || 0)
         
@@ -1023,6 +1034,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
         try {
           const projectId = activeProjectId || 'main'
           localStorage.setItem(`orgData_${projectId}`, JSON.stringify(newData))
+          console.log('💾 [LOCAL] Veri localStorage\'a kaydedildi')
         } catch (error) {
           console.error('localStorage kaydetme hatası:', error)
           throw error
@@ -1030,16 +1042,27 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
         return
       }
       if (activeProjectId) {
-        set(ref(database, `orgData/${activeProjectId}`), newData).catch((error) => {
-          console.error('❌ Firebase kaydetme hatası:', error)
-          console.error('Hata detayları:', {
-            projectId: activeProjectId,
-            error: error.message || String(error),
-            code: error.code || undefined
+        console.log('🔥 [PRODUCTION] Firebase\'e kaydediliyor...')
+        console.log('  - Project ID:', activeProjectId)
+        console.log('  - Executives:', newData.executives?.length || 0)
+        console.log('  - Coordinators:', newData.coordinators?.length || 0)
+        
+        set(ref(database, `orgData/${activeProjectId}`), newData)
+          .then(() => {
+            console.log('✅✅✅ [PRODUCTION] Firebase\'e başarıyla kaydedildi! ✅✅✅')
+            console.log('  - Executives:', newData.executives?.map(e => e.name).join(', ') || 'Yok')
+            console.log('  - Coordinators:', newData.coordinators?.length || 0, 'adet')
           })
-          // Hata olsa bile state'i güncelle (offline mode için)
-          setData(newData)
-        })
+          .catch((error) => {
+            console.error('❌ Firebase kaydetme hatası:', error)
+            console.error('Hata detayları:', {
+              projectId: activeProjectId,
+              error: error.message || String(error),
+              code: error.code || undefined
+            })
+            // Hata olsa bile state'i güncelle (offline mode için)
+            setData(newData)
+          })
       }
     } catch (error) {
       console.error('❌ saveToFirebase genel hatası:', error)
