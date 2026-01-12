@@ -1097,6 +1097,84 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
             return prev
           }
           console.log('  🔄 Veri değişti, state güncelleniyor...')
+          
+          // Pozisyonları kontrol et ve executives array'indeki position değerlerini güncelle
+          // positions state'ini kullan (useState hook'undan gelen current value)
+          // NOT: positions henüz yüklenmemiş olabilir, bu durumda useEffect çalışacak
+          if (Object.keys(positions).length > 0) {
+            let hasPositionChanges = false
+            const updatedExecutives = cleanedVal.executives.map((exec: Executive) => {
+              if (positions[exec.id]) {
+                const savedPosition = positions[exec.id]
+                if (exec.position.x !== savedPosition.x || exec.position.y !== savedPosition.y) {
+                  hasPositionChanges = true
+                  console.log(`  📍 Executive pozisyonu orgData'da güncelleniyor: ${exec.id} -> (${savedPosition.x}, ${savedPosition.y})`)
+                  return { ...exec, position: savedPosition }
+                }
+              }
+              return exec
+            })
+            
+            const updatedManagement = cleanedVal.management.map((mgmt: Management) => {
+              if (positions[mgmt.id]) {
+                const savedPosition = positions[mgmt.id]
+                if (mgmt.position.x !== savedPosition.x || mgmt.position.y !== savedPosition.y) {
+                  hasPositionChanges = true
+                  return { ...mgmt, position: savedPosition }
+                }
+              }
+              return mgmt
+            })
+            
+            const updatedMainCoordinators = cleanedVal.mainCoordinators.map((mc: MainCoordinator) => {
+              if (positions[mc.id]) {
+                const savedPosition = positions[mc.id]
+                if (mc.position.x !== savedPosition.x || mc.position.y !== savedPosition.y) {
+                  hasPositionChanges = true
+                  return { ...mc, position: savedPosition }
+                }
+              }
+              return mc
+            })
+            
+            const updatedCoordinators = cleanedVal.coordinators.map((coord: Coordinator) => {
+              if (positions[coord.id]) {
+                const savedPosition = positions[coord.id]
+                if (coord.position.x !== savedPosition.x || coord.position.y !== savedPosition.y) {
+                  hasPositionChanges = true
+                  return { ...coord, position: savedPosition }
+                }
+              }
+              return coord
+            })
+            
+            if (hasPositionChanges) {
+              // Executives array'indeki pozisyonları Firebase'deki orgData'ya kaydet
+              const updatedData = {
+                ...cleanedVal,
+                executives: updatedExecutives,
+                management: updatedManagement,
+                mainCoordinators: updatedMainCoordinators,
+                coordinators: updatedCoordinators
+              }
+              
+              // Firebase'deki orgData'ya kaydet (sonsuz döngüyü önlemek için setTimeout kullan)
+              if (activeProjectId && !USE_LOCAL_ONLY) {
+                setTimeout(() => {
+                  set(ref(database, `orgData/${activeProjectId}`), updatedData)
+                    .then(() => {
+                      console.log('✅ Executives array pozisyonları orgData\'ya kaydedildi (orgData yükleme)')
+                    })
+                    .catch((error) => {
+                      console.error('❌ Executives array pozisyon kaydetme hatası:', error)
+                    })
+                }, 100)
+              }
+              
+              return updatedData
+            }
+          }
+          
           return cleanedVal
         })
         
