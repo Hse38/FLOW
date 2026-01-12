@@ -1216,6 +1216,15 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
           }
         }
         
+        // Executives array veya object olabilir - normalize et
+        if (firebaseData.executives && !Array.isArray(firebaseData.executives) && typeof firebaseData.executives === 'object') {
+          console.log('🔄 Executives object formatında, array\'e çevriliyor...')
+          firebaseData = {
+            ...firebaseData,
+            executives: Object.values(firebaseData.executives)
+          }
+        }
+        
         // Array'leri normalize et
         if (!firebaseData.coordinators) firebaseData.coordinators = []
         if (!firebaseData.management) firebaseData.management = []
@@ -1347,16 +1356,33 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       if (!updatedData.executives) {
         updatedData.executives = []
       } else if (!Array.isArray(updatedData.executives)) {
+        console.log('🔄 Executives object formatında, array\'e çevriliyor...')
         updatedData.executives = Object.values(updatedData.executives)
       }
       
+      console.log('📊 Mevcut executives:', updatedData.executives.length, 'adet')
+      console.log('  - Executives listesi:', updatedData.executives.map((e: any) => e.name || e.id).join(', '))
+      
       // Küre Koordinatörlüğü var mı kontrol et
       const kureExists = updatedData.executives.some((exec: any) => 
-        exec.id === 'kure' || exec.name?.includes('Küre')
+        exec.id === 'kure' || exec.name?.includes('Küre') || exec.name?.includes('KÜRE')
       )
       
       if (kureExists) {
         console.log('✅ Küre Koordinatörlüğü zaten Firebase\'de mevcut')
+        // Yine de veriyi güncelle (position, parent kontrolü için)
+        const existingKureIndex = updatedData.executives.findIndex((exec: any) => 
+          exec.id === 'kure' || exec.name?.includes('Küre') || exec.name?.includes('KÜRE')
+        )
+        if (existingKureIndex >= 0) {
+          const kureFromInitial = initialData.executives.find(e => e.id === 'kure')
+          if (kureFromInitial) {
+            updatedData.executives[existingKureIndex] = kureFromInitial
+            console.log('🔄 Küre Koordinatörlüğü güncellendi (position, parent kontrolü)')
+            await set(ref(database, `orgData/${projectId}`), updatedData)
+            console.log('✅✅✅ Küre Koordinatörlüğü Firebase\'de güncellendi! ✅✅✅')
+          }
+        }
         return { success: true }
       }
       
@@ -1365,6 +1391,12 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       if (kureFromInitial) {
         updatedData.executives.push(kureFromInitial)
         console.log('➕ Küre Koordinatörlüğü executives array\'ine eklendi')
+        console.log('  - Küre detayları:', {
+          id: kureFromInitial.id,
+          name: kureFromInitial.name,
+          parent: kureFromInitial.parent,
+          position: kureFromInitial.position
+        })
         
         // Firebase'e kaydet
         await set(ref(database, `orgData/${projectId}`), updatedData)
@@ -1372,6 +1404,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
         return { success: true }
       } else {
         console.error('❌ InitialData\'da Küre Koordinatörlüğü bulunamadı')
+        console.error('  - InitialData executives:', initialData.executives.map(e => e.id).join(', '))
         return { success: false }
       }
     } catch (error) {
