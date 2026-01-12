@@ -1158,6 +1158,79 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
             return prev
           }
           console.log('  🔄 Pozisyonlar değişti, state güncelleniyor...')
+          
+          // Executives array'indeki position değerlerini güncelle
+          setData(currentData => {
+            let hasChanges = false
+            const updatedExecutives = currentData.executives.map(exec => {
+              if (val[exec.id]) {
+                const newPosition = val[exec.id]
+                // Sadece pozisyon gerçekten değiştiyse güncelle
+                if (exec.position.x !== newPosition.x || exec.position.y !== newPosition.y) {
+                  hasChanges = true
+                  console.log(`  📍 Executive pozisyonu güncellendi: ${exec.id} -> (${newPosition.x}, ${newPosition.y})`)
+                  return { ...exec, position: newPosition }
+                }
+              }
+              return exec
+            })
+            
+            // Management array'indeki position değerlerini de güncelle
+            const updatedManagement = currentData.management.map(mgmt => {
+              if (val[mgmt.id]) {
+                const newPosition = val[mgmt.id]
+                if (mgmt.position.x !== newPosition.x || mgmt.position.y !== newPosition.y) {
+                  hasChanges = true
+                  console.log(`  📍 Management pozisyonu güncellendi: ${mgmt.id} -> (${newPosition.x}, ${newPosition.y})`)
+                  return { ...mgmt, position: newPosition }
+                }
+              }
+              return mgmt
+            })
+            
+            // MainCoordinators array'indeki position değerlerini de güncelle
+            const updatedMainCoordinators = currentData.mainCoordinators.map(mc => {
+              if (val[mc.id]) {
+                const newPosition = val[mc.id]
+                if (mc.position.x !== newPosition.x || mc.position.y !== newPosition.y) {
+                  hasChanges = true
+                  console.log(`  📍 MainCoordinator pozisyonu güncellendi: ${mc.id} -> (${newPosition.x}, ${newPosition.y})`)
+                  return { ...mc, position: newPosition }
+                }
+              }
+              return mc
+            })
+            
+            // Coordinators array'indeki position değerlerini de güncelle
+            const updatedCoordinators = currentData.coordinators.map(coord => {
+              if (val[coord.id]) {
+                const newPosition = val[coord.id]
+                if (coord.position.x !== newPosition.x || coord.position.y !== newPosition.y) {
+                  hasChanges = true
+                  console.log(`  📍 Coordinator pozisyonu güncellendi: ${coord.id} -> (${newPosition.x}, ${newPosition.y})`)
+                  return { ...coord, position: newPosition }
+                }
+              }
+              return coord
+            })
+            
+            if (hasChanges) {
+              // Executives array'indeki pozisyonları güncelle (sadece state'te, Firebase'e yazma - sonsuz döngüyü önlemek için)
+              // Pozisyonlar zaten positions/${projectId} altında saklanıyor
+              const updatedData = {
+                ...currentData,
+                executives: updatedExecutives,
+                management: updatedManagement,
+                mainCoordinators: updatedMainCoordinators,
+                coordinators: updatedCoordinators
+              }
+              
+              return updatedData
+            }
+            
+            return currentData
+          })
+          
           return val
         })
       } else {
@@ -1266,6 +1339,67 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error('localStorage pozisyon kaydetme hatası:', error)
       }
+      
+      // Executives array'indeki position değerlerini de güncelle (localStorage için)
+      setData(currentData => {
+        let hasChanges = false
+        const updatedExecutives = currentData.executives.map(exec => {
+          if (newPositions[exec.id]) {
+            const newPosition = newPositions[exec.id]
+            if (exec.position.x !== newPosition.x || exec.position.y !== newPosition.y) {
+              hasChanges = true
+              return { ...exec, position: newPosition }
+            }
+          }
+          return exec
+        })
+        
+        const updatedManagement = currentData.management.map(mgmt => {
+          if (newPositions[mgmt.id]) {
+            const newPosition = newPositions[mgmt.id]
+            if (mgmt.position.x !== newPosition.x || mgmt.position.y !== newPosition.y) {
+              hasChanges = true
+              return { ...mgmt, position: newPosition }
+            }
+          }
+          return mgmt
+        })
+        
+        const updatedMainCoordinators = currentData.mainCoordinators.map(mc => {
+          if (newPositions[mc.id]) {
+            const newPosition = newPositions[mc.id]
+            if (mc.position.x !== newPosition.x || mc.position.y !== newPosition.y) {
+              hasChanges = true
+              return { ...mc, position: newPosition }
+            }
+          }
+          return mc
+        })
+        
+        const updatedCoordinators = currentData.coordinators.map(coord => {
+          if (newPositions[coord.id]) {
+            const newPosition = newPositions[coord.id]
+            if (coord.position.x !== newPosition.x || coord.position.y !== newPosition.y) {
+              hasChanges = true
+              return { ...coord, position: newPosition }
+            }
+          }
+          return coord
+        })
+        
+        if (hasChanges) {
+          return {
+            ...currentData,
+            executives: updatedExecutives,
+            management: updatedManagement,
+            mainCoordinators: updatedMainCoordinators,
+            coordinators: updatedCoordinators
+          }
+        }
+        
+        return currentData
+      })
+      
       return
     }
     if (activeProjectId) {
@@ -1276,6 +1410,78 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       console.log('  - Project ID:', activeProjectId)
       console.log('  - Node sayısı:', Object.keys(newPositions).length)
       console.log('  - Node ID\'leri:', Object.keys(newPositions).join(', '))
+      
+      // Executives array'indeki position değerlerini de güncelle
+      setData(currentData => {
+        let hasChanges = false
+        const updatedExecutives = currentData.executives.map(exec => {
+          if (newPositions[exec.id]) {
+            const newPosition = newPositions[exec.id]
+            if (exec.position.x !== newPosition.x || exec.position.y !== newPosition.y) {
+              hasChanges = true
+              console.log(`  📍 Executive pozisyonu güncelleniyor: ${exec.id} -> (${newPosition.x}, ${newPosition.y})`)
+              return { ...exec, position: newPosition }
+            }
+          }
+          return exec
+        })
+        
+        const updatedManagement = currentData.management.map(mgmt => {
+          if (newPositions[mgmt.id]) {
+            const newPosition = newPositions[mgmt.id]
+            if (mgmt.position.x !== newPosition.x || mgmt.position.y !== newPosition.y) {
+              hasChanges = true
+              return { ...mgmt, position: newPosition }
+            }
+          }
+          return mgmt
+        })
+        
+        const updatedMainCoordinators = currentData.mainCoordinators.map(mc => {
+          if (newPositions[mc.id]) {
+            const newPosition = newPositions[mc.id]
+            if (mc.position.x !== newPosition.x || mc.position.y !== newPosition.y) {
+              hasChanges = true
+              return { ...mc, position: newPosition }
+            }
+          }
+          return mc
+        })
+        
+        const updatedCoordinators = currentData.coordinators.map(coord => {
+          if (newPositions[coord.id]) {
+            const newPosition = newPositions[coord.id]
+            if (coord.position.x !== newPosition.x || coord.position.y !== newPosition.y) {
+              hasChanges = true
+              return { ...coord, position: newPosition }
+            }
+          }
+          return coord
+        })
+        
+        if (hasChanges) {
+          const updatedData = {
+            ...currentData,
+            executives: updatedExecutives,
+            management: updatedManagement,
+            mainCoordinators: updatedMainCoordinators,
+            coordinators: updatedCoordinators
+          }
+          
+          // Executives array'indeki pozisyonları Firebase'deki orgData'ya da kaydet
+          set(ref(database, `orgData/${activeProjectId}`), updatedData)
+            .then(() => {
+              console.log('✅ Executives array pozisyonları Firebase\'e kaydedildi')
+            })
+            .catch((error) => {
+              console.error('❌ Executives array pozisyon kaydetme hatası:', error)
+            })
+          
+          return updatedData
+        }
+        
+        return currentData
+      })
       
       // Firebase'e yaz - başarılı olmasını bekle
       set(ref(database, `positions/${activeProjectId}`), newPositions)
