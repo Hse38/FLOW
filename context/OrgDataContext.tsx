@@ -518,7 +518,81 @@ const initialDataLegacy: OrgData = {
       position: { x: 300, y: 760 },
       parent: "t3-vakfi-koordinatorlukleri",
       deputies: [],
-      subUnits: []
+      subUnits: [
+        {
+          id: "egitmen-egitimleri-teknik-icerik",
+          title: "Eğitmen Eğitimleri ve Teknik İçerik",
+          description: "Eğitmenlere yönelik teknik eğitim programları ve içerik yönetimi",
+          responsibilities: [
+            "Eğitmenlere yönelik teknik eğitim programlarının planlanması ve yürütülmesi",
+            "Eğitim içeriklerinin teknik doğruluğunun sağlanması",
+            "Kullanıcı destek süreçlerinin yönetilmesi",
+            "Yazılım kütüphaneleri ve örnek uygulamaların hazırlanması",
+            "Atölye ve akademi teknik operasyonlarının yürütülmesi"
+          ],
+          people: [
+            {
+              id: "bayram-er",
+              name: "Bayram Er",
+              title: "Eğitmen Eğitimleri ve Teknik İçerik Sorumlusu"
+            }
+          ]
+        },
+        {
+          id: "gomulu-yazilim-donanim-gelistirme",
+          title: "Gömülü Yazılım ve Donanım Geliştirme",
+          description: "Gömülü yazılım, IDE süreçleri ve yeni kart/kit geliştirme",
+          responsibilities: [
+            "Gömülü yazılım ve IDE süreçlerinin yönetilmesi",
+            "Yeni kart ve kit geliştirme çalışmalarının yürütülmesi",
+            "Teknik dokümantasyon ve planlama süreçlerinin hazırlanması",
+            "Ar-Ge ve ürün test süreçlerinin koordine edilmesi"
+          ],
+          people: [
+            {
+              id: "mehmet-akif-erdem",
+              name: "Mehmet Akif Erdem",
+              title: "Gömülü Yazılım ve Donanım Geliştirme Sorumlusu"
+            }
+          ]
+        },
+        {
+          id: "icerik-iletisim-organizasyon",
+          title: "İçerik, İletişim ve Organizasyon",
+          description: "İçerik üretimi, tanıtım, etkinlik organizasyonu ve dijital iletişim",
+          responsibilities: [
+            "İçerik ve tanıtım süreçlerinin yönetilmesi",
+            "Etkinlik ve organizasyon planlamalarının yürütülmesi",
+            "Akademi ve eğitim operasyonlarının koordine edilmesi",
+            "Sosyal medya ve dijital iletişim faaliyetlerinin yönetimi"
+          ],
+          people: [
+            {
+              id: "gamze-tuzane",
+              name: "Gamze Tuzane",
+              title: "İçerik, İletişim ve Organizasyon Sorumlusu"
+            }
+          ]
+        },
+        {
+          id: "yazilim-teknik-destek-uygulama",
+          title: "Yazılım, Teknik Destek ve Uygulama",
+          description: "Yazılım güncellemeleri, teknik destek ve uygulama yönetimi",
+          responsibilities: [
+            "Yazılım güncelleme ve test süreçlerinin yürütülmesi",
+            "Teknik destek ve atölye operasyonlarının yönetimi",
+            "Kit ve kart uygulamalarının sahaya alınması",
+            "Eğitim ve yarışmalar için teknik destek sağlanması"
+          ],
+          people: [
+            {
+              id: "nazmi-aras",
+              name: "Nazmi Aras",
+              title: "Yazılım, Teknik Destek ve Uygulama Sorumlusu"
+            }
+          ]
+        }
+      ]
     },
     {
       id: "teknofest-ulasim",
