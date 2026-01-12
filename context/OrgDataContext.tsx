@@ -1638,13 +1638,28 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
           }
           
           // Executives array'indeki pozisyonları Firebase'deki orgData'ya da kaydet
-          set(ref(database, `orgData/${activeProjectId}`), updatedData)
-            .then(() => {
-              console.log('✅ Executives array pozisyonları Firebase\'e kaydedildi')
-            })
-            .catch((error) => {
-              console.error('❌ Executives array pozisyon kaydetme hatası:', error)
-            })
+          // ÖNEMLİ: saveToFirebase kullanmak yerine direkt set kullanıyoruz çünkü
+          // saveToFirebase setData çağırıyor ve bu sonsuz döngüye neden olabilir
+          if (activeProjectId && !USE_LOCAL_ONLY) {
+            set(ref(database, `orgData/${activeProjectId}`), updatedData)
+              .then(() => {
+                console.log('✅✅✅ Executives array pozisyonları orgData\'ya kaydedildi (updatePositions)')
+                console.log('  - Güncellenen executives:', updatedExecutives.filter(e => newPositions[e.id]).map(e => e.id).join(', '))
+              })
+              .catch((error) => {
+                console.error('❌ Executives array pozisyon kaydetme hatası:', error)
+                // Hata durumunda tekrar dene
+                setTimeout(() => {
+                  set(ref(database, `orgData/${activeProjectId}`), updatedData)
+                    .then(() => {
+                      console.log('✅ Executives array pozisyonları ikinci denemede kaydedildi')
+                    })
+                    .catch((retryError) => {
+                      console.error('❌ Executives array pozisyon kaydetme hatası (ikinci deneme):', retryError)
+                    })
+                }, 500)
+              })
+          }
           
           return updatedData
         }
