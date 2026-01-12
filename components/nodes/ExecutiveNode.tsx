@@ -14,7 +14,7 @@ interface ExecutiveNodeProps {
 const ExecutiveNode = memo(({ data }: ExecutiveNodeProps) => {
   const isSpecial = data.type === 'special'
   const isToplumsal = data.label?.includes('Toplumsal Çalışmalar')
-  const isKure = data.label?.includes('Küre')
+  const isKure = data.label?.includes('Küre Koordinatörlüğü') || data.label?.includes('Küre')
   const isBlue = isToplumsal || isKure
   
   return (

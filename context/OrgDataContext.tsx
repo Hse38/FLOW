@@ -249,7 +249,7 @@ const initialDataLegacy: OrgData = {
     },
     {
       id: "kure",
-      name: "Küre",
+      name: "Küre Koordinatörlüğü",
       title: "Koordinatörlük",
       type: "special",
       position: { x: 1350, y: 50 },
