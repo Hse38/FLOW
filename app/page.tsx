@@ -78,26 +78,29 @@ export default function Home() {
     setIsMounted(true)
   }, [])
 
-  // Küre Koordinatörlüğü coordinator'ını otomatik olarak Firebase'e ekle (sadece bir kez)
+  // Küre Koordinatörlüğü coordinator'ını otomatik olarak Firebase'e ekle (her zaman kontrol et)
   useEffect(() => {
     if (isMounted && typeof window !== 'undefined') {
-      // Sadece production'da (localhost değilse) ve daha önce eklenmemişse
+      // Sadece production'da (localhost değilse)
       const hostname = window.location.hostname
       const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
-      const alreadyAdded = localStorage.getItem('kure-coordinator-added')
       
-      if (!isLocalhost && !alreadyAdded) {
-        // 2 saniye bekle (sayfa yüklensin)
+      if (!isLocalhost) {
+        // 3 saniye bekle (sayfa ve Firebase yüklensin)
         setTimeout(async () => {
           try {
-            console.log('🔍 Küre Koordinatörlüğü coordinator\'ı otomatik olarak Firebase\'e ekleniyor...')
-            await addKureCoordinatorToFirebase()
-            localStorage.setItem('kure-coordinator-added', 'true')
-            console.log('✅ Küre Koordinatörlüğü coordinator\'ı Firebase\'e eklendi!')
+            console.log('🔍 Küre Koordinatörlüğü coordinator\'ı Firebase\'de kontrol ediliyor...')
+            const result = await addKureCoordinatorToFirebase()
+            if (result?.success) {
+              console.log('✅✅✅ Küre Koordinatörlüğü coordinator\'ı Firebase\'e eklendi/güncellendi! ✅✅✅')
+            } else {
+              console.warn('⚠️ Küre coordinator ekleme sonucu:', result)
+            }
           } catch (error) {
             console.error('❌ Küre coordinator ekleme hatası:', error)
+            // Hata olsa bile tekrar deneme (kullanıcı manuel butona basabilir)
           }
-        }, 2000)
+        }, 3000)
       }
     }
   }, [isMounted, addKureCoordinatorToFirebase])

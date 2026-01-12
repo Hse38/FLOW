@@ -755,6 +755,61 @@ const initialDataLegacy: OrgData = {
 // Lokal org.json'dan oku
 const initialDataRaw: OrgData = orgJsonData as unknown as OrgData
 
+// Küre Koordinatörlüğü coordinator'ını ekle (org.json'da yoksa)
+if (!initialDataRaw.coordinators?.find((c: Coordinator) => c.id === 'kure-koordinatorlugu')) {
+  const kureCoordinator: Coordinator = {
+    id: "kure-koordinatorlugu",
+    title: "Küre Koordinatörlüğü",
+    description: "İçerik üretimi, redaksiyon ve yayın standartları yönetimi",
+    responsibilities: [
+      "İçerik Üretimi ve Redaksiyon",
+      "Bilgi Doğrulama ve Kaynak Denetimi",
+      "Yapay Zeka İçerik Kontrolü",
+      "SEO ve Yayın Standartları"
+    ],
+    position: { x: 1350, y: 300 },
+    parent: "kure",
+    hasDetailPage: true,
+    deputies: [],
+    subUnits: [
+      {
+        id: "kure-birimi",
+        title: "Küre",
+        people: [
+          { id: "kure-1", name: "Duygu Şahinler" },
+          { id: "kure-2", name: "Ayşe Aslıhan Yoran" },
+          { id: "kure-3", name: "Meryem Şentürk Çoban" },
+          { id: "kure-4", name: "Burak Enes" },
+          { id: "kure-5", name: "Onur Çolak" },
+          { id: "kure-6", name: "Yusuf Bilal Akkaya" },
+          { id: "kure-7", name: "Nazlıcan Kemerkaya" },
+          { id: "kure-8", name: "Nurten Yalçın" },
+          { id: "kure-9", name: "Hamza Aktay" },
+          { id: "kure-10", name: "Burcu Sandıkçı" },
+          { id: "kure-11", name: "Zozan Demirci" },
+          { id: "kure-12", name: "Sadullah Bora Yıldırım" }
+        ],
+        responsibilities: [
+          "İçerik Üretimi ve Redaksiyon",
+          "Bilgi Doğrulama ve Kaynak Denetimi",
+          "Yapay Zeka İçerik Kontrolü",
+          "SEO ve Yayın Standartları"
+        ],
+        description: "Küre birimi içerik üretimi ve yayın standartları"
+      }
+    ]
+  }
+  
+  // Coordinators array'ini başlat (yoksa)
+  if (!initialDataRaw.coordinators) {
+    initialDataRaw.coordinators = []
+  }
+  
+  // Küre coordinator'ını ekle
+  initialDataRaw.coordinators.push(kureCoordinator)
+  console.log('✅ Küre Koordinatörlüğü coordinator\'ı initialDataRaw\'a eklendi')
+}
+
 // Duplicate ID'leri temizle - utility function (component dışında, stable referans için)
 function cleanDuplicateIds(orgData: OrgData): OrgData {
   const cleaned = { ...orgData }
