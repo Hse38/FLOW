@@ -1005,18 +1005,30 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       setIsLoading(false)
     })
 
-    // Pozisyonları dinle
+    // Pozisyonları dinle - Production'da Firebase'den otomatik yükle (GERÇEK ZAMANLI)
     const posRef = ref(database, `positions/${activeProjectId}`)
+    console.log('🔍 [PRODUCTION] Pozisyonlar dinleniyor (gerçek zamanlı):', `positions/${activeProjectId}`)
     const unsubPos = onValue(posRef, (snapshot) => {
       const val = snapshot.val()
-      setPositions(val || {})
+      if (val) {
+        console.log('📥 [PRODUCTION] Pozisyonlar güncellendi (başka kullanıcıdan):', Object.keys(val).length, 'node')
+        setPositions(val)
+      } else {
+        setPositions({})
+      }
     })
 
-    // Bağlantıları dinle
+    // Bağlantıları dinle - Production'da Firebase'den otomatik yükle (GERÇEK ZAMANLI)
     const connRef = ref(database, `connections/${activeProjectId}`)
+    console.log('🔍 [PRODUCTION] Bağlantılar dinleniyor (gerçek zamanlı):', `connections/${activeProjectId}`)
     const unsubConn = onValue(connRef, (snapshot) => {
       const val = snapshot.val()
-      setCustomConnections(val || [])
+      if (val) {
+        console.log('📥 [PRODUCTION] Bağlantılar güncellendi (başka kullanıcıdan):', val.length || 0, 'bağlantı')
+        setCustomConnections(val)
+      } else {
+        setCustomConnections([])
+      }
     })
 
     return () => {
@@ -1043,16 +1055,19 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
         return
       }
       if (activeProjectId) {
-        console.log('🔥 [PRODUCTION] Firebase\'e kaydediliyor...')
+        console.log('🔥 [PRODUCTION] Firebase\'e kaydediliyor (GERÇEK ZAMANLI SENKRONİZASYON)...')
         console.log('  - Project ID:', activeProjectId)
+        console.log('  - Management:', newData.management?.length || 0)
         console.log('  - Executives:', newData.executives?.length || 0)
         console.log('  - Coordinators:', newData.coordinators?.length || 0)
-        
+        console.log('  - Main Coordinators:', newData.mainCoordinators?.length || 0)
+        console.log('  - ⚡ Tüm kullanıcılar bu değişiklikleri anında görecek!')
         set(ref(database, `orgData/${activeProjectId}`), newData)
           .then(() => {
             console.log('✅✅✅ [PRODUCTION] Firebase\'e başarıyla kaydedildi! ✅✅✅')
             console.log('  - Executives:', newData.executives?.map(e => e.name).join(', ') || 'Yok')
             console.log('  - Coordinators:', newData.coordinators?.length || 0, 'adet')
+            console.log('  - 🌐 Gerçek zamanlı senkronizasyon aktif - tüm kullanıcılar güncel veriyi görecek')
           })
           .catch((error) => {
             console.error('❌ Firebase kaydetme hatası:', error)
@@ -1072,7 +1087,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     }
   }, [activeProjectId])
 
-  // Pozisyonları kaydet
+  // Pozisyonları kaydet (gerçek zamanlı Firebase senkronizasyonu)
   const updatePositions = useCallback((newPositions: Record<string, { x: number; y: number }>) => {
     if (USE_LOCAL_ONLY) {
       setPositions(newPositions)
@@ -1080,13 +1095,24 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       try {
         const projectId = activeProjectId || 'main'
         localStorage.setItem(`orgPositions_${projectId}`, JSON.stringify(newPositions))
+        console.log('💾 [LOCAL] Pozisyonlar localStorage\'a kaydedildi:', Object.keys(newPositions).length, 'node')
       } catch (error) {
         console.error('localStorage pozisyon kaydetme hatası:', error)
       }
       return
     }
     if (activeProjectId) {
+      console.log('💾 [PRODUCTION] Pozisyonlar Firebase\'e kaydediliyor (GERÇEK ZAMANLI)...')
+      console.log('  - Project ID:', activeProjectId)
+      console.log('  - Node sayısı:', Object.keys(newPositions).length)
       set(ref(database, `positions/${activeProjectId}`), newPositions)
+        .then(() => {
+          console.log('✅✅✅ [PRODUCTION] Pozisyonlar Firebase\'e kaydedildi! ✅✅✅')
+          console.log('  - 🌐 Tüm kullanıcılar bu pozisyonları anında görecek')
+        })
+        .catch((error) => {
+          console.error('❌ Firebase pozisyon kaydetme hatası:', error)
+        })
     }
   }, [activeProjectId])
 

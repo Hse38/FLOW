@@ -1190,21 +1190,40 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   }, [isLoading, flowNodes.length, customPositions, localPositions, applyAutoLayoutInternal, flowNodes])
 
 
-  // Node sürüklendiğinde pozisyonu Firebase'e kaydet
+  // Pozisyon kaydetme için debounce timer
+  const positionSaveTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const pendingPositionsRef = useRef<Record<string, { x: number; y: number }>>({})
+
+  // Node sürüklendiğinde pozisyonu Firebase'e kaydet (debounced)
   const handleNodesChange = useCallback((changes: NodeChange[]) => {
     onNodesChange(changes)
 
-    // Sürükleme bittiğinde pozisyonu kaydet
+    // Sürükleme bittiğinde pozisyonu kaydet (debounced)
     changes.forEach((change) => {
       if (change.type === 'position' && change.position && !change.dragging) {
         const nodeId = change.id
-        // Detail node'ları da kaydet (unique ID kullandığımız için sorun yok)
-        const updated = {
-          ...customPositions,
-          [nodeId]: { x: change.position!.x, y: change.position!.y }
+        const newPosition = { x: change.position!.x, y: change.position!.y }
+        
+        // Lokal state'i hemen güncelle (UI responsive olsun)
+        setLocalPositions(prev => ({ ...prev, [nodeId]: newPosition }))
+        
+        // Pending positions'a ekle
+        pendingPositionsRef.current[nodeId] = newPosition
+        
+        // Debounce: 500ms sonra Firebase'e kaydet (çok fazla yazma işlemi yapmamak için)
+        if (positionSaveTimerRef.current) {
+          clearTimeout(positionSaveTimerRef.current)
         }
-        setLocalPositions(prev => ({ ...prev, [nodeId]: { x: change.position!.x, y: change.position!.y } }))
-        updateFirebasePositions(updated)
+        
+        positionSaveTimerRef.current = setTimeout(() => {
+          const positionsToSave = {
+            ...customPositions,
+            ...pendingPositionsRef.current
+          }
+          updateFirebasePositions(positionsToSave)
+          pendingPositionsRef.current = {}
+          console.log('💾 Pozisyonlar Firebase\'e kaydedildi:', Object.keys(positionsToSave).length, 'node')
+        }, 500)
       }
     })
   }, [onNodesChange, customPositions, updateFirebasePositions])
