@@ -905,32 +905,73 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     console.log('🔍 [PRODUCTION] Firebase\'den veri dinleniyor:', `orgData/${activeProjectId}`)
     const unsubData = onValue(orgDataRef, (snapshot) => {
       const val = snapshot.val()
-      if (val && val.coordinators && val.coordinators.length > 0) {
+      console.log('📦 [PRODUCTION] Firebase snapshot alındı:', {
+        exists: snapshot.exists(),
+        hasValue: !!val,
+        coordinatorsType: val?.coordinators ? typeof val.coordinators : 'undefined',
+        coordinatorsIsArray: Array.isArray(val?.coordinators),
+        coordinatorsLength: val?.coordinators?.length,
+        coordinatorsKeys: val?.coordinators ? Object.keys(val.coordinators) : []
+      })
+      
+      if (val) {
+        // Veri yapısını normalize et - coordinators array veya object olabilir
+        let normalizedVal = { ...val }
+        
+        // Eğer coordinators object ise array'e çevir
+        if (val.coordinators && !Array.isArray(val.coordinators) && typeof val.coordinators === 'object') {
+          console.log('🔄 Coordinators object formatında, array\'e çevriliyor...')
+          normalizedVal.coordinators = Object.values(val.coordinators)
+        }
+        
+        // Coordinators array'i yoksa boş array olarak ayarla
+        if (!normalizedVal.coordinators) {
+          normalizedVal.coordinators = []
+        }
+        
+        // Diğer array'ler için de aynı kontrolü yap
+        if (!normalizedVal.management) normalizedVal.management = []
+        if (!normalizedVal.executives) normalizedVal.executives = []
+        if (!normalizedVal.mainCoordinators) normalizedVal.mainCoordinators = []
+        
         console.log('✅✅✅ [PRODUCTION] Firebase\'den veri yüklendi! ✅✅✅')
         console.log('  - Project ID:', activeProjectId)
-        console.log('  - Coordinators:', val.coordinators.length)
+        console.log('  - Management:', normalizedVal.management?.length || 0)
+        console.log('  - Executives:', normalizedVal.executives?.length || 0)
+        console.log('  - Main Coordinators:', normalizedVal.mainCoordinators?.length || 0)
+        console.log('  - Coordinators:', normalizedVal.coordinators?.length || 0)
+        
         // Duplicate ID'leri temizle
-        const cleanedVal = cleanDuplicateIds(val)
+        const cleanedVal = cleanDuplicateIds(normalizedVal)
+        
         // Eğer temizleme yapıldıysa Firebase'e kaydet
-        if (JSON.stringify(cleanedVal) !== JSON.stringify(val)) {
+        if (JSON.stringify(cleanedVal) !== JSON.stringify(normalizedVal)) {
           set(ref(database, `orgData/${activeProjectId}`), cleanedVal).then(() => {
             console.log('✅ Duplicate ID\'ler temizlendi ve Firebase\'e kaydedildi')
           })
         }
-        cleanedVal.coordinators.forEach((coord: any, idx: number) => {
-          console.log(`    ${idx + 1}. ${coord.title}`)
-          if (coord.deputies && coord.deputies.length > 0) {
-            console.log(`       - Deputies: ${coord.deputies.length}`)
-          }
-          if (coord.subUnits && coord.subUnits.length > 0) {
-            console.log(`       - SubUnits: ${coord.subUnits.length}`)
-          }
-        })
+        
+        // Detaylı log
+        if (cleanedVal.coordinators && cleanedVal.coordinators.length > 0) {
+          cleanedVal.coordinators.forEach((coord: any, idx: number) => {
+            console.log(`    ${idx + 1}. ${coord.title || coord.id || 'İsimsiz'}`)
+            if (coord.deputies && coord.deputies.length > 0) {
+              console.log(`       - Deputies: ${coord.deputies.length}`)
+            }
+            if (coord.subUnits && coord.subUnits.length > 0) {
+              console.log(`       - SubUnits: ${coord.subUnits.length}`)
+            }
+          })
+        } else {
+          console.log('  ⚠️ Coordinators array boş veya yok')
+        }
+        
         setData(cleanedVal)
       } else {
         // Firebase'de veri yoksa - boş veri göster (üzerine yazma!)
         console.log('⚠️⚠️⚠️ [PRODUCTION] Firebase\'de veri yok! ⚠️⚠️⚠️')
         console.log('  - Project ID:', activeProjectId)
+        console.log('  - Path:', `orgData/${activeProjectId}`)
         console.log('  - Boş veri gösteriliyor.')
         console.log('  - ÇÖZÜM: Lokalde "Firebase\'e Yükle" butonuna basın!')
         // Sadece boş veri göster, Firebase'e yazma (kullanıcının verileri üzerine yazılmasın)
@@ -1090,9 +1131,99 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
   }, [data, saveToFirebase])
 
   // Load from Firebase (compatibility)
-  const loadData = useCallback(() => {
-    // onValue dinleyicisi zaten yüklüyor
-  }, [])
+  const loadData = useCallback(async () => {
+    if (USE_LOCAL_ONLY) {
+      console.log('⚠️ localStorage modu aktif, Firebase\'den yükleme yapılamaz')
+      return
+    }
+    
+    const projectId = activeProjectId || 'main'
+    console.log('📥 Firebase\'den veriler yükleniyor...')
+    console.log('  - Project ID:', projectId)
+    
+    try {
+      // Firebase'den verileri çek
+      const [dataSnapshot, positionsSnapshot, connectionsSnapshot] = await Promise.all([
+        get(ref(database, `orgData/${projectId}`)),
+        get(ref(database, `positions/${projectId}`)),
+        get(ref(database, `connections/${projectId}`))
+      ])
+      
+      // Verileri yükle
+      if (dataSnapshot.exists()) {
+        let firebaseData = dataSnapshot.val()
+        console.log('📦 Firebase snapshot alındı:', {
+          coordinatorsType: firebaseData?.coordinators ? typeof firebaseData.coordinators : 'undefined',
+          coordinatorsIsArray: Array.isArray(firebaseData?.coordinators),
+          coordinatorsLength: firebaseData?.coordinators?.length,
+        })
+        
+        // Veri yapısını normalize et - coordinators array veya object olabilir
+        if (firebaseData.coordinators && !Array.isArray(firebaseData.coordinators) && typeof firebaseData.coordinators === 'object') {
+          console.log('🔄 Coordinators object formatında, array\'e çevriliyor...')
+          firebaseData = {
+            ...firebaseData,
+            coordinators: Object.values(firebaseData.coordinators)
+          }
+        }
+        
+        // Array'leri normalize et
+        if (!firebaseData.coordinators) firebaseData.coordinators = []
+        if (!firebaseData.management) firebaseData.management = []
+        if (!firebaseData.executives) firebaseData.executives = []
+        if (!firebaseData.mainCoordinators) firebaseData.mainCoordinators = []
+        
+        console.log('✅ Firebase\'den orgData yüklendi')
+        console.log('  - Management:', firebaseData.management?.length || 0)
+        console.log('  - Executives:', firebaseData.executives?.length || 0)
+        console.log('  - Main Coordinators:', firebaseData.mainCoordinators?.length || 0)
+        console.log('  - Coordinators:', firebaseData.coordinators?.length || 0)
+        
+        const cleanedData = cleanDuplicateIds(firebaseData)
+        setData(cleanedData)
+        
+        // localStorage'a da kaydet (yedekleme için)
+        try {
+          localStorage.setItem(`orgData_${projectId}`, JSON.stringify(cleanedData))
+        } catch (e) {
+          console.warn('localStorage kaydetme hatası:', e)
+        }
+      } else {
+        console.warn('⚠️ Firebase\'de veri bulunamadı')
+      }
+      
+      if (positionsSnapshot.exists()) {
+        const firebasePositions = positionsSnapshot.val()
+        console.log('✅ Firebase\'den positions yüklendi')
+        setPositions(firebasePositions)
+        
+        // localStorage'a da kaydet
+        try {
+          localStorage.setItem(`orgPositions_${projectId}`, JSON.stringify(firebasePositions))
+        } catch (e) {
+          console.warn('localStorage kaydetme hatası:', e)
+        }
+      }
+      
+      if (connectionsSnapshot.exists()) {
+        const firebaseConnections = connectionsSnapshot.val()
+        console.log('✅ Firebase\'den connections yüklendi')
+        setCustomConnections(firebaseConnections)
+        
+        // localStorage'a da kaydet
+        try {
+          localStorage.setItem(`orgConnections_${projectId}`, JSON.stringify(firebaseConnections))
+        } catch (e) {
+          console.warn('localStorage kaydetme hatası:', e)
+        }
+      }
+      
+      console.log('✅✅✅ Firebase verileri başarıyla yüklendi! ✅✅✅')
+    } catch (error) {
+      console.error('❌ Firebase\'den yükleme hatası:', error)
+      throw error
+    }
+  }, [activeProjectId])
 
   // Lokaldeki verileri Firebase'e sync et
   const syncLocalToFirebase = useCallback(async () => {

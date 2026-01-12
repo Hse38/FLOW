@@ -121,6 +121,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   const [history, setHistory] = useState<OrgData[]>([])
   const [historyIndex, setHistoryIndex] = useState<number>(-1)
   const [shouldAutoLayout, setShouldAutoLayout] = useState<boolean>(false)
+  const hasAutoLayoutRunRef = useRef<boolean>(false)
 
   // History'ye snapshot ekle
   const addToHistory = useCallback((snapshot: OrgData) => {
@@ -1154,6 +1155,44 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       return () => clearTimeout(timer)
     }
   }, [shouldAutoLayout, applyAutoLayoutInternal])
+
+  // İlk yüklemede otomatik layout çalıştır (sadece bir kez) - node'lar dağınıksa
+  useEffect(() => {
+    if (!isLoading && flowNodes.length > 0 && !hasAutoLayoutRunRef.current && applyAutoLayoutInternal) {
+      // Node'ların pozisyonlarını kontrol et - eğer çok dağınıksa otomatik layout çalıştır
+      const hasManualPositions = Object.keys(customPositions || {}).length > 0 || Object.keys(localPositions).length > 0
+      
+      // Eğer manuel pozisyonlar varsa ve node'lar çok dağınıksa otomatik layout çalıştır
+      if (hasManualPositions) {
+        // Node'lar arasındaki mesafeyi kontrol et
+        const positions = flowNodes.map(n => n.position)
+        if (positions.length > 1) {
+          const minX = Math.min(...positions.map(p => p.x))
+          const maxX = Math.max(...positions.map(p => p.x))
+          const minY = Math.min(...positions.map(p => p.y))
+          const maxY = Math.max(...positions.map(p => p.y))
+          const width = maxX - minX
+          const height = maxY - minY
+          
+          // Eğer node'lar çok geniş bir alana yayılmışsa (muhtemelen dağınık) otomatik layout çalıştır
+          // 5000px'den fazla genişlik veya yükseklik varsa dağınık kabul et
+          if (width > 5000 || height > 5000) {
+            hasAutoLayoutRunRef.current = true
+            setTimeout(() => {
+              applyAutoLayoutInternal('TB', undefined)
+            }, 800) // Biraz daha uzun bekle, tüm node'lar render olsun
+          }
+        }
+      } else {
+        // Manuel pozisyon yoksa, ilk yüklemede otomatik layout çalıştır
+        hasAutoLayoutRunRef.current = true
+        setTimeout(() => {
+          applyAutoLayoutInternal('TB', undefined)
+        }, 800)
+      }
+    }
+  }, [isLoading, flowNodes.length, customPositions, localPositions, applyAutoLayoutInternal, flowNodes])
+
 
   // Node sürüklendiğinde pozisyonu Firebase'e kaydet
   const handleNodesChange = useCallback((changes: NodeChange[]) => {

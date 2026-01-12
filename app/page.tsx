@@ -53,7 +53,7 @@ interface SavedProject {
 
 export default function Home() {
   // OrgData context
-  const { syncLocalToFirebase } = useOrgData()
+  const { syncLocalToFirebase, loadData } = useOrgData()
   
   // Sidebar state
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -437,6 +437,23 @@ export default function Home() {
                 {/* Sync to Firebase Button (Development only) */}
                 {isMounted && process.env.NODE_ENV === 'development' && (
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={async () => {
+                        try {
+                          showToast('Firebase\'den yükleniyor...', 'info', 3000)
+                          await loadData()
+                          showToast('✅ Firebase verileri başarıyla yüklendi!', 'success', 5000)
+                        } catch (error) {
+                          console.error('Firebase yükleme hatası:', error)
+                          showToast('Firebase\'den yükleme hatası. Console\'u kontrol edin.', 'error', 5000)
+                        }
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all font-medium text-sm shadow-sm"
+                      title="Firebase'deki verileri lokale yükle"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span className="hidden lg:inline">Firebase'den Yükle</span>
+                    </button>
                     <button
                       onClick={handleSyncToFirebase}
                       className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all font-medium text-sm shadow-sm"
