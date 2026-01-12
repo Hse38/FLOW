@@ -1250,17 +1250,33 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     }
   }, [activeProjectId])
 
-  // InitialData'yı direkt Firebase'e yükle
+  // InitialData'yı Firebase'deki mevcut verilerle birleştir (sadece eksik olanları ekle)
   const syncInitialDataToFirebase = useCallback(async () => {
     const projectId = activeProjectId || 'main'
     
     try {
-      console.log('📤 InitialData Firebase\'e yükleniyor...')
+      console.log('📤 InitialData Firebase\'e birleştiriliyor...')
       console.log('  - Project ID:', projectId)
-      console.log('  - Coordinators:', initialData.coordinators?.length || 0)
-      console.log('  - Executives:', initialData.executives?.length || 0)
       
-      // InitialData'yı Firebase'e yaz
+      // Önce Firebase'deki mevcut verileri oku
+      const snapshot = await get(ref(database, `orgData/${projectId}`))
+      const existingData = snapshot.exists() ? snapshot.val() : null
+      
+      if (existingData) {
+        console.log('⚠️ Firebase\'de mevcut veriler var!')
+        console.log('  - Mevcut Executives:', existingData.executives?.length || 0)
+        console.log('  - Mevcut Coordinators:', existingData.coordinators?.length || 0)
+        console.log('')
+        console.log('❌ İPTAL EDİLDİ: Mevcut veriler korunacak!')
+        console.log('💡 Eğer InitialData\'yı yüklemek istiyorsanız, önce Firebase\'deki verileri silin veya yedekleyin.')
+        throw new Error('Firebase\'de mevcut veriler var. Mevcut veriler korunuyor.')
+      }
+      
+      // Firebase'de veri yoksa InitialData'yı yükle
+      console.log('✅ Firebase\'de veri yok, InitialData yükleniyor...')
+      console.log('  - Executives:', initialData.executives?.length || 0)
+      console.log('  - Coordinators:', initialData.coordinators?.length || 0)
+      
       await set(ref(database, `orgData/${projectId}`), initialData)
       console.log('  ✅ InitialData Firebase\'e yüklendi')
       

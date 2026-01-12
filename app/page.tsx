@@ -457,16 +457,21 @@ export default function Home() {
                     <button
                       onClick={async () => {
                         try {
-                          showToast('InitialData Firebase\'e yükleniyor...', 'info', 3000)
+                          showToast('InitialData kontrol ediliyor...', 'info', 3000)
                           await syncInitialDataToFirebase()
                           showToast('✅ InitialData Firebase\'e yüklendi! Canlıda görünecek.', 'success', 5000)
-                        } catch (error) {
+                        } catch (error: any) {
                           console.error('InitialData yükleme hatası:', error)
-                          showToast('InitialData yükleme hatası. Console\'u kontrol edin.', 'error', 5000)
+                          const errorMsg = error?.message || 'Bilinmeyen hata'
+                          if (errorMsg.includes('mevcut veriler')) {
+                            showToast('⚠️ Firebase\'de mevcut veriler var! Mevcut veriler korunuyor.', 'warning', 8000)
+                          } else {
+                            showToast('InitialData yükleme hatası. Console\'u kontrol edin.', 'error', 5000)
+                          }
                         }
                       }}
                       className="flex items-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all font-medium text-sm shadow-sm"
-                      title="InitialData'yı (Küre dahil) direkt Firebase'e yükle"
+                      title="InitialData'yı Firebase'e yükle (sadece Firebase boşsa)"
                     >
                       <CloudUpload className="w-4 h-4" />
                       <span className="hidden lg:inline">InitialData Yükle</span>
