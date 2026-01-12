@@ -33,6 +33,7 @@ import ConfirmationModal from './ConfirmationModal'
 import AutoLayoutSelectionModal from './AutoLayoutSelectionModal'
 import PersonnelPanel from './PersonnelPanel'
 import SubUnitDeputyChangeModal from './SubUnitDeputyChangeModal'
+import SubUnitSelectionModal from './SubUnitSelectionModal'
 import AddPersonSelectionModal from './AddPersonSelectionModal'
 import { showToast } from './Toast'
 import { useOrgData, Person, OrgData } from '@/context/OrgDataContext'
@@ -288,6 +289,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     subUnitTitle: string
     city?: string
     type?: 'person' | 'coordinator' | 'deputy' | 'subunit-person' | 'city-person'
+    role?: 'ilSorumlusu' | 'deneyapSorumlusu' // Şehir personeli için role
   } | null>(null)
 
   // Alt birim context menu (kişi ekle/sil için)
@@ -311,6 +313,12 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   const [addPersonSelectionModal, setAddPersonSelectionModal] = useState<{
     coordinatorId: string
     subUnitId: string
+  } | null>(null)
+
+  // Birim seçim modal (Personel Ata için)
+  const [subUnitSelectionModal, setSubUnitSelectionModal] = useState<{
+    coordinatorId: string
+    coordinatorTitle: string
   } | null>(null)
 
   // Personel sağ tık context menu (düzenleme için)
@@ -493,13 +501,22 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               // Artık modal açmıyoruz, node içinde gösteriliyor
             },
             cityPersonnel: getCityPersonnel(),
-            onAddPerson: addCityPerson,
-            onUpdatePerson: updateCityPerson,
-            onDeletePerson: deleteCityPerson,
+            onAddPerson: (city: string, role: 'ilSorumlusu' | 'deneyapSorumlusu', person: Omit<Person, 'id'>) => {
+              addCityPerson(city, role, person)
+            },
+            onUpdatePerson: (city: string, role: 'ilSorumlusu' | 'deneyapSorumlusu', personId: string, updates: Partial<Person>) => {
+              updateCityPerson(city, role, personId, updates)
+            },
+            onDeletePerson: (city: string, role: 'ilSorumlusu' | 'deneyapSorumlusu', personId: string) => {
+              deleteCityPerson(city, role, personId)
+            },
           },
         })
       }
     }
+
+    // Main coordinator ID'lerini kaydet (duplicate kontrolü için)
+    const mainCoordinatorIds = new Set(data.mainCoordinators.map(c => c.id))
 
     // Add main coordinators
     data.mainCoordinators.forEach((coord) => {
@@ -518,8 +535,14 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       })
     })
 
-    // Add sub-coordinators
+    // Add sub-coordinators (main coordinator ile çakışanları atla)
     data.coordinators.forEach((coord) => {
+      // Main coordinator ile aynı ID'ye sahipse atla (duplicate önleme)
+      if (mainCoordinatorIds.has(coord.id)) {
+        console.warn(`⚠️ Coordinator ID "${coord.id}" already exists as main coordinator. Skipping duplicate.`)
+        return
+      }
+
       const hasDetails = (coord.deputies?.length || 0) > 0 || (coord.subUnits?.length || 0) > 0
 
       nodeList.push({
@@ -664,11 +687,12 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         const xOffset = (col * 200) - (totalWidth / 2)
         const yOffset = row * 200
 
-        const subUnitId = `detail-${coordId}-subunit-${idx}`
+        // Unique ID için subUnit.id kullan (idx yerine)
+        const subUnitNodeId = `detail-${coordId}-subunit-${subUnit.id}`
         nodeList.push({
-          id: subUnitId,
+          id: subUnitNodeId,
           type: 'detail',
-          position: getPosition(subUnitId, { x: defaultBaseX + xOffset - 50, y: defaultBaseY + 240 + yOffset }),
+          position: getPosition(subUnitNodeId, { x: defaultBaseX + xOffset - 50, y: defaultBaseY + 240 + yOffset }),
           draggable: !isLocked,
           data: {
             label: subUnit.title,
@@ -729,11 +753,12 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         const xOffset = (col * 200) - (totalWidth / 2)
         const yOffset = row * 200
 
-        const personId = `detail-${coordId}-person-${idx}`
+        // Unique ID için person.id kullan (idx yerine)
+        const personNodeId = `detail-${coordId}-person-${person.id || idx}`
         nodeList.push({
-          id: personId,
+          id: personNodeId,
           type: 'detail',
-          position: getPosition(personId, { x: defaultBaseX + xOffset - 50, y: defaultBaseY + 240 + peopleStartY + yOffset }),
+          position: getPosition(personNodeId, { x: defaultBaseX + xOffset - 50, y: defaultBaseY + 240 + peopleStartY + yOffset }),
           draggable: !isLocked,
           data: {
             label: person.name,
@@ -768,8 +793,63 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       })
     }
 
-    return nodeList
-  }, [data, handleUnitClick, handleContextMenu, expandedCoordinator, expandedCoordinatorData, customPositions, isLocked, turkeyMapExpanded])
+    // Duplicate ID kontrolü ve filtreleme - daha güçlü kontrol
+    const seenIds = new Map<string, { node: Node; index: number }[]>()
+    
+    // Tüm node'ları ID'ye göre grupla
+    nodeList.forEach((node, index) => {
+      const existing = seenIds.get(node.id) || []
+      existing.push({ node, index })
+      seenIds.set(node.id, existing)
+    })
+    
+    // Duplicate ID'leri bul ve unique hale getir
+    const duplicateIds = Array.from(seenIds.entries()).filter(([_, nodes]) => nodes.length > 1)
+    
+    if (duplicateIds.length > 0) {
+      console.error('❌ Duplicate node IDs detected:')
+      duplicateIds.forEach(([id, nodes]) => {
+        console.error(`   - ${id}: appears ${nodes.length} times`)
+        nodes.forEach(({ node, index }, idx) => {
+          console.error(`     ${idx + 1}. Index: ${index}, Type: ${node.type}, Label: ${node.data?.label || 'N/A'}`)
+        })
+      })
+    }
+    
+    // Unique node'lar oluştur - duplicate olanların sonrakilerini unique ID ile değiştir
+    const uniqueNodes: Node[] = []
+    const idCounter = new Map<string, number>()
+    
+    nodeList.forEach((node) => {
+      const existing = seenIds.get(node.id)
+      if (existing && existing.length > 1) {
+        // Duplicate varsa, ilkini tut, diğerlerine unique ID ver
+        const counter = idCounter.get(node.id) || 0
+        if (counter === 0) {
+          // İlk duplicate'i olduğu gibi tut
+          uniqueNodes.push(node)
+        } else {
+          // Sonraki duplicate'lere unique ID ver
+          const uniqueId = `${node.id}-duplicate-${counter}`
+          console.warn(`⚠️ Renaming duplicate node ID "${node.id}" to "${uniqueId}"`)
+          uniqueNodes.push({
+            ...node,
+            id: uniqueId
+          })
+        }
+        idCounter.set(node.id, counter + 1)
+      } else {
+        // Duplicate yoksa olduğu gibi ekle
+        uniqueNodes.push(node)
+      }
+    })
+
+    if (duplicateIds.length > 0) {
+      console.warn(`⚠️ Processed ${duplicateIds.length} duplicate ID(s), created ${uniqueNodes.length} unique node(s)`)
+    }
+
+    return uniqueNodes
+  }, [data, handleUnitClick, handleContextMenu, expandedCoordinator, expandedCoordinatorData, customPositions, isLocked, turkeyMapExpanded, getCityPersonnel])
 
   // Convert data to React Flow edges
   const edges: Edge[] = useMemo(() => {
@@ -850,7 +930,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       const deputies = uniqueDeputiesForEdges
       const deputyCount = deputies.length
       
-      expandedCoordinatorData.subUnits?.forEach((_, idx) => {
+      expandedCoordinatorData.subUnits?.forEach((subUnit, idx) => {
         let sourceId = rootId
         if (deputyCount > 0 && deputies.length > 0) {
           const deputyIdx = idx % deputyCount
@@ -860,10 +940,12 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           }
         }
 
+        // Sub-unit node ID formatını güncelle (subUnit.id kullanıyoruz)
+        const subUnitNodeId = `detail-${coordId}-subunit-${subUnit.id}`
         edgeList.push({
-          id: `detail-to-subunit-${coordId}-${idx}`,
+          id: `detail-to-subunit-${coordId}-${subUnit.id}`,
           source: sourceId,
-          target: `detail-${coordId}-subunit-${idx}`,
+          target: subUnitNodeId,
           type: 'smoothstep',
           style: { stroke: '#9ca3af', strokeWidth: 1.5 },
         })
@@ -903,8 +985,10 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
 
     // Custom connections (manuel bağlantılar) - beyaz çizgi, diğerleri gibi
     customConnections.forEach((conn) => {
+      // Custom connection ID yoksa oluştur
+      const edgeId = conn.id || `${conn.source}-${conn.target}-${conn.sourceHandle || ''}-${conn.targetHandle || ''}`
       edgeList.push({
-        id: conn.id,
+        id: edgeId,
         source: conn.source,
         target: conn.target,
         sourceHandle: conn.sourceHandle || 'bottom',
@@ -914,7 +998,18 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       })
     })
 
-    return edgeList
+    // Duplicate edge ID kontrolü ve filtreleme
+    const seenEdgeIds = new Set<string>()
+    const uniqueEdges = edgeList.filter(edge => {
+      if (seenEdgeIds.has(edge.id)) {
+        console.warn(`⚠️ Duplicate edge ID detected: ${edge.id}. Skipping duplicate.`)
+        return false
+      }
+      seenEdgeIds.add(edge.id)
+      return true
+    })
+
+    return uniqueEdges
   }, [data, expandedCoordinator, expandedCoordinatorData, customConnections, turkeyMapExpanded])
 
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState(nodes)
@@ -1268,6 +1363,20 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     }
   }
 
+  // Personel Ata - mevcut personeli bir birime atamak için
+  const handleAssignPerson = () => {
+    if (contextMenu) {
+      const coordinator = data.coordinators.find(c => c.id === contextMenu.nodeId)
+      if (coordinator) {
+        // Önce birim seçim modalını aç
+        setSubUnitSelectionModal({
+          coordinatorId: contextMenu.nodeId,
+          coordinatorTitle: coordinator.title,
+        })
+      }
+    }
+  }
+
   // Koordinatörlüğe koordinatör kişisi ekle (coordinator.name)
   const handleAddCoordinatorPerson = () => {
     if (contextMenu) {
@@ -1615,8 +1724,10 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           }
           break
         case 'city-person':
+          // city-person formu artık kullanılmıyor (harita node'u içinde yeni sistem var)
+          // Ama hata vermemesi için role default olarak 'ilSorumlusu' veriyoruz
           if (formData.city && formData.name) {
-            addCityPerson(formData.city, {
+            addCityPerson(formData.city, formData.role || 'ilSorumlusu', {
               name: formData.name,
               title: formData.title || '',
               email: formData.email || undefined,
@@ -1652,9 +1763,18 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           isOpen={turkeyMapOpen}
           onClose={() => setTurkeyMapOpen(false)}
           cityPersonnel={getCityPersonnel()}
-          onAddPerson={addCityPerson}
-          onUpdatePerson={updateCityPerson}
-          onDeletePerson={deleteCityPerson}
+          onAddPerson={(city: string, person: Omit<Person, 'id'>) => {
+            // TurkeyMapPanel eski sistemde, default olarak 'ilSorumlusu' rolü veriyoruz
+            addCityPerson(city, 'ilSorumlusu', person)
+          }}
+          onUpdatePerson={(city: string, personId: string, updates: Partial<Person>) => {
+            // TurkeyMapPanel eski sistemde, default olarak 'ilSorumlusu' rolü kullanıyoruz
+            updateCityPerson(city, 'ilSorumlusu', personId, updates)
+          }}
+          onDeletePerson={(city: string, personId: string) => {
+            // TurkeyMapPanel eski sistemde, default olarak 'ilSorumlusu' rolü kullanıyoruz
+            deleteCityPerson(city, 'ilSorumlusu', personId)
+          }}
         />
       )}
 
@@ -1874,6 +1994,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           onAddDeputy={handleAddDeputy}
           onAddResponsibility={handleAddResponsibility}
           onAddPerson={handleAddPerson}
+          onAssignPerson={handleAssignPerson}
           onEdit={handleEdit}
           onDelete={handleDelete}
           onAddExecutive={handleAddExecutiveToChairman}
@@ -1983,30 +2104,94 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                 </div>
               </div>
 
-              {/* Department Info */}
-              <div className="bg-gray-50 rounded-lg px-3 py-2.5 mb-3">
-                <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
-                  <div className="flex items-center gap-1.5">
-                    <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                    <span className="truncate max-w-[130px] font-medium">{viewPersonCard.coordinatorTitle}</span>
+              {/* Department Info - Tüm birimler */}
+              {(() => {
+                // Personelin tüm birimlerini bul (aynı isim ve ünvan ile)
+                const allPersonUnits = viewPersonCard.type === 'subunit-person' || viewPersonCard.type === 'person'
+                  ? getAllPersonnel().filter(item => 
+                      item.person.name === viewPersonCard.person.name &&
+                      item.person.title === viewPersonCard.person.title &&
+                      item.type === 'subunit-person'
+                    )
+                  : []
+
+                // Birimleri koordinatörlüğe göre grupla
+                const unitsByCoordinator = allPersonUnits.reduce((acc, item) => {
+                  if (!item.coordinatorTitle || !item.subUnitTitle) return acc
+                  const key = item.coordinatorTitle
+                  if (!acc[key]) {
+                    acc[key] = []
+                  }
+                  acc[key].push(item.subUnitTitle)
+                  return acc
+                }, {} as Record<string, string[]>)
+
+                return (
+                  <div className="bg-gray-50 rounded-lg px-3 py-2.5 mb-3">
+                    {/* Deputy için ünvan göster */}
+                    {viewPersonCard.type === 'deputy' ? (
+                      viewPersonCard.person.title ? (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                            <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            <span className="truncate max-w-[130px] font-medium">{viewPersonCard.coordinatorTitle}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <a href="#" className="text-blue-600 hover:underline text-xs">Web Siteleri</a>
+                          </div>
+                        </div>
+                      ) : null
+                    ) : (
+                      <>
+                        {/* Koordinatörlük ve birimler listesi */}
+                        {Object.keys(unitsByCoordinator).length > 0 ? (
+                          <div className="space-y-2">
+                            {Object.entries(unitsByCoordinator).map(([coordTitle, unitTitles]) => (
+                              <div key={coordTitle}>
+                                <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                    <span className="font-medium">{coordTitle}</span>
+                                  </div>
+                                  <a href="#" className="text-blue-600 hover:underline text-xs">Web Siteleri</a>
+                                </div>
+                                {unitTitles.length > 0 && (
+                                  <div className="ml-5 mt-1 space-y-1">
+                                    {unitTitles.map((unitTitle, idx) => (
+                                      <div key={idx} className="text-xs text-gray-500 flex items-center gap-1">
+                                        <span>•</span>
+                                        <span>{unitTitle}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : viewPersonCard.coordinatorTitle ? (
+                          <div className="flex items-center justify-between text-xs text-gray-600">
+                            <div className="flex items-center gap-1.5">
+                              <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                              </svg>
+                              <span className="truncate max-w-[130px] font-medium">{viewPersonCard.coordinatorTitle}</span>
+                            </div>
+                            <a href="#" className="text-blue-600 hover:underline text-xs">Web Siteleri</a>
+                          </div>
+                        ) : null}
+                        {/* Eski format - sadece bir birim varsa */}
+                        {Object.keys(unitsByCoordinator).length === 0 && viewPersonCard.subUnitTitle && (
+                          <div className="text-xs text-gray-500 ml-5">{viewPersonCard.subUnitTitle}</div>
+                        )}
+                      </>
+                    )}
                   </div>
-                  <a href="#" className="text-blue-600 hover:underline text-xs">Web Siteleri</a>
-                </div>
-                {/* Deputy için ünvan göster, normal person için subUnitTitle göster */}
-                {viewPersonCard.type === 'deputy' ? (
-                  viewPersonCard.person.title ? (
-                    <div className="mt-2 flex justify-end">
-                      <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700 font-medium">
-                        {viewPersonCard.person.title}
-                      </span>
-                    </div>
-                  ) : null
-                ) : viewPersonCard.subUnitTitle ? (
-                  <div className="text-xs text-gray-500 ml-5">{viewPersonCard.subUnitTitle}</div>
-                ) : null}
-              </div>
+                )
+              })()}
 
               {/* Üniversite ve Bölüm */}
               <div className="bg-indigo-50 rounded-lg px-3 py-2.5 mb-3">
@@ -2384,6 +2569,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               subUnitTitle: metadata.subUnitTitle || metadata.city || '',
               city: metadata.city,
               type: metadata.type,
+              role: metadata.role, // Şehir personeli için role bilgisi
             })
             setPersonnelPanelOpen(false)
           }}
@@ -2392,8 +2578,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             if (metadata.type === 'subunit-person' && metadata.coordinatorId && metadata.subUnitId && person.id) {
               updatePerson(metadata.coordinatorId, metadata.subUnitId, person.id, updates)
               showToast('Personel bilgileri güncellendi!', 'success')
-            } else if (metadata.type === 'city-person' && metadata.city && person.id) {
-              updateCityPerson(metadata.city, person.id, updates)
+            } else if (metadata.type === 'city-person' && metadata.city && metadata.role && person.id) {
+              updateCityPerson(metadata.city, metadata.role, person.id, updates)
               showToast('Personel bilgileri güncellendi!', 'success')
             } else if (metadata.type === 'coordinator' && metadata.coordinatorId) {
               // Koordinatör güncelleme - coordinator field'ını güncelle
@@ -2459,10 +2645,10 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                   console.error('Deputy ID bulunamadı:', { person, metadata })
                   showToast('Koordinatör yardımcısı ID bulunamadı', 'error')
                 }
-              } else if (metadata.type === 'city-person' && metadata.city) {
+              } else if (metadata.type === 'city-person' && metadata.city && metadata.role) {
                 const personId = person.id || person.name
                 if (personId) {
-                  deleteCityPerson(metadata.city, personId)
+                  deleteCityPerson(metadata.city, metadata.role, personId)
                   showToast(`${person.name} silindi!`, 'success')
                 } else {
                   console.error('City person ID bulunamadı:', { person, metadata })
@@ -2530,6 +2716,29 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           }}
         />
       )}
+
+      {/* SubUnit Selection Modal (Personel Ata için) */}
+      {subUnitSelectionModal && (() => {
+        const coordinator = data.coordinators.find(c => c.id === subUnitSelectionModal.coordinatorId)
+        const subUnits = coordinator?.subUnits || []
+        return (
+          <SubUnitSelectionModal
+            isOpen={!!subUnitSelectionModal}
+            onClose={() => setSubUnitSelectionModal(null)}
+            coordinatorId={subUnitSelectionModal.coordinatorId}
+            coordinatorTitle={subUnitSelectionModal.coordinatorTitle}
+            subUnits={subUnits}
+            onSelect={(subUnitId) => {
+              // Birim seçildi, şimdi AddPersonSelectionModal'ı aç
+              setAddPersonSelectionModal({
+                coordinatorId: subUnitSelectionModal.coordinatorId,
+                subUnitId: subUnitId,
+              })
+              setSubUnitSelectionModal(null)
+            }}
+          />
+        )
+      })()}
 
       {/* SubUnit Deputy Change Modal */}
       {subUnitDeputyChangeModal && (() => {

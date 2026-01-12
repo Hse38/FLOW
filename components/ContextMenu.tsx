@@ -14,6 +14,7 @@ interface ContextMenuProps {
   onAddDeputy: () => void
   onAddResponsibility: () => void
   onAddPerson: () => void
+  onAssignPerson?: () => void // Personel Ata - mevcut personeli birime atamak için
   onEdit: () => void
   onDelete: () => void
   onLinkToMainSchema?: () => void
@@ -40,6 +41,7 @@ export default function ContextMenu({
   onAddDeputy,
   onAddResponsibility,
   onAddPerson,
+  onAssignPerson,
   onEdit,
   onDelete,
   onLinkToMainSchema,
@@ -112,6 +114,12 @@ export default function ContextMenu({
       icon: User,
       onClick: onAddPerson,
       show: ['coordinator', 'subCoordinator'].includes(nodeType),
+    },
+    {
+      label: 'Personel Ata',
+      icon: UserPlus,
+      onClick: onAssignPerson,
+      show: ['coordinator', 'subCoordinator'].includes(nodeType) && !!onAssignPerson,
     },
     { type: 'divider' },
     // Bağlantı oluşturma

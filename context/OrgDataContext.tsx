@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react'
 import {
   database,
   ref,
@@ -135,7 +135,15 @@ export interface Management {
 export interface CityPersonnel {
   id: string
   city: string
-  people: Person[]
+  ilSorumlusu?: Person  // İl Sorumlusu
+  deneyapSorumlusu?: Person  // Deneyap Sorumlusu
+  people?: Person[]  // Diğer personel (opsiyonel, geriye uyumluluk için)
+}
+
+export interface RegionPersonnel {
+  id: string
+  region: string  // Marmara, İç Anadolu, Ege, vb.
+  bolgeSorumlusu?: Person  // Bölge Sorumlusu
 }
 
 export interface OrgData {
@@ -144,6 +152,7 @@ export interface OrgData {
   mainCoordinators: MainCoordinator[]
   coordinators: Coordinator[]
   cityPersonnel?: CityPersonnel[]  // Toplumsal Çalışmalar şehir bazlı personel
+  regionPersonnel?: RegionPersonnel[]  // Bölge sorumluları
 }
 
 export interface Project {
@@ -182,10 +191,15 @@ interface OrgDataContextType {
   getLinkedSchemaData: (schemaId: string) => OrgData | null
   updateSubUnit: (coordinatorId: string, subUnitId: string, updates: Partial<SubUnit>) => void
   // Şehir personel fonksiyonları
-  addCityPerson: (city: string, person: Omit<Person, 'id'>) => void
-  updateCityPerson: (city: string, personId: string, updates: Partial<Person>) => void
-  deleteCityPerson: (city: string, personId: string) => void
+  addCityPerson: (city: string, role: 'ilSorumlusu' | 'deneyapSorumlusu', person: Omit<Person, 'id'>) => void
+  updateCityPerson: (city: string, role: 'ilSorumlusu' | 'deneyapSorumlusu', personId: string, updates: Partial<Person>) => void
+  deleteCityPerson: (city: string, role: 'ilSorumlusu' | 'deneyapSorumlusu', personId: string) => void
   getCityPersonnel: () => CityPersonnel[]
+  // Bölge personel fonksiyonları
+  addRegionPerson: (region: string, person: Omit<Person, 'id'>) => void
+  updateRegionPerson: (region: string, personId: string, updates: Partial<Person>) => void
+  deleteRegionPerson: (region: string, personId: string) => void
+  getRegionPersonnel: () => RegionPersonnel[]
   getAllPersonnel: () => Array<{
     person: Person
     type: 'coordinator' | 'deputy' | 'subunit-person' | 'city-person'
@@ -194,6 +208,7 @@ interface OrgDataContextType {
     subUnitId?: string
     subUnitTitle?: string
     city?: string
+    role?: 'ilSorumlusu' | 'deneyapSorumlusu' // Şehir personeli için role
   }> // Tüm personeli getir (koordinatör, deputy, alt birim personeli, şehir personeli)
   resetToEmpty: () => void
   restoreData: (data: OrgData) => void // Undo/Redo için
@@ -683,7 +698,61 @@ const initialDataLegacy: OrgData = {
 }
 
 // Lokal org.json'dan oku
-const initialData: OrgData = orgJsonData as unknown as OrgData
+const initialDataRaw: OrgData = orgJsonData as unknown as OrgData
+
+// Duplicate ID'leri temizle - utility function (component dışında, stable referans için)
+function cleanDuplicateIds(orgData: OrgData): OrgData {
+  const cleaned = { ...orgData }
+  
+  // Coordinators'daki duplicate ID'leri temizle
+  const seenCoordIds = new Set<string>()
+  const uniqueCoordinators: Coordinator[] = []
+  let duplicateCount = 0
+  
+  cleaned.coordinators.forEach((coord, index) => {
+    if (seenCoordIds.has(coord.id)) {
+      // Duplicate ID bulundu, yeni unique ID oluştur
+      const newId = `coord-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`
+      console.warn(`⚠️ Duplicate coordinator ID found: "${coord.id}" -> renamed to "${newId}"`)
+      uniqueCoordinators.push({ ...coord, id: newId })
+      duplicateCount++
+    } else {
+      seenCoordIds.add(coord.id)
+      uniqueCoordinators.push(coord)
+    }
+  })
+  
+  if (duplicateCount > 0) {
+    console.warn(`⚠️ Cleaned ${duplicateCount} duplicate coordinator ID(s)`)
+    cleaned.coordinators = uniqueCoordinators
+  }
+  
+  // Main coordinators'daki duplicate ID'leri temizle
+  const seenMainCoordIds = new Set<string>()
+  const uniqueMainCoordinators: MainCoordinator[] = []
+  let duplicateMainCount = 0
+  
+  cleaned.mainCoordinators.forEach((coord, index) => {
+    if (seenMainCoordIds.has(coord.id)) {
+      const newId = `maincoord-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`
+      console.warn(`⚠️ Duplicate main coordinator ID found: "${coord.id}" -> renamed to "${newId}"`)
+      uniqueMainCoordinators.push({ ...coord, id: newId })
+      duplicateMainCount++
+    } else {
+      seenMainCoordIds.add(coord.id)
+      uniqueMainCoordinators.push(coord)
+    }
+  })
+  
+  if (duplicateMainCount > 0) {
+    console.warn(`⚠️ Cleaned ${duplicateMainCount} duplicate main coordinator ID(s)`)
+    cleaned.mainCoordinators = uniqueMainCoordinators
+  }
+  
+  return cleaned
+}
+
+const initialData = cleanDuplicateIds(initialDataRaw)
 
 export function OrgDataProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<OrgData>(initialData)
@@ -694,9 +763,14 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
   const [customConnections, setCustomConnections] = useState<Array<{ source: string; target: string; sourceHandle?: string; targetHandle?: string }>>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
-  // Generate unique ID
+  // Generate unique ID - counter ile daha unique hale getirildi
+  const idCounterRef = useRef(0)
   const generateId = useCallback(() => {
-    return `id-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    idCounterRef.current++
+    const timestamp = Date.now()
+    const random = Math.random().toString(36).substr(2, 9)
+    const counter = idCounterRef.current.toString(36)
+    return `id-${timestamp}-${counter}-${random}`
   }, [])
 
   // Firebase'den verileri dinle - gerçek zamanlı senkronizasyon
@@ -771,24 +845,31 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
         if (savedData) {
           const parsedData = JSON.parse(savedData)
-          setData(parsedData)
-        } else {
-          // İlk yüklemede veya yeni projede initialData'yı kullan
-          if (projectId === 'main') {
-            localStorage.setItem(`orgData_${projectId}`, JSON.stringify(initialData))
-            setData(initialData)
-          } else {
-            // Yeni proje için boş veri
-            const emptyData: OrgData = {
-              management: [],
-              executives: [],
-              mainCoordinators: [],
-              coordinators: []
-            }
-            localStorage.setItem(`orgData_${projectId}`, JSON.stringify(emptyData))
-            setData(emptyData)
+          // Duplicate ID'leri temizle
+          const cleanedData = cleanDuplicateIds(parsedData)
+          // Eğer temizleme yapıldıysa localStorage'a kaydet
+          if (cleanedData !== parsedData) {
+            localStorage.setItem(`orgData_${projectId}`, JSON.stringify(cleanedData))
           }
-        }
+          setData(cleanedData)
+          } else {
+            // İlk yüklemede veya yeni projede initialData'yı kullan
+            if (projectId === 'main') {
+              const cleanedInitial = cleanDuplicateIds(initialData)
+              localStorage.setItem(`orgData_${projectId}`, JSON.stringify(cleanedInitial))
+              setData(cleanedInitial)
+            } else {
+              // Yeni proje için boş veri
+              const emptyData: OrgData = {
+                management: [],
+                executives: [],
+                mainCoordinators: [],
+                coordinators: []
+              }
+              localStorage.setItem(`orgData_${projectId}`, JSON.stringify(emptyData))
+              setData(cleanDuplicateIds(emptyData))
+            }
+          }
 
         if (savedPositions) {
           setPositions(JSON.parse(savedPositions))
@@ -819,7 +900,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    // Org data dinle - Production'da Firebase'den otomatik yükle
+    // Org data dinle - Production'da Firebase'den otomatik yükle (cleanDuplicateIds fonksiyonu component seviyesinde tanımlı)
     const orgDataRef = ref(database, `orgData/${activeProjectId}`)
     console.log('🔍 [PRODUCTION] Firebase\'den veri dinleniyor:', `orgData/${activeProjectId}`)
     const unsubData = onValue(orgDataRef, (snapshot) => {
@@ -828,7 +909,15 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
         console.log('✅✅✅ [PRODUCTION] Firebase\'den veri yüklendi! ✅✅✅')
         console.log('  - Project ID:', activeProjectId)
         console.log('  - Coordinators:', val.coordinators.length)
-        val.coordinators.forEach((coord: any, idx: number) => {
+        // Duplicate ID'leri temizle
+        const cleanedVal = cleanDuplicateIds(val)
+        // Eğer temizleme yapıldıysa Firebase'e kaydet
+        if (JSON.stringify(cleanedVal) !== JSON.stringify(val)) {
+          set(ref(database, `orgData/${activeProjectId}`), cleanedVal).then(() => {
+            console.log('✅ Duplicate ID\'ler temizlendi ve Firebase\'e kaydedildi')
+          })
+        }
+        cleanedVal.coordinators.forEach((coord: any, idx: number) => {
           console.log(`    ${idx + 1}. ${coord.title}`)
           if (coord.deputies && coord.deputies.length > 0) {
             console.log(`       - Deputies: ${coord.deputies.length}`)
@@ -837,7 +926,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
             console.log(`       - SubUnits: ${coord.subUnits.length}`)
           }
         })
-        setData(val)
+        setData(cleanedVal)
       } else {
         // Firebase'de veri yoksa - boş veri göster (üzerine yazma!)
         console.log('⚠️⚠️⚠️ [PRODUCTION] Firebase\'de veri yok! ⚠️⚠️⚠️')
@@ -846,7 +935,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
         console.log('  - ÇÖZÜM: Lokalde "Firebase\'e Yükle" butonuna basın!')
         // Sadece boş veri göster, Firebase'e yazma (kullanıcının verileri üzerine yazılmasın)
         const emptyData: OrgData = { management: [], executives: [], mainCoordinators: [], coordinators: [] }
-        setData(emptyData)
+        setData(cleanDuplicateIds(emptyData))
       }
       setIsLoading(false)
     }, (error) => {
@@ -873,7 +962,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       unsubPos()
       unsubConn()
     }
-  }, [activeProjectId]) // activeProjectId değiştiğinde yeniden yükle
+  }, [activeProjectId]) // activeProjectId değiştiğinde yeniden yükle (cleanDuplicateIds component dışında tanımlı, stable referans)
 
   // Firebase'e veri kaydet (veya localStorage)
   const saveToFirebase = useCallback((newData: OrgData) => {
@@ -1405,8 +1494,8 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     })
   }, [saveToFirebase])
 
-  // Şehir bazlı personel ekleme (Toplumsal Çalışmalar için)
-  const addCityPerson = useCallback((city: string, person: Omit<Person, 'id'>) => {
+  // Şehir bazlı personel ekleme (İl Sorumlusu veya Deneyap Sorumlusu)
+  const addCityPerson = useCallback((city: string, role: 'ilSorumlusu' | 'deneyapSorumlusu', person: Omit<Person, 'id'>) => {
     setData(prev => {
       const cityPersonnel = prev.cityPersonnel || []
       const existingCity = cityPersonnel.find(cp => cp.city === city)
@@ -1420,13 +1509,18 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       if (existingCity) {
         newCityPersonnel = cityPersonnel.map(cp =>
           cp.city === city
-            ? { ...cp, people: [...cp.people, newPerson] }
+            ? { ...cp, [role]: newPerson }
             : cp
         )
       } else {
         newCityPersonnel = [
           ...cityPersonnel,
-          { id: `city-${Date.now()}`, city, people: [newPerson] }
+          { 
+            id: `city-${Date.now()}`, 
+            city, 
+            [role]: newPerson,
+            people: [] // Geriye uyumluluk için
+          }
         ]
       }
 
@@ -1437,18 +1531,20 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
   }, [saveToFirebase])
 
   // Şehir bazlı personel güncelleme
-  const updateCityPerson = useCallback((city: string, personId: string, updates: Partial<Person>) => {
+  const updateCityPerson = useCallback((city: string, role: 'ilSorumlusu' | 'deneyapSorumlusu', personId: string, updates: Partial<Person>) => {
     setData(prev => {
-      const newCityPersonnel = (prev.cityPersonnel || []).map(cp =>
-        cp.city === city
-          ? {
+      const newCityPersonnel = (prev.cityPersonnel || []).map(cp => {
+        if (cp.city !== city) return cp
+        
+        const currentPerson = cp[role]
+        if (currentPerson?.id === personId) {
+          return {
             ...cp,
-            people: cp.people.map(p =>
-              p.id === personId ? { ...p, ...updates } : p
-            )
+            [role]: { ...currentPerson, ...updates }
           }
-          : cp
-      )
+        }
+        return cp
+      })
 
       const newData = { ...prev, cityPersonnel: newCityPersonnel }
       saveToFirebase(newData)
@@ -1457,13 +1553,20 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
   }, [saveToFirebase])
 
   // Şehir bazlı personel silme
-  const deleteCityPerson = useCallback((city: string, personId: string) => {
+  const deleteCityPerson = useCallback((city: string, role: 'ilSorumlusu' | 'deneyapSorumlusu', personId: string) => {
     setData(prev => {
-      const newCityPersonnel = (prev.cityPersonnel || []).map(cp =>
-        cp.city === city
-          ? { ...cp, people: cp.people.filter(p => p.id !== personId) }
-          : cp
-      ).filter(cp => cp.people.length > 0) // Boş şehirleri kaldır
+      const newCityPersonnel = (prev.cityPersonnel || []).map(cp => {
+        if (cp.city !== city) return cp
+        
+        const currentPerson = cp[role]
+        if (currentPerson?.id === personId) {
+          return {
+            ...cp,
+            [role]: undefined
+          }
+        }
+        return cp
+      }).filter(cp => cp.ilSorumlusu || cp.deneyapSorumlusu || (cp.people && cp.people.length > 0)) // Boş şehirleri kaldır
 
       const newData = { ...prev, cityPersonnel: newCityPersonnel }
       saveToFirebase(newData)
@@ -1475,6 +1578,86 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
   const getCityPersonnel = useCallback((): CityPersonnel[] => {
     return data.cityPersonnel || []
   }, [data.cityPersonnel])
+
+  // Bölge sorumlusu ekleme
+  const addRegionPerson = useCallback((region: string, person: Omit<Person, 'id'>) => {
+    setData(prev => {
+      const regionPersonnel = prev.regionPersonnel || []
+      const existingRegion = regionPersonnel.find(rp => rp.region === region)
+
+      const newPerson: Person = {
+        ...person,
+        id: `person-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      }
+
+      let newRegionPersonnel: RegionPersonnel[]
+      if (existingRegion) {
+        newRegionPersonnel = regionPersonnel.map(rp =>
+          rp.region === region
+            ? { ...rp, bolgeSorumlusu: newPerson }
+            : rp
+        )
+      } else {
+        newRegionPersonnel = [
+          ...regionPersonnel,
+          { 
+            id: `region-${Date.now()}`, 
+            region, 
+            bolgeSorumlusu: newPerson
+          }
+        ]
+      }
+
+      const newData = { ...prev, regionPersonnel: newRegionPersonnel }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [saveToFirebase])
+
+  // Bölge sorumlusu güncelleme
+  const updateRegionPerson = useCallback((region: string, personId: string, updates: Partial<Person>) => {
+    setData(prev => {
+      const newRegionPersonnel = (prev.regionPersonnel || []).map(rp => {
+        if (rp.region !== region) return rp
+        
+        if (rp.bolgeSorumlusu?.id === personId) {
+          return {
+            ...rp,
+            bolgeSorumlusu: { ...rp.bolgeSorumlusu, ...updates }
+          }
+        }
+        return rp
+      })
+
+      const newData = { ...prev, regionPersonnel: newRegionPersonnel }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [saveToFirebase])
+
+  // Bölge sorumlusu silme
+  const deleteRegionPerson = useCallback((region: string, personId: string) => {
+    setData(prev => {
+      const newRegionPersonnel = (prev.regionPersonnel || [])
+        .map(rp => {
+          if (rp.region !== region) return rp
+          if (rp.bolgeSorumlusu?.id === personId) {
+            return { ...rp, bolgeSorumlusu: undefined }
+          }
+          return rp
+        })
+        .filter(rp => rp.bolgeSorumlusu) // Boş bölgeleri kaldır
+
+      const newData = { ...prev, regionPersonnel: newRegionPersonnel }
+      saveToFirebase(newData)
+      return newData
+    })
+  }, [saveToFirebase])
+
+  // Tüm bölge personelini getir
+  const getRegionPersonnel = useCallback((): RegionPersonnel[] => {
+    return data.regionPersonnel || []
+  }, [data.regionPersonnel])
 
   // Tüm personeli getir (koordinatör, deputy, alt birim personeli, şehir personeli)
   const getAllPersonnel = useCallback(() => {
@@ -1543,8 +1726,25 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       })
     })
 
-    // Şehir personeli (Toplumsal Çalışmalar için)
+    // Şehir personeli (Toplumsal Çalışmalar için) - İl Sorumlusu ve Deneyap Sorumlusu
     data.cityPersonnel?.forEach(cityData => {
+      if (cityData.ilSorumlusu) {
+        allPersonnel.push({
+          person: cityData.ilSorumlusu,
+          type: 'city-person',
+          city: cityData.city,
+          role: 'ilSorumlusu',
+        })
+      }
+      if (cityData.deneyapSorumlusu) {
+        allPersonnel.push({
+          person: cityData.deneyapSorumlusu,
+          type: 'city-person',
+          city: cityData.city,
+          role: 'deneyapSorumlusu',
+        })
+      }
+      // Geriye uyumluluk için people array'ini de kontrol et
       cityData.people?.forEach(person => {
         allPersonnel.push({
           person,
@@ -1618,9 +1818,22 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
     const siblingCount = data.coordinators.filter(c => c.parent === parentId).length
 
+    // Unique ID oluştur ve duplicate kontrolü yap
+    let newId = generateId()
+    let attempts = 0
+    while (data.coordinators.some(c => c.id === newId) || data.mainCoordinators.some(m => m.id === newId)) {
+      newId = generateId()
+      attempts++
+      if (attempts > 10) {
+        console.error('⚠️ Unique ID oluşturulamadı, fallback ID kullanılıyor')
+        newId = `coord-${Date.now()}-${Math.random().toString(36).substr(2, 15)}`
+        break
+      }
+    }
+
     const newCoordinator: Coordinator = {
       ...coordinator,
-      id: generateId(),
+      id: newId,
       position: coordinator.position || {
         x: (parent?.position.x || 500) + (siblingCount * 170),
         y: (parent?.position.y || 300) + 100,
@@ -1752,6 +1965,10 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       updateCityPerson,
       deleteCityPerson,
       getCityPersonnel,
+      addRegionPerson,
+      updateRegionPerson,
+      deleteRegionPerson,
+      getRegionPersonnel,
       getAllPersonnel,
       deleteDeputy,
       deleteCoordinator,

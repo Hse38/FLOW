@@ -1,0 +1,100 @@
+// Türkiye illeri ve bölgeleri eşleştirmesi
+export const turkeyProvinces: { id: string; name: string; plateCode: string; region: string }[] = [
+  // Marmara (bolge-1)
+  { id: 'balikesir', name: 'Balıkesir', plateCode: '10', region: 'Marmara' },
+  { id: 'bilecik', name: 'Bilecik', plateCode: '11', region: 'Marmara' },
+  { id: 'bursa', name: 'Bursa', plateCode: '16', region: 'Marmara' },
+  { id: 'canakkale', name: 'Çanakkale', plateCode: '17', region: 'Marmara' },
+  { id: 'edirne', name: 'Edirne', plateCode: '22', region: 'Marmara' },
+  { id: 'istanbul', name: 'İstanbul', plateCode: '34', region: 'Marmara' },
+  { id: 'kirklareli', name: 'Kırklareli', plateCode: '39', region: 'Marmara' },
+  { id: 'kocaeli', name: 'Kocaeli', plateCode: '41', region: 'Marmara' },
+  { id: 'sakarya', name: 'Sakarya', plateCode: '54', region: 'Marmara' },
+  { id: 'tekirdag', name: 'Tekirdağ', plateCode: '59', region: 'Marmara' },
+  { id: 'yalova', name: 'Yalova', plateCode: '77', region: 'Marmara' },
+  // İç Anadolu (bolge-2)
+  { id: 'ankara', name: 'Ankara', plateCode: '06', region: 'İç Anadolu' },
+  { id: 'cankiri', name: 'Çankırı', plateCode: '18', region: 'İç Anadolu' },
+  { id: 'eskisehir', name: 'Eskişehir', plateCode: '26', region: 'İç Anadolu' },
+  { id: 'kayseri', name: 'Kayseri', plateCode: '38', region: 'İç Anadolu' },
+  { id: 'kirsehir', name: 'Kırşehir', plateCode: '40', region: 'İç Anadolu' },
+  { id: 'konya', name: 'Konya', plateCode: '42', region: 'İç Anadolu' },
+  { id: 'nevsehir', name: 'Nevşehir', plateCode: '50', region: 'İç Anadolu' },
+  { id: 'nigde', name: 'Niğde', plateCode: '51', region: 'İç Anadolu' },
+  { id: 'sivas', name: 'Sivas', plateCode: '58', region: 'İç Anadolu' },
+  { id: 'yozgat', name: 'Yozgat', plateCode: '66', region: 'İç Anadolu' },
+  { id: 'aksaray', name: 'Aksaray', plateCode: '68', region: 'İç Anadolu' },
+  { id: 'karaman', name: 'Karaman', plateCode: '70', region: 'İç Anadolu' },
+  { id: 'kirikkale', name: 'Kırıkkale', plateCode: '71', region: 'İç Anadolu' },
+  // Ege (bolge-3)
+  { id: 'afyon', name: 'Afyonkarahisar', plateCode: '03', region: 'Ege' },
+  { id: 'aydin', name: 'Aydın', plateCode: '09', region: 'Ege' },
+  { id: 'denizli', name: 'Denizli', plateCode: '20', region: 'Ege' },
+  { id: 'izmir', name: 'İzmir', plateCode: '35', region: 'Ege' },
+  { id: 'kutahya', name: 'Kütahya', plateCode: '43', region: 'Ege' },
+  { id: 'manisa', name: 'Manisa', plateCode: '45', region: 'Ege' },
+  { id: 'mugla', name: 'Muğla', plateCode: '48', region: 'Ege' },
+  { id: 'usak', name: 'Uşak', plateCode: '64', region: 'Ege' },
+  // Akdeniz (bolge-4)
+  { id: 'adana', name: 'Adana', plateCode: '01', region: 'Akdeniz' },
+  { id: 'antalya', name: 'Antalya', plateCode: '07', region: 'Akdeniz' },
+  { id: 'burdur', name: 'Burdur', plateCode: '15', region: 'Akdeniz' },
+  { id: 'hatay', name: 'Hatay', plateCode: '31', region: 'Akdeniz' },
+  { id: 'isparta', name: 'Isparta', plateCode: '32', region: 'Akdeniz' },
+  { id: 'mersin', name: 'Mersin', plateCode: '33', region: 'Akdeniz' },
+  { id: 'kahramanmaras', name: 'Kahramanmaraş', plateCode: '46', region: 'Akdeniz' },
+  { id: 'osmaniye', name: 'Osmaniye', plateCode: '80', region: 'Akdeniz' },
+  // Karadeniz (bolge-5)
+  { id: 'amasya', name: 'Amasya', plateCode: '05', region: 'Karadeniz' },
+  { id: 'artvin', name: 'Artvin', plateCode: '08', region: 'Karadeniz' },
+  { id: 'bolu', name: 'Bolu', plateCode: '14', region: 'Karadeniz' },
+  { id: 'corum', name: 'Çorum', plateCode: '19', region: 'Karadeniz' },
+  { id: 'giresun', name: 'Giresun', plateCode: '28', region: 'Karadeniz' },
+  { id: 'gumushane', name: 'Gümüşhane', plateCode: '29', region: 'Karadeniz' },
+  { id: 'kastamonu', name: 'Kastamonu', plateCode: '37', region: 'Karadeniz' },
+  { id: 'ordu', name: 'Ordu', plateCode: '52', region: 'Karadeniz' },
+  { id: 'rize', name: 'Rize', plateCode: '53', region: 'Karadeniz' },
+  { id: 'samsun', name: 'Samsun', plateCode: '55', region: 'Karadeniz' },
+  { id: 'sinop', name: 'Sinop', plateCode: '57', region: 'Karadeniz' },
+  { id: 'tokat', name: 'Tokat', plateCode: '60', region: 'Karadeniz' },
+  { id: 'trabzon', name: 'Trabzon', plateCode: '61', region: 'Karadeniz' },
+  { id: 'zonguldak', name: 'Zonguldak', plateCode: '67', region: 'Karadeniz' },
+  { id: 'bayburt', name: 'Bayburt', plateCode: '69', region: 'Karadeniz' },
+  { id: 'bartin', name: 'Bartın', plateCode: '74', region: 'Karadeniz' },
+  { id: 'karabuk', name: 'Karabük', plateCode: '78', region: 'Karadeniz' },
+  { id: 'duzce', name: 'Düzce', plateCode: '81', region: 'Karadeniz' },
+  // Güneydoğu Anadolu (bolge-6)
+  { id: 'adiyaman', name: 'Adıyaman', plateCode: '02', region: 'Güneydoğu Anadolu' },
+  { id: 'diyarbakir', name: 'Diyarbakır', plateCode: '21', region: 'Güneydoğu Anadolu' },
+  { id: 'gaziantep', name: 'Gaziantep', plateCode: '27', region: 'Güneydoğu Anadolu' },
+  { id: 'mardin', name: 'Mardin', plateCode: '47', region: 'Güneydoğu Anadolu' },
+  { id: 'siirt', name: 'Siirt', plateCode: '56', region: 'Güneydoğu Anadolu' },
+  { id: 'sanliurfa', name: 'Şanlıurfa', plateCode: '63', region: 'Güneydoğu Anadolu' },
+  { id: 'batman', name: 'Batman', plateCode: '72', region: 'Güneydoğu Anadolu' },
+  { id: 'sirnak', name: 'Şırnak', plateCode: '73', region: 'Güneydoğu Anadolu' },
+  { id: 'kilis', name: 'Kilis', plateCode: '79', region: 'Güneydoğu Anadolu' },
+  // Doğu Anadolu (bolge-7)
+  { id: 'agri', name: 'Ağrı', plateCode: '04', region: 'Doğu Anadolu' },
+  { id: 'bingol', name: 'Bingöl', plateCode: '12', region: 'Doğu Anadolu' },
+  { id: 'bitlis', name: 'Bitlis', plateCode: '13', region: 'Doğu Anadolu' },
+  { id: 'elazig', name: 'Elazığ', plateCode: '23', region: 'Doğu Anadolu' },
+  { id: 'erzincan', name: 'Erzincan', plateCode: '24', region: 'Doğu Anadolu' },
+  { id: 'erzurum', name: 'Erzurum', plateCode: '25', region: 'Doğu Anadolu' },
+  { id: 'hakkari', name: 'Hakkari', plateCode: '30', region: 'Doğu Anadolu' },
+  { id: 'kars', name: 'Kars', plateCode: '36', region: 'Doğu Anadolu' },
+  { id: 'malatya', name: 'Malatya', plateCode: '44', region: 'Doğu Anadolu' },
+  { id: 'mus', name: 'Muş', plateCode: '49', region: 'Doğu Anadolu' },
+  { id: 'tunceli', name: 'Tunceli', plateCode: '62', region: 'Doğu Anadolu' },
+  { id: 'van', name: 'Van', plateCode: '65', region: 'Doğu Anadolu' },
+  { id: 'ardahan', name: 'Ardahan', plateCode: '75', region: 'Doğu Anadolu' },
+  { id: 'igdir', name: 'Iğdır', plateCode: '76', region: 'Doğu Anadolu' },
+]
+
+// Şehir adından bölge bulma
+export function getRegionFromCity(cityName: string): string | null {
+  const province = turkeyProvinces.find(p => p.name === cityName)
+  return province?.region || null
+}
+
+// Bölge listesi
+export const regions = ['Marmara', 'İç Anadolu', 'Ege', 'Akdeniz', 'Karadeniz', 'Güneydoğu Anadolu', 'Doğu Anadolu']

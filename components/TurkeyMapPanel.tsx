@@ -4,23 +4,10 @@ import { useState } from 'react'
 import { X, Plus, Edit2, Trash2, MapPin, Users, Phone, Mail, User } from 'lucide-react'
 import ConfirmationModal from './ConfirmationModal'
 import { showToast } from './Toast'
+import { CityPersonnel, Person } from '@/context/OrgDataContext'
 
-// Context'teki Person tipi
-export interface Person {
-  id: string
-  name: string
-  title?: string
-  phone?: string
-  email?: string
-  photo?: string
-}
-
-// Context'teki CityPersonnel tipi
-export interface CityPersonnel {
-  id: string
-  city: string  // Şehir adı (örn: "Ankara")
-  people: Person[]
-}
+// Geriye uyumluluk için export ediyoruz
+export type { CityPersonnel, Person }
 
 interface TurkeyMapPanelProps {
   isOpen: boolean
@@ -155,13 +142,13 @@ export default function TurkeyMapPanel({
     email: ''
   })
 
-  // Seçili il personelleri
+  // Seçili il personelleri - geriye uyumluluk için people array'ini kullan
   const selectedCityPersonnel = selectedCity
     ? cityPersonnel.find(cp => cp.city === selectedCity.name)?.people || []
     : []
 
-  // İstatistikler
-  const totalPersonnel = cityPersonnel.reduce((sum, cp) => sum + cp.people.length, 0)
+  // İstatistikler - geriye uyumluluk için people array'ini kullan
+  const totalPersonnel = cityPersonnel.reduce((sum, cp) => sum + (cp.people?.length || 0), 0)
   const citiesWithPersonnel = cityPersonnel.length
 
   // Filtrelenmiş iller
@@ -233,10 +220,10 @@ export default function TurkeyMapPanel({
     setConfirmationModal({ isOpen: true, personId, cityName })
   }
 
-  // İl için personel sayısını al
+  // İl için personel sayısını al - geriye uyumluluk için people array'ini kullan
   const getPersonnelCount = (cityName: string) => {
     const cityData = cityPersonnel.find(cp => cp.city === cityName)
-    return cityData ? cityData.people.length : 0
+    return cityData ? (cityData.people?.length || 0) : 0
   }
 
   if (!isOpen) return null

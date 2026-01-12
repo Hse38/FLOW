@@ -3,35 +3,17 @@
 import { memo, useEffect, useRef, useState } from 'react'
 import { Handle, Position } from 'reactflow'
 import { Plus, Edit2, Trash2, X, User, Phone, Mail } from 'lucide-react'
-
-interface Person {
-  id: string
-  name: string
-  title?: string
-  email?: string
-  phone?: string
-  notes?: string
-  photoData?: string
-  color?: string
-  university?: string
-  department?: string
-  jobDescription?: string
-}
-
-interface CityPersonnel {
-  id: string
-  city: string
-  people: Person[]
-}
+import { CityPersonnel } from '@/context/OrgDataContext'
+import type { Person } from '@/context/OrgDataContext'
 
 interface TurkeyMapNodeProps {
   data: {
     id: string
     onCityClick?: (cityName: string) => void
     cityPersonnel?: CityPersonnel[]
-    onAddPerson?: (city: string, person: Omit<Person, 'id'>) => void
-    onUpdatePerson?: (city: string, personId: string, updates: Partial<Person>) => void
-    onDeletePerson?: (city: string, personId: string) => void
+    onAddPerson?: (city: string, role: 'ilSorumlusu' | 'deneyapSorumlusu', person: Omit<Person, 'id'>) => void
+    onUpdatePerson?: (city: string, role: 'ilSorumlusu' | 'deneyapSorumlusu', personId: string, updates: Partial<Person>) => void
+    onDeletePerson?: (city: string, role: 'ilSorumlusu' | 'deneyapSorumlusu', personId: string) => void
   }
 }
 
@@ -40,7 +22,8 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
   const infoRef = useRef<HTMLDivElement>(null)
   const [selectedProvince, setSelectedProvince] = useState<string | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
-  const [editingPerson, setEditingPerson] = useState<{ person: Person; cityName: string } | null>(null)
+  const [selectedRole, setSelectedRole] = useState<'ilSorumlusu' | 'deneyapSorumlusu' | null>(null)
+  const [editingPerson, setEditingPerson] = useState<{ person: Person; cityName: string; role: 'ilSorumlusu' | 'deneyapSorumlusu' } | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     title: '',
@@ -136,10 +119,10 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
   }, [])
 
   return (
-    <div className="relative bg-transparent">
+    <div className="relative bg-transparent flex gap-4">
       <Handle type="target" position={Position.Top} id="top" className="!bg-green-500 !w-3 !h-3 !border-2 !border-white" />
       {/* Map Container - Direkt canvas'da, arka plan yok, büyük */}
-      <div ref={mapContainerRef} className="p-4" style={{ width: '1800px', maxWidth: '1800px' }}>
+      <div ref={mapContainerRef} className="p-3 flex-shrink-0" style={{ width: '2000px', maxWidth: '2000px' }}>
           {/* İl İsimleri Tooltip */}
           <div ref={infoRef} className="il-isimleri fixed pointer-events-none z-10" style={{ display: 'none' }}></div>
 
@@ -487,43 +470,64 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
         `}</style>
       </div>
 
-      {/* Seçili İl Personel Kartları */}
+      {/* Seçili İl Personel Kartları - Yan Panel */}
       {selectedProvince && data.cityPersonnel && (() => {
         const cityName = selectedProvince.replace(' (Asya)', '').replace(' (Avrupa)', '')
         const cityData = data.cityPersonnel.find(cp => cp.city === cityName)
-        const personnel = cityData?.people || []
 
         return (
-          <div className="mt-4 w-full bg-white rounded-lg shadow-lg border border-gray-200 p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-xl font-bold text-gray-800">{cityName} İl Personeli</h3>
-                <p className="text-sm text-gray-500 mt-1">{personnel.length} personel</p>
+          <div className="w-96 flex-shrink-0 bg-white rounded-xl shadow-2xl border-2 border-gray-200 p-5 h-fit max-h-[800px] overflow-y-auto sticky top-4">
+            <div className="mb-4 border-b border-gray-200 pb-4">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800">{cityName}</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {[cityData?.ilSorumlusu, cityData?.deneyapSorumlusu].filter(Boolean).length} personel
+                  </p>
+                </div>
               </div>
-              <button
-                onClick={() => {
-                  setShowAddForm(true)
-                  setEditingPerson(null)
-                  setFormData({ name: '', title: '', phone: '', email: '', university: '', department: '', jobDescription: '' })
-                }}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Personel Ekle
-              </button>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => {
+                    setShowAddForm(true)
+                    setSelectedRole('ilSorumlusu')
+                    setEditingPerson(null)
+                    setFormData({ name: '', title: '', phone: '', email: '', university: '', department: '', jobDescription: '' })
+                  }}
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                >
+                  <Plus className="w-4 h-4" />
+                  İl Sorumlusu Ekle
+                </button>
+                <button
+                  onClick={() => {
+                    setShowAddForm(true)
+                    setSelectedRole('deneyapSorumlusu')
+                    setEditingPerson(null)
+                    setFormData({ name: '', title: '', phone: '', email: '', university: '', department: '', jobDescription: '' })
+                  }}
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                >
+                  <Plus className="w-4 h-4" />
+                  Deneyap Sorumlusu Ekle
+                </button>
+              </div>
             </div>
 
             {/* Personel Ekleme/Düzenleme Formu */}
-            {(showAddForm || editingPerson) && (
+            {(showAddForm || editingPerson) && (selectedRole || editingPerson) && (
               <form
                 onSubmit={(e) => {
                   e.preventDefault()
                   if (!selectedProvince || !formData.name) return
+                  if (!selectedRole && !editingPerson) return
 
                   const cityNameClean = selectedProvince.replace(' (Asya)', '').replace(' (Avrupa)', '')
+                  const role = editingPerson?.role || selectedRole
+                  if (!role) return
                   
                   if (editingPerson && data.onUpdatePerson) {
-                    data.onUpdatePerson(cityNameClean, editingPerson.person.id, {
+                    data.onUpdatePerson(cityNameClean, role, editingPerson.person.id, {
                       name: formData.name,
                       title: formData.title || undefined,
                       phone: formData.phone || undefined,
@@ -532,8 +536,8 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
                       department: formData.department || undefined,
                       jobDescription: formData.jobDescription || undefined
                     })
-                  } else if (data.onAddPerson) {
-                    data.onAddPerson(cityNameClean, {
+                  } else if (data.onAddPerson && selectedRole) {
+                    data.onAddPerson(cityNameClean, selectedRole, {
                       name: formData.name,
                       title: formData.title || undefined,
                       phone: formData.phone || undefined,
@@ -546,12 +550,17 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
 
                   setFormData({ name: '', title: '', phone: '', email: '', university: '', department: '', jobDescription: '' })
                   setShowAddForm(false)
+                  setSelectedRole(null)
                   setEditingPerson(null)
                 }}
                 className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200"
               >
                 <h4 className="font-semibold text-gray-700 mb-3">
-                  {editingPerson ? 'Personel Düzenle' : 'Yeni Personel Ekle'}
+                  {editingPerson 
+                    ? `${editingPerson.role === 'ilSorumlusu' ? 'İl Sorumlusu' : 'Deneyap Sorumlusu'} Düzenle`
+                    : selectedRole === 'ilSorumlusu' 
+                    ? 'İl Sorumlusu Ekle'
+                    : 'Deneyap Sorumlusu Ekle'}
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -641,85 +650,195 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
               </form>
             )}
 
-            {/* Personel Kartları */}
-            {personnel.length > 0 ? (
-              <div className="grid grid-cols-3 gap-4">
-                {personnel.map(person => (
-                  <div
-                    key={person.id}
-                    className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3 flex-1">
-                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          {person.photoData ? (
-                            <img src={person.photoData} alt={person.name} className="w-12 h-12 rounded-full object-cover" />
+            {/* Personel Kartları - İl Sorumlusu ve Deneyap Sorumlusu */}
+            {(() => {
+              const ilSorumlusu = cityData?.ilSorumlusu
+              const deneyapSorumlusu = cityData?.deneyapSorumlusu
+              const hasPersonnel = ilSorumlusu || deneyapSorumlusu
+
+              if (!hasPersonnel && !showAddForm && !editingPerson) {
+                return (
+                  <div className="text-center py-8 text-gray-500">
+                    <User className="w-12 h-12 mx-auto text-gray-300 mb-2" />
+                    <p>Bu il için henüz personel eklenmemiş</p>
+                  </div>
+                )
+              }
+
+              return (
+                <div className="space-y-3">
+                  {/* İl Sorumlusu */}
+                  {ilSorumlusu ? (
+                    <div className="bg-blue-50 rounded-lg p-4 border-2 border-blue-200 hover:shadow-md transition-shadow">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-semibold text-blue-700 px-2 py-1 bg-blue-100 rounded-full">İl Sorumlusu</span>
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => {
+                              setEditingPerson({ person: ilSorumlusu, cityName, role: 'ilSorumlusu' })
+                              setFormData({
+                                name: ilSorumlusu.name,
+                                title: ilSorumlusu.title || '',
+                                phone: ilSorumlusu.phone || '',
+                                email: ilSorumlusu.email || '',
+                                university: ilSorumlusu.university || '',
+                                department: ilSorumlusu.department || '',
+                                jobDescription: ilSorumlusu.jobDescription || ''
+                              })
+                              setShowAddForm(false)
+                              setSelectedRole(null)
+                            }}
+                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                            title="Düzenle"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (data.onDeletePerson && confirm('İl sorumlusunu silmek istediğinize emin misiniz?')) {
+                                const cityNameClean = selectedProvince.replace(' (Asya)', '').replace(' (Avrupa)', '')
+                                data.onDeletePerson(cityNameClean, 'ilSorumlusu', ilSorumlusu.id)
+                              }
+                            }}
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-100 rounded transition-colors"
+                            title="Sil"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          {ilSorumlusu.photoData ? (
+                            <img src={ilSorumlusu.photoData} alt={ilSorumlusu.name} className="w-12 h-12 rounded-full object-cover" />
                           ) : (
-                            <User className="w-6 h-6 text-green-600" />
+                            <User className="w-6 h-6 text-blue-600" />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-gray-800 text-sm">{person.name}</h4>
-                          {person.title && (
-                            <p className="text-xs text-gray-600 mt-1">{person.title}</p>
+                          <h4 className="font-semibold text-gray-800 text-sm">{ilSorumlusu.name}</h4>
+                          {ilSorumlusu.title && (
+                            <p className="text-xs text-gray-600 mt-1">{ilSorumlusu.title}</p>
                           )}
-                          {person.phone && (
+                          {ilSorumlusu.phone && (
                             <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
                               <Phone className="w-3 h-3" />
-                              <span className="truncate">{person.phone}</span>
+                              <span className="truncate">{ilSorumlusu.phone}</span>
                             </div>
                           )}
-                          {person.email && (
+                          {ilSorumlusu.email && (
                             <div className="flex items-center gap-1 text-xs text-gray-500">
                               <Mail className="w-3 h-3" />
-                              <span className="truncate">{person.email}</span>
+                              <span className="truncate">{ilSorumlusu.email}</span>
                             </div>
                           )}
                         </div>
                       </div>
-                      <div className="flex gap-1 ml-2">
-                        <button
-                          onClick={() => {
-                            setEditingPerson({ person, cityName })
-                            setFormData({
-                              name: person.name,
-                              title: person.title || '',
-                              phone: person.phone || '',
-                              email: person.email || '',
-                              university: person.university || '',
-                              department: person.department || '',
-                              jobDescription: person.jobDescription || ''
-                            })
-                            setShowAddForm(false)
-                          }}
-                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                          title="Düzenle"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (data.onDeletePerson && confirm('Bu personeli silmek istediğinize emin misiniz?')) {
-                              const cityNameClean = selectedProvince.replace(' (Asya)', '').replace(' (Avrupa)', '')
-                              data.onDeletePerson(cityNameClean, person.id)
-                            }
-                          }}
-                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                          title="Sil"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                    </div>
+                  ) : (
+                    <div className="bg-blue-50/30 rounded-lg p-4 border-2 border-dashed border-blue-200 flex items-center justify-center min-h-[120px]">
+                      <button
+                        onClick={() => {
+                          setShowAddForm(true)
+                          setSelectedRole('ilSorumlusu')
+                          setEditingPerson(null)
+                          setFormData({ name: '', title: '', phone: '', email: '', university: '', department: '', jobDescription: '' })
+                        }}
+                        className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        İl Sorumlusu Ekle
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Deneyap Sorumlusu */}
+                  {deneyapSorumlusu ? (
+                    <div className="bg-purple-50 rounded-lg p-4 border-2 border-purple-200 hover:shadow-md transition-shadow">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-semibold text-purple-700 px-2 py-1 bg-purple-100 rounded-full">Deneyap Sorumlusu</span>
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => {
+                              setEditingPerson({ person: deneyapSorumlusu, cityName, role: 'deneyapSorumlusu' })
+                              setFormData({
+                                name: deneyapSorumlusu.name,
+                                title: deneyapSorumlusu.title || '',
+                                phone: deneyapSorumlusu.phone || '',
+                                email: deneyapSorumlusu.email || '',
+                                university: deneyapSorumlusu.university || '',
+                                department: deneyapSorumlusu.department || '',
+                                jobDescription: deneyapSorumlusu.jobDescription || ''
+                              })
+                              setShowAddForm(false)
+                              setSelectedRole(null)
+                            }}
+                            className="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-100 rounded transition-colors"
+                            title="Düzenle"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (data.onDeletePerson && confirm('Deneyap sorumlusunu silmek istediğinize emin misiniz?')) {
+                                const cityNameClean = selectedProvince.replace(' (Asya)', '').replace(' (Avrupa)', '')
+                                data.onDeletePerson(cityNameClean, 'deneyapSorumlusu', deneyapSorumlusu.id)
+                              }
+                            }}
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-100 rounded transition-colors"
+                            title="Sil"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          {deneyapSorumlusu.photoData ? (
+                            <img src={deneyapSorumlusu.photoData} alt={deneyapSorumlusu.name} className="w-12 h-12 rounded-full object-cover" />
+                          ) : (
+                            <User className="w-6 h-6 text-purple-600" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-800 text-sm">{deneyapSorumlusu.name}</h4>
+                          {deneyapSorumlusu.title && (
+                            <p className="text-xs text-gray-600 mt-1">{deneyapSorumlusu.title}</p>
+                          )}
+                          {deneyapSorumlusu.phone && (
+                            <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                              <Phone className="w-3 h-3" />
+                              <span className="truncate">{deneyapSorumlusu.phone}</span>
+                            </div>
+                          )}
+                          {deneyapSorumlusu.email && (
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <Mail className="w-3 h-3" />
+                              <span className="truncate">{deneyapSorumlusu.email}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : !showAddForm && !editingPerson ? (
-              <div className="text-center py-8 text-gray-500">
-                <User className="w-12 h-12 mx-auto text-gray-300 mb-2" />
-                <p>Bu il için henüz personel eklenmemiş</p>
-              </div>
-            ) : null}
+                  ) : (
+                    <div className="bg-purple-50/30 rounded-lg p-4 border-2 border-dashed border-purple-200 flex items-center justify-center min-h-[120px]">
+                      <button
+                        onClick={() => {
+                          setShowAddForm(true)
+                          setSelectedRole('deneyapSorumlusu')
+                          setEditingPerson(null)
+                          setFormData({ name: '', title: '', phone: '', email: '', university: '', department: '', jobDescription: '' })
+                        }}
+                        className="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center gap-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Deneyap Sorumlusu Ekle
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
           </div>
         )
       })()}

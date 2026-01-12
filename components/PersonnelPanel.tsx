@@ -17,6 +17,7 @@ interface PersonnelItem {
   subUnitId?: string
   subUnitTitle?: string
   city?: string
+  role?: 'ilSorumlusu' | 'deneyapSorumlusu' // Şehir personeli için role
 }
 
 interface PersonnelPanelProps {
