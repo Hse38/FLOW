@@ -270,9 +270,6 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     deputies?: Array<{ id: string; name: string; title: string; color?: string }>
   } | null>(null)
 
-  // Video modal state
-  const [videoModal, setVideoModal] = useState<boolean>(false)
-
   // Personel detay modal state (düzenleme için)
   const [personDetailModal, setPersonDetailModal] = useState<{
     isOpen: boolean
@@ -463,7 +460,6 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         data: {
           label: item.name,
           title: item.title,
-          onVideoClick: () => setVideoModal(true),
         },
       })
     })
