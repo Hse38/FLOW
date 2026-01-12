@@ -318,7 +318,7 @@ export default function PersonnelPanel({ isOpen, onClose, personnel, onPersonCli
                           )}
                         </div>
                         <span className={`px-2 py-1 rounded-lg text-xs font-medium border ${getTypeColor(item.type)} whitespace-nowrap`}>
-                          {item.type === 'deputy' && item.person.title 
+                          {item.person.title && (item.type === 'coordinator' || item.type === 'deputy' || item.type === 'subunit-person' || item.type === 'city-person')
                             ? item.person.title 
                             : getTypeLabel(item.type)}
                         </span>
