@@ -1786,6 +1786,18 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
 
       // Modal'ı hemen kapat (çift çağrıyı önlemek için)
       setFormModal(null)
+    } catch (error) {
+      // Hata yakala ve kullanıcıya göster
+      console.error('❌ Form kaydetme hatası:', error)
+      console.error('Hata detayları:', {
+        type: currentModal.type,
+        nodeId: currentModal.nodeId,
+        formData: formData,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      })
+      showToast('Bir hata oluştu. Lütfen tekrar deneyin.', 'error')
+      // Modal'ı kapatma, kullanıcı tekrar deneyebilsin
     } finally {
       // Guard'ı gecikmeyle sıfırla
       setTimeout(() => {

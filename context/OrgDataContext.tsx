@@ -1007,19 +1007,35 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
   // Firebase'e veri kaydet (veya localStorage)
   const saveToFirebase = useCallback((newData: OrgData) => {
-    if (USE_LOCAL_ONLY) {
-      setData(newData)
-      // localStorage'a kaydet (activeProjectId'ye göre)
-      try {
-        const projectId = activeProjectId || 'main'
-        localStorage.setItem(`orgData_${projectId}`, JSON.stringify(newData))
-      } catch (error) {
-        console.error('localStorage kaydetme hatası:', error)
+    try {
+      if (USE_LOCAL_ONLY) {
+        setData(newData)
+        // localStorage'a kaydet (activeProjectId'ye göre)
+        try {
+          const projectId = activeProjectId || 'main'
+          localStorage.setItem(`orgData_${projectId}`, JSON.stringify(newData))
+        } catch (error) {
+          console.error('localStorage kaydetme hatası:', error)
+          throw error
+        }
+        return
       }
-      return
-    }
-    if (activeProjectId) {
-      set(ref(database, `orgData/${activeProjectId}`), newData)
+      if (activeProjectId) {
+        set(ref(database, `orgData/${activeProjectId}`), newData).catch((error) => {
+          console.error('❌ Firebase kaydetme hatası:', error)
+          console.error('Hata detayları:', {
+            projectId: activeProjectId,
+            error: error.message || String(error),
+            code: error.code || undefined
+          })
+          // Hata olsa bile state'i güncelle (offline mode için)
+          setData(newData)
+        })
+      }
+    } catch (error) {
+      console.error('❌ saveToFirebase genel hatası:', error)
+      // Hata olsa bile state'i güncelle
+      setData(newData)
     }
   }, [activeProjectId])
 
@@ -1348,77 +1364,125 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
   // Update coordinator
   const updateCoordinator = useCallback((id: string, updates: Partial<Coordinator>) => {
+    if (!id || !updates) {
+      console.error('❌ updateCoordinator: Geçersiz parametreler', { id, updates })
+      return
+    }
+    
     setData(prev => {
-      const newData = {
-        ...prev,
-        coordinators: prev.coordinators.map(c =>
-          c.id === id ? { ...c, ...updates } : c
-        )
+      try {
+        const coordinator = prev.coordinators.find(c => c.id === id)
+        if (!coordinator) {
+          console.error('❌ updateCoordinator: Koordinatör bulunamadı', { id })
+          return prev
+        }
+        
+        const newData = {
+          ...prev,
+          coordinators: prev.coordinators.map(c =>
+            c.id === id ? { ...c, ...updates } : c
+          )
+        }
+        saveToFirebase(newData)
+        return newData
+      } catch (error) {
+        console.error('❌ updateCoordinator hatası:', error)
+        return prev
       }
-      saveToFirebase(newData)
-      return newData
     })
   }, [saveToFirebase])
 
   // Add sub unit
   const addSubUnit = useCallback((coordinatorId: string, subUnit: Omit<SubUnit, 'id'>) => {
+    if (!coordinatorId || !subUnit || !subUnit.title) {
+      console.error('❌ addSubUnit: Geçersiz parametreler', { coordinatorId, subUnit })
+      return
+    }
+    
     setData(prev => {
-      // Duplicate kontrolü - aynı title'a sahip subunit var mı?
-      const coordinator = prev.coordinators.find(c => c.id === coordinatorId)
-      const existingSubUnit = coordinator?.subUnits?.find(su => su.title === subUnit.title)
-      
-      if (existingSubUnit) {
-        // Zaten varsa, mevcut data'yı döndür (ekleme yapma)
+      try {
+        // Duplicate kontrolü - aynı title'a sahip subunit var mı?
+        const coordinator = prev.coordinators.find(c => c.id === coordinatorId)
+        
+        if (!coordinator) {
+          console.error('❌ addSubUnit: Koordinatör bulunamadı', { coordinatorId })
+          return prev
+        }
+        
+        const existingSubUnit = coordinator?.subUnits?.find(su => su.title === subUnit.title)
+
+        if (existingSubUnit) {
+          // Zaten varsa, mevcut data'yı döndür (ekleme yapma)
+          return prev
+        }
+
+        const newSubUnit: SubUnit = {
+          ...subUnit,
+          id: generateId(),
+        }
+
+        const newData = {
+          ...prev,
+          coordinators: prev.coordinators.map(c =>
+            c.id === coordinatorId
+              ? { ...c, subUnits: [...(c.subUnits || []), newSubUnit], hasDetailPage: true }
+              : c
+          )
+        }
+        saveToFirebase(newData)
+        return newData
+      } catch (error) {
+        console.error('❌ addSubUnit hatası:', error)
         return prev
       }
-
-      const newSubUnit: SubUnit = {
-        ...subUnit,
-        id: generateId(),
-      }
-      
-      const newData = {
-        ...prev,
-        coordinators: prev.coordinators.map(c =>
-          c.id === coordinatorId
-            ? { ...c, subUnits: [...(c.subUnits || []), newSubUnit], hasDetailPage: true }
-            : c
-        )
-      }
-      saveToFirebase(newData)
-      return newData
     })
   }, [generateId, saveToFirebase])
 
   // Add deputy
   const addDeputy = useCallback((coordinatorId: string, deputy: Omit<Deputy, 'id'>) => {
+    if (!coordinatorId || !deputy || !deputy.name) {
+      console.error('❌ addDeputy: Geçersiz parametreler', { coordinatorId, deputy })
+      return
+    }
+    
     setData(prev => {
-      // Duplicate kontrolü - aynı name ve title'a sahip deputy var mı?
-      const coordinator = prev.coordinators.find(c => c.id === coordinatorId)
-      const existingDeputy = coordinator?.deputies?.find(d => 
-        d.name === deputy.name && d.title === deputy.title
-      )
-      
-      if (existingDeputy) {
-        // Zaten varsa, mevcut data'yı döndür (ekleme yapma)
+      try {
+        // Duplicate kontrolü - aynı name ve title'a sahip deputy var mı?
+        const coordinator = prev.coordinators.find(c => c.id === coordinatorId)
+        
+        if (!coordinator) {
+          console.error('❌ addDeputy: Koordinatör bulunamadı', { coordinatorId })
+          return prev
+        }
+        
+        const existingDeputy = coordinator?.deputies?.find(d =>
+          d.name === deputy.name && d.title === deputy.title
+        )
+
+        if (existingDeputy) {
+          // Zaten varsa, mevcut data'yı döndür (ekleme yapma)
+          return prev
+        }
+
+        const newDeputy: Deputy = {
+          ...deputy,
+          id: generateId(),
+        }
+
+        const newData = {
+          ...prev,
+          coordinators: prev.coordinators.map(c =>
+            c.id === coordinatorId
+              ? { ...c, deputies: [...(c.deputies || []), newDeputy], hasDetailPage: true }
+              : c
+          )
+        }
+        saveToFirebase(newData)
+        return newData
+      } catch (error) {
+        console.error('❌ addDeputy hatası:', error)
         return prev
       }
-
-      const newDeputy: Deputy = {
-        ...deputy,
-        id: generateId(),
-      }
-      
-      const newData = {
-        ...prev,
-        coordinators: prev.coordinators.map(c =>
-          c.id === coordinatorId
-            ? { ...c, deputies: [...(c.deputies || []), newDeputy], hasDetailPage: true }
-            : c
-        )
-      }
-      saveToFirebase(newData)
-      return newData
     })
   }, [generateId, saveToFirebase])
 
@@ -1440,41 +1504,63 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
   // Add person to sub unit
   const addPerson = useCallback((coordinatorId: string, subUnitId: string, person: Omit<Person, 'id'>) => {
+    if (!coordinatorId || !subUnitId || !person || !person.name) {
+      console.error('❌ addPerson: Geçersiz parametreler', { coordinatorId, subUnitId, person })
+      return
+    }
+    
     setData(prev => {
-      // Duplicate kontrolü - aynı name ve title'a sahip person var mı?
-      const coordinator = prev.coordinators.find(c => c.id === coordinatorId)
-      const subUnit = coordinator?.subUnits?.find(su => su.id === subUnitId)
-      const existingPerson = subUnit?.people?.find(p => 
-        p.name === person.name && p.title === (person.title || '')
-      )
-      
-      if (existingPerson) {
-        // Zaten varsa, mevcut data'yı döndür (ekleme yapma)
+      try {
+        // Duplicate kontrolü - aynı name ve title'a sahip person var mı?
+        const coordinator = prev.coordinators.find(c => c.id === coordinatorId)
+        
+        if (!coordinator) {
+          console.error('❌ addPerson: Koordinatör bulunamadı', { coordinatorId })
+          return prev
+        }
+        
+        const subUnit = coordinator?.subUnits?.find(su => su.id === subUnitId)
+        
+        if (!subUnit) {
+          console.error('❌ addPerson: Alt birim bulunamadı', { coordinatorId, subUnitId })
+          return prev
+        }
+        
+        const existingPerson = subUnit?.people?.find(p =>
+          p.name === person.name && p.title === (person.title || '')
+        )
+
+        if (existingPerson) {
+          // Zaten varsa, mevcut data'yı döndür (ekleme yapma)
+          return prev
+        }
+
+        const newPerson: Person = {
+          ...person,
+          id: generateId(),
+        }
+
+        const newData = {
+          ...prev,
+          coordinators: prev.coordinators.map(c =>
+            c.id === coordinatorId
+              ? {
+                ...c,
+                subUnits: (c.subUnits || []).map(su =>
+                  su.id === subUnitId
+                    ? { ...su, people: [...(su.people || []), newPerson] }
+                    : su
+                )
+              }
+              : c
+          )
+        }
+        saveToFirebase(newData)
+        return newData
+      } catch (error) {
+        console.error('❌ addPerson hatası:', error)
         return prev
       }
-
-      const newPerson: Person = {
-        ...person,
-        id: generateId(),
-      }
-      
-      const newData = {
-        ...prev,
-        coordinators: prev.coordinators.map(c =>
-          c.id === coordinatorId
-            ? {
-              ...c,
-              subUnits: (c.subUnits || []).map(su =>
-                su.id === subUnitId
-                  ? { ...su, people: [...(su.people || []), newPerson] }
-                  : su
-              )
-            }
-            : c
-        )
-      }
-      saveToFirebase(newData)
-      return newData
     })
   }, [generateId, saveToFirebase])
 

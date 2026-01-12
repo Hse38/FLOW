@@ -109,13 +109,24 @@ export default function FormModal({
       
       // Modal'ı hemen kapat (çift çağrıyı önlemek için)
       onClose()
+    } catch (error) {
+      // Hata yakala ve kullanıcıya göster
+      console.error('❌ Form submit hatası:', error)
+      console.error('Hata detayları:', {
+        type: type,
+        formData: formData,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      })
+      showToast('Bir hata oluştu. Lütfen tekrar deneyin.', 'error')
+      // Modal'ı kapatma, kullanıcı tekrar deneyebilsin
     } finally {
       // Flag'i gecikmeyle sıfırla (çift çağrıyı önlemek için)
       setTimeout(() => {
         isSubmittingRef.current = false
       }, 1000)
     }
-  }, [formData, responsibilities, initialData, onSave, onClose])
+  }, [formData, responsibilities, initialData, onSave, onClose, type])
 
   const addResponsibility = () => {
     setResponsibilities([...responsibilities, ''])
