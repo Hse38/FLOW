@@ -1669,6 +1669,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       subUnitId?: string
       subUnitTitle?: string
       city?: string
+      role?: 'ilSorumlusu' | 'deneyapSorumlusu' // Şehir personeli için role
     }> = []
 
     // Koordinatörler
@@ -1731,24 +1732,24 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       if (cityData.ilSorumlusu) {
         allPersonnel.push({
           person: cityData.ilSorumlusu,
-          type: 'city-person',
+          type: 'city-person' as const,
           city: cityData.city,
-          role: 'ilSorumlusu',
+          role: 'ilSorumlusu' as const,
         })
       }
       if (cityData.deneyapSorumlusu) {
         allPersonnel.push({
           person: cityData.deneyapSorumlusu,
-          type: 'city-person',
+          type: 'city-person' as const,
           city: cityData.city,
-          role: 'deneyapSorumlusu',
+          role: 'deneyapSorumlusu' as const,
         })
       }
       // Geriye uyumluluk için people array'ini de kontrol et
       cityData.people?.forEach(person => {
         allPersonnel.push({
           person,
-          type: 'city-person',
+          type: 'city-person' as const,
           city: cityData.city,
         })
       })
