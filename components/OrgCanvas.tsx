@@ -84,12 +84,14 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     addSubUnit,
     addDeputy,
     addResponsibility,
+    addSubUnitResponsibility,
     addCoordinator,
     deleteCoordinator,
     deleteNode,
     updateCoordinator,
     addManagement,
     addExecutive,
+    updateExecutive,
     addMainCoordinator,
     updatePerson,
     addPerson,
@@ -1228,6 +1230,16 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           console.log('💾 Pozisyonlar Firebase\'e kaydediliyor:', Object.keys(positionsToSave).length, 'node')
           console.log('  - Güncellenen node\'lar:', Object.keys(pendingPositionsRef.current).join(', '))
           
+          // Executive node pozisyonlarını da kaydet
+          Object.keys(pendingPositionsRef.current).forEach(nodeId => {
+            const executive = data.executives.find(e => e.id === nodeId)
+            if (executive) {
+              const newPosition = pendingPositionsRef.current[nodeId]
+              console.log(`  - Executive pozisyonu güncelleniyor: ${nodeId} -> (${newPosition.x}, ${newPosition.y})`)
+              updateExecutive(nodeId, { position: newPosition })
+            }
+          })
+          
           // Firebase'e kaydet - bu fonksiyon state'i de güncelleyecek
           updateFirebasePositions(positionsToSave)
           
@@ -1243,7 +1255,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         }, 500)
       }
     })
-  }, [onNodesChange, customPositions, updateFirebasePositions])
+  }, [onNodesChange, customPositions, updateFirebasePositions, data.executives, updateExecutive])
 
   // Kilitleme toggle - Firebase'e kaydet
   const toggleLock = useCallback(() => {
@@ -2038,6 +2050,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           onAddPerson={addPerson}
           onUpdatePerson={updatePerson}
           onDeletePerson={deletePerson}
+          onAddSubUnitResponsibility={addSubUnitResponsibility}
         />
 
         {/* Logo */}

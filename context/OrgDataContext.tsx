@@ -185,7 +185,9 @@ interface OrgDataContextType {
   addCoordinator: (parentId: string, coordinator: Omit<Coordinator, 'id'> & { position?: { x: number; y: number } }) => void
   addManagement: (management: Omit<Management, 'id'>) => void
   addExecutive: (executive: Omit<Executive, 'id'>) => void
+  updateExecutive: (id: string, updates: Partial<Executive>) => void
   addMainCoordinator: (mainCoordinator: Omit<MainCoordinator, 'id'>) => void
+  addSubUnitResponsibility: (coordinatorId: string, subUnitId: string, responsibility: string) => void
   linkSchemaToCoordinator: (schemaId: string, coordinatorId: string) => void
   unlinkSchemaFromCoordinator: (coordinatorId: string) => void
   getLinkedSchemaData: (schemaId: string) => OrgData | null
@@ -1913,6 +1915,58 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     })
   }, [saveToFirebase])
 
+  // Add responsibility to subUnit
+  const addSubUnitResponsibility = useCallback((coordinatorId: string, subUnitId: string, responsibility: string) => {
+    if (!coordinatorId || !subUnitId || !responsibility) {
+      console.error('❌ addSubUnitResponsibility: Geçersiz parametreler', { coordinatorId, subUnitId, responsibility })
+      return
+    }
+    
+    setData(prev => {
+      try {
+        const coordinator = prev.coordinators.find(c => c.id === coordinatorId)
+        if (!coordinator) {
+          console.error('❌ addSubUnitResponsibility: Koordinatör bulunamadı', { coordinatorId })
+          return prev
+        }
+        
+        const subUnit = coordinator.subUnits?.find(su => su.id === subUnitId)
+        if (!subUnit) {
+          console.error('❌ addSubUnitResponsibility: Alt birim bulunamadı', { coordinatorId, subUnitId })
+          return prev
+        }
+        
+        // Duplicate kontrolü
+        const existingResponsibility = subUnit.responsibilities?.find(r => r === responsibility)
+        if (existingResponsibility) {
+          console.log('⚠️ addSubUnitResponsibility: Bu görev zaten mevcut', { responsibility })
+          return prev
+        }
+        
+        const newData = {
+          ...prev,
+          coordinators: prev.coordinators.map(c =>
+            c.id === coordinatorId
+              ? {
+                  ...c,
+                  subUnits: (c.subUnits || []).map(su =>
+                    su.id === subUnitId
+                      ? { ...su, responsibilities: [...(su.responsibilities || []), responsibility] }
+                      : su
+                  )
+                }
+              : c
+          )
+        }
+        saveToFirebase(newData)
+        return newData
+      } catch (error) {
+        console.error('❌ addSubUnitResponsibility hatası:', error)
+        return prev
+      }
+    })
+  }, [saveToFirebase])
+
   // Add person to sub unit
   const addPerson = useCallback((coordinatorId: string, subUnitId: string, person: Omit<Person, 'id'>) => {
     if (!coordinatorId || !subUnitId || !person || !person.name) {
@@ -2514,6 +2568,36 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     })
   }, [generateId, saveToFirebase])
 
+  // Update executive (pozisyon güncelleme için)
+  const updateExecutive = useCallback((id: string, updates: Partial<Executive>) => {
+    if (!id || !updates) {
+      console.error('❌ updateExecutive: Geçersiz parametreler', { id, updates })
+      return
+    }
+    
+    setData(prev => {
+      try {
+        const executive = prev.executives.find(e => e.id === id)
+        if (!executive) {
+          console.error('❌ updateExecutive: Executive bulunamadı', { id })
+          return prev
+        }
+        
+        const newData = {
+          ...prev,
+          executives: prev.executives.map(e =>
+            e.id === id ? { ...e, ...updates } : e
+          )
+        }
+        saveToFirebase(newData)
+        return newData
+      } catch (error) {
+        console.error('❌ updateExecutive hatası:', error)
+        return prev
+      }
+    })
+  }, [saveToFirebase])
+
   // Add new main coordinator
   const addMainCoordinator = useCallback((mainCoordinator: Omit<MainCoordinator, 'id'>) => {
     const newMainCoordinator: MainCoordinator = {
@@ -2605,7 +2689,9 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       addCoordinator,
       addManagement,
       addExecutive,
+      updateExecutive,
       addMainCoordinator,
+      addSubUnitResponsibility,
       linkSchemaToCoordinator,
       unlinkSchemaFromCoordinator,
       getLinkedSchemaData,

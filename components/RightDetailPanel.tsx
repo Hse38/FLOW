@@ -15,6 +15,7 @@ interface RightDetailPanelProps {
   onAddPerson: (coordinatorId: string, subUnitId: string, person: Omit<Person, 'id'>) => void
   onUpdatePerson: (coordinatorId: string, subUnitId: string, personId: string, updates: Partial<Person>) => void
   onDeletePerson: (coordinatorId: string, subUnitId: string, personId: string) => void
+  onAddSubUnitResponsibility?: (coordinatorId: string, subUnitId: string, responsibility: string) => void
 }
 
 export default function RightDetailPanel({
@@ -27,6 +28,7 @@ export default function RightDetailPanel({
   onAddPerson,
   onUpdatePerson,
   onDeletePerson,
+  onAddSubUnitResponsibility,
 }: RightDetailPanelProps) {
   const [selectedPerson, setSelectedPerson] = useState<{
     person: Person
@@ -35,7 +37,7 @@ export default function RightDetailPanel({
     type: 'coordinator' | 'deputy' | 'subunit'
   } | null>(null)
 
-  const [editMode, setEditMode] = useState<'coordinator' | 'deputy' | 'subunit' | 'person' | null>(null)
+  const [editMode, setEditMode] = useState<'coordinator' | 'deputy' | 'subunit' | 'person' | 'subunit-responsibility' | null>(null)
   const [editData, setEditData] = useState<any>(null)
   const [confirmationModal, setConfirmationModal] = useState<{
     isOpen: boolean
@@ -52,6 +54,7 @@ export default function RightDetailPanel({
   const [newDeputyForm, setNewDeputyForm] = useState({ name: '', title: '', responsibilities: '' })
   const [newSubUnitForm, setNewSubUnitForm] = useState({ title: '', description: '', responsibilities: '' })
   const [newPersonForm, setNewPersonForm] = useState({ name: '', title: '', subUnitId: '' })
+  const [newSubUnitResponsibilityForm, setNewSubUnitResponsibilityForm] = useState({ subUnitId: '', responsibility: '' })
 
   // Guard refs - çift çağrıyı önlemek için (hooks must be called before early return)
   const addInProgressRef = useRef<Set<string>>(new Set())
@@ -476,9 +479,22 @@ export default function RightDetailPanel({
                       ) : null}
                       
                       {/* Görevler / Sorumluluklar */}
-                      {subUnit.responsibilities && subUnit.responsibilities.length > 0 && subUnit.responsibilities.filter(r => r && r.trim()).length > 0 ? (
-                        <div className="mb-3 pt-2 mt-2 border-t border-gray-200">
-                          <p className="text-xs text-gray-500 mb-2 font-semibold uppercase tracking-wide">Görevler:</p>
+                      <div className="mb-3 pt-2 mt-2 border-t border-gray-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Görevler:</p>
+                          {onAddSubUnitResponsibility && (
+                            <button
+                              onClick={() => {
+                                setNewSubUnitResponsibilityForm({ subUnitId: subUnit.id, responsibility: '' })
+                                setEditMode('subunit-responsibility')
+                              }}
+                              className="text-xs text-blue-500 hover:text-blue-700"
+                            >
+                              + Görev Ekle
+                            </button>
+                          )}
+                        </div>
+                        {subUnit.responsibilities && subUnit.responsibilities.length > 0 && subUnit.responsibilities.filter(r => r && r.trim()).length > 0 ? (
                           <ul className="text-sm text-gray-700 space-y-1.5">
                             {subUnit.responsibilities.filter(r => r && r.trim()).map((resp, respIdx) => (
                               <li key={`${subUnit.id}-resp-${respIdx}`} className="flex items-start gap-2 pl-1">
@@ -487,8 +503,56 @@ export default function RightDetailPanel({
                               </li>
                             ))}
                           </ul>
-                        </div>
-                      ) : null}
+                        ) : (
+                          <p className="text-xs text-gray-400 italic">Henüz görev eklenmemiş</p>
+                        )}
+                        
+                        {/* Görev Ekleme Formu */}
+                        {editMode === 'subunit-responsibility' && newSubUnitResponsibilityForm.subUnitId === subUnit.id && onAddSubUnitResponsibility && (
+                          <div className="mt-2 p-2 bg-blue-50 rounded-lg space-y-2">
+                            <input
+                              type="text"
+                              placeholder="Yeni görev ekle..."
+                              value={newSubUnitResponsibilityForm.responsibility}
+                              onChange={(e) => setNewSubUnitResponsibilityForm({ ...newSubUnitResponsibilityForm, responsibility: e.target.value })}
+                              className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-400"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && newSubUnitResponsibilityForm.responsibility.trim()) {
+                                  e.preventDefault()
+                                  onAddSubUnitResponsibility(coordinator.id, subUnit.id, newSubUnitResponsibilityForm.responsibility.trim())
+                                  setNewSubUnitResponsibilityForm({ subUnitId: '', responsibility: '' })
+                                  setEditMode(null)
+                                  showToast('Görev eklendi!', 'success')
+                                }
+                              }}
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  if (newSubUnitResponsibilityForm.responsibility.trim()) {
+                                    onAddSubUnitResponsibility(coordinator.id, subUnit.id, newSubUnitResponsibilityForm.responsibility.trim())
+                                    setNewSubUnitResponsibilityForm({ subUnitId: '', responsibility: '' })
+                                    setEditMode(null)
+                                    showToast('Görev eklendi!', 'success')
+                                  }
+                                }}
+                                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-1.5 rounded-lg text-xs font-medium"
+                              >
+                                Ekle
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setNewSubUnitResponsibilityForm({ subUnitId: '', responsibility: '' })
+                                  setEditMode(null)
+                                }}
+                                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-1.5 rounded-lg text-xs font-medium"
+                              >
+                                İptal
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                       
                       {/* Kişi Ekleme Formu */}
                     {editMode === 'person' && newPersonForm.subUnitId === subUnit.id && (
