@@ -3536,8 +3536,8 @@
       "name": "Küre Koordinatörlüğü",
       "parent": "selcuk-bayraktar",
       "position": {
-        "x": 5080,
-        "y": 480
+        "x": 6500,
+        "y": 600
       },
       "title": "Koordinatörlük",
       "type": "special"
@@ -3558,8 +3558,8 @@
       "name": "Elvan Kuzucu Hıdır",
       "parent": "selcuk-bayraktar",
       "position": {
-        "x": 4560,
-        "y": 480
+        "x": 4000,
+        "y": 300
       },
       "title": "Genel Müdür Yardımcısı",
       "type": "executive"
@@ -3569,8 +3569,8 @@
       "name": "Muhammet Saymaz",
       "parent": "selcuk-bayraktar",
       "position": {
-        "x": 8330,
-        "y": 480
+        "x": 6000,
+        "y": 300
       },
       "title": "Genel Müdür Yardımcısı",
       "type": "executive"
@@ -3582,8 +3582,8 @@
       "id": "t3-vakfi-koordinatorlukleri",
       "parent": "elvan-kuzucu",
       "position": {
-        "x": 2570,
-        "y": 860
+        "x": 3000,
+        "y": 600
       },
       "title": "T3 Vakfı Koordinatörlükleri",
       "type": "main-coordinator"
@@ -3602,9 +3602,10 @@
     {
       "description": "Her iki yapıya da hizmet veren koordinatörlükler",
       "id": "t3-teknofest-koordinatorlukleri",
+      "parent": null,
       "position": {
-        "x": 8340,
-        "y": 860
+        "x": 5000,
+        "y": 900
       },
       "title": "T3 Vakfı / Teknofest Koordinatörlükleri",
       "type": "main-coordinator"
@@ -3615,8 +3616,8 @@
       "id": "selcuk-bayraktar",
       "name": "Selçuk Bayraktar",
       "position": {
-        "x": 5550,
-        "y": 80
+        "x": 5000,
+        "y": 100
       },
       "title": "Mütevelli Heyeti Başkanı",
       "type": "chairman"

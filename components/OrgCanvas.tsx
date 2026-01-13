@@ -1000,6 +1000,27 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       })
     }
 
+    // T3/Teknofest Ortak Koordinatörlükler için Elvan ve Muhammet'e bağlantı
+    const t3TeknofestCoord = data.mainCoordinators.find(c => c.id === 't3-teknofest-koordinatorlukleri')
+    if (t3TeknofestCoord) {
+      // Elvan'a bağlantı
+      edgeList.push({
+        id: 'elvan-kuzucu-to-t3-teknofest',
+        source: 'elvan-kuzucu',
+        target: 't3-teknofest-koordinatorlukleri',
+        type: 'step',
+        style: { stroke: '#ffffff', strokeWidth: 2.5 },
+      })
+      // Muhammet'e bağlantı
+      edgeList.push({
+        id: 'muhammet-saymaz-to-t3-teknofest',
+        source: 'muhammet-saymaz',
+        target: 't3-teknofest-koordinatorlukleri',
+        type: 'step',
+        style: { stroke: '#ffffff', strokeWidth: 2.5 },
+      })
+    }
+
     // STRICT HIERARCHY: Custom connections are DISABLED
     // Only explicit parent-child relationships from data structure are allowed
     // This ensures strict hierarchical org chart with no cross-links or lateral connections
@@ -1018,12 +1039,16 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       seenEdgeIds.add(edge.id)
       
       // STRICT HIERARCHY RULE: Each target must have exactly ONE source
-      if (targetToSource.has(edge.target)) {
+      // EXCEPTION: T3/Teknofest Ortak Koordinatörlükler iki parent'a sahip olabilir (Elvan ve Muhammet)
+      if (targetToSource.has(edge.target) && edge.target !== 't3-teknofest-koordinatorlukleri') {
         const existingSource = targetToSource.get(edge.target)
         console.warn(`⚠️ HIERARCHY VIOLATION: Node ${edge.target} has multiple parents (${existingSource} and ${edge.source}). Removing duplicate connection.`)
         return false
       }
-      targetToSource.set(edge.target, edge.source)
+      // T3/Teknofest için multiple parent'a izin ver
+      if (edge.target !== 't3-teknofest-koordinatorlukleri') {
+        targetToSource.set(edge.target, edge.source)
+      }
       
       return true
     })
