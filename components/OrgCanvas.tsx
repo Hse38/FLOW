@@ -66,8 +66,9 @@ const NODE_SIZE: Record<string, { width: number; height: number }> = {
   chairman: { width: 500, height: 140 }, // Daha dikdörtgen (geniş, kısa)
   executive: { width: 450, height: 120 }, // Daha dikdörtgen (geniş, kısa)
   mainCoordinator: { width: 600, height: 120 }, // Daha dikdörtgen (geniş, kısa) - özellikle T3 Vakfı/Teknofest için
-  subCoordinator: { width: 600, height: 100 }, // Daha dikdörtgen (geniş, kısa) - özellikle T3 Vakfı/Teknofest için
+  subCoordinator: { width: 600, height: 140 }, // Text taşmasını önlemek için yükseklik artırıldı
   detail: { width: 550, height: 180 }, // Açılır node'lar için daha dikdörtgen (geniş, kısa)
+  unit: { width: 320, height: 160 }, // Text taşmasını önlemek için yükseklik artırıldı
   default: { width: 280, height: 140 }
 }
 

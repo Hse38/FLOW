@@ -21,9 +21,9 @@ const UnitNode = memo(({ data }: UnitNodeProps) => {
       />
       <div
         onClick={() => data.onClick?.(data.id)}
-        className="bg-white text-gray-700 px-7 py-7 rounded-lg shadow-md border border-gray-200 min-w-[240px] max-w-[340px] text-center cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 hover:border-gray-300"
+        className="bg-white text-gray-700 px-8 py-10 rounded-lg shadow-md border border-gray-200 min-w-[260px] max-w-[380px] text-center cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 hover:border-gray-300"
       >
-        <div className="text-4xl font-medium leading-relaxed break-words">
+        <div className="text-4xl font-medium leading-relaxed break-words min-h-[80px] flex items-center justify-center">
           {data.label}
         </div>
       </div>

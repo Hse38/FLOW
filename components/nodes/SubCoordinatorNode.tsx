@@ -29,10 +29,10 @@ const SubCoordinatorNode = memo(({ data }: SubCoordinatorNodeProps) => {
   
   const widthClass = isSpecialNode 
     ? 'min-w-[500px] max-w-[700px]' 
-    : 'min-w-[220px] max-w-[320px]'
+    : 'min-w-[240px] max-w-[360px]'
   const paddingClass = isSpecialNode 
-    ? 'px-10 py-4' 
-    : 'px-6 py-6'
+    ? 'px-10 py-6' 
+    : 'px-8 py-10'
 
   return (
     <div className="relative group">
@@ -51,7 +51,7 @@ const SubCoordinatorNode = memo(({ data }: SubCoordinatorNodeProps) => {
             : 'border-gray-200 hover:border-gray-300'
         }`}
       >
-        <div className="text-4xl font-semibold leading-relaxed flex items-center justify-center gap-1 break-words">
+        <div className="text-4xl font-semibold leading-relaxed flex items-center justify-center gap-1 break-words min-h-[80px]">
           {data.hasDetails && (
             data.isExpanded 
               ? <ChevronDown className="w-5 h-5 text-blue-500" />
