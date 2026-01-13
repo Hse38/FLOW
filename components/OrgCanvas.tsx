@@ -2326,8 +2326,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           edgesFocusable={true}
           // Preserve edge paths when nodes move
           nodesConnectable={!isLocked}
-          // Allow edge selection and editing
-          selectEdgesOnDrag={true}
+          // Note: selectEdgesOnDrag is not a valid React Flow prop
         >
           <Background
             variant={BackgroundVariant.Dots}
