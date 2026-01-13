@@ -1333,9 +1333,49 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       }
     }
 
-    // STRICT HIERARCHY: Custom connections are DISABLED
-    // Only explicit parent-child relationships from data structure are allowed
-    // This ensures strict hierarchical org chart with no cross-links or lateral connections
+    // FIREBASE CONNECTIONS'LARI DİREKT EDGE OLARAK EKLE
+    // Firebase'deki tüm connections'ları direkt edge olarak ekle
+    ;(firebaseConnections || []).forEach(conn => {
+      const edgeId = `${conn.source}-${conn.target}`
+      
+      // Eğer bu edge zaten oluşturulmuşsa (parent-child relationship'ten), atla
+      if (edgeIdsSeen.has(edgeId)) {
+        return
+      }
+      
+      // Source ve target node'ların var olduğundan emin ol
+      const sourceExists = 
+        nodeList.some(n => n.id === conn.source) ||
+        data.management.some(m => m.id === conn.source) ||
+        data.executives.some(e => e.id === conn.source) ||
+        data.mainCoordinators.some(mc => mc.id === conn.source) ||
+        data.coordinators.some(c => c.id === conn.source)
+      
+      const targetExists = 
+        nodeList.some(n => n.id === conn.target) ||
+        data.management.some(m => m.id === conn.target) ||
+        data.executives.some(e => e.id === conn.target) ||
+        data.mainCoordinators.some(mc => mc.id === conn.target) ||
+        data.coordinators.some(c => c.id === conn.target)
+      
+      // Her iki node da varsa edge ekle
+      if (sourceExists && targetExists) {
+        edgeIdsSeen.add(edgeId)
+        edgeList.push({
+          id: edgeId,
+          source: conn.source,
+          target: conn.target,
+          type: 'manual',
+          sourceHandle: conn.sourceHandle || 'bottom-source',
+          targetHandle: conn.targetHandle || 'top',
+          style: { stroke: '#3b82f6', strokeWidth: 2.5 },
+          data: { 
+            waypoints: conn.waypoints || [],
+            ...conn.data 
+          },
+        })
+      }
+    })
 
     // STRICT HIERARCHY: Validate edges and remove duplicates
     // Also ensure no unit has multiple incoming connections (violates hierarchy)
