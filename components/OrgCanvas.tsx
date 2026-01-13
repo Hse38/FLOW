@@ -2239,8 +2239,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             type: 'step', 
             style: { strokeWidth: 2 },
             // Düz çizgiler için - grid'e hizalanmış
-            animated: false,
-            markerEnd: { type: 'arrowclosed', color: '#60a5fa' }
+            animated: false
           }} // DRAW.IO STYLE ORTHOGONAL - Klavuz çizgileri ile düz çizgiler
           className="react-flow-custom"
           // Çoklu seçim özellikleri (masaüstü gibi)
