@@ -1333,39 +1333,25 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       }
     }
 
-    // FIREBASE CONNECTIONS'LARI DİREKT EDGE OLARAK EKLE
-    // Firebase'deki tüm connections'ları direkt edge olarak ekle (parent-child kontrolü olmadan)
-    ;(firebaseConnections || []).forEach(conn => {
-      if (!conn || !conn.source || !conn.target) {
-        return // Geçersiz connection
-      }
-      
-      const edgeId = `${conn.source}-${conn.target}`
-      
-      // Eğer bu edge zaten oluşturulmuşsa (parent-child relationship'ten), atla
-      if (edgeIdsSeen.has(edgeId)) {
-        return
-      }
-      
-      // Source ve target node'ların data'da var olduğundan emin ol
-      const sourceExists = 
-        data.management?.some(m => m.id === conn.source) ||
-        data.executives?.some(e => e.id === conn.source) ||
-        data.mainCoordinators?.some(mc => mc.id === conn.source) ||
-        data.coordinators?.some(c => c.id === conn.source) ||
-        conn.source === 'turkey-map-node' ||
-        conn.source.startsWith('detail-')
-      
-      const targetExists = 
-        data.management?.some(m => m.id === conn.target) ||
-        data.executives?.some(e => e.id === conn.target) ||
-        data.mainCoordinators?.some(mc => mc.id === conn.target) ||
-        data.coordinators?.some(c => c.id === conn.target) ||
-        conn.target === 'turkey-map-node' ||
-        conn.target.startsWith('detail-')
-      
-      // Her iki node da varsa edge ekle
-      if (sourceExists && targetExists) {
+    // FIREBASE CONNECTIONS'LARI DİREKT EDGE OLARAK EKLE - ZORLA EKLE
+    // Firebase'deki TÜM connections'ları direkt edge olarak ekle (parent-child kontrolü YOK)
+    console.log('🔗 Firebase connections sayısı:', firebaseConnections?.length || 0)
+    
+    if (firebaseConnections && firebaseConnections.length > 0) {
+      let addedCount = 0
+      firebaseConnections.forEach((conn: any) => {
+        if (!conn || !conn.source || !conn.target) {
+          return // Geçersiz connection
+        }
+        
+        const edgeId = `${conn.source}-${conn.target}`
+        
+        // Eğer bu edge zaten oluşturulmuşsa, atla
+        if (edgeIdsSeen.has(edgeId)) {
+          return
+        }
+        
+        // DİREKT EKLE - node kontrolü yapma, Firebase'de varsa ekle
         edgeIdsSeen.add(edgeId)
         edgeList.push({
           id: edgeId,
@@ -1380,8 +1366,10 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             ...conn.data 
           },
         })
-      }
-    })
+        addedCount++
+      })
+      console.log(`✅ Firebase'den ${addedCount} edge eklendi`)
+    }
 
     // STRICT HIERARCHY: Validate edges and remove duplicates
     // Also ensure no unit has multiple incoming connections (violates hierarchy)
