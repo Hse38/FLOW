@@ -2893,13 +2893,15 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
           return prev
         }
         
-        // undefined değerleri temizle
+        // undefined değerleri temizle - sadece tanımlı değerleri kopyala
         const cleanedUpdates: Partial<SubUnit> = {}
-        for (const key in updates) {
-          if (updates[key] !== undefined) {
-            cleanedUpdates[key as keyof SubUnit] = updates[key]
-          }
-        }
+        if (updates.id !== undefined) cleanedUpdates.id = updates.id
+        if (updates.title !== undefined) cleanedUpdates.title = updates.title
+        if (updates.people !== undefined) cleanedUpdates.people = updates.people
+        if (updates.responsibilities !== undefined) cleanedUpdates.responsibilities = updates.responsibilities
+        if (updates.description !== undefined) cleanedUpdates.description = updates.description
+        if (updates.normKadro !== undefined) cleanedUpdates.normKadro = updates.normKadro
+        if (updates.deputyId !== undefined) cleanedUpdates.deputyId = updates.deputyId
         
         const newData = {
           ...prev,
