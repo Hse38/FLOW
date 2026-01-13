@@ -126,6 +126,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   const [shouldAutoLayout, setShouldAutoLayout] = useState<boolean>(false)
   const hasAutoLayoutRunRef = useRef<boolean>(false)
   
+  // Klavuz çizgileri (Snap to Grid) - varsayılan olarak açık
+  const [snapToGrid, setSnapToGrid] = useState<boolean>(true)
+  
   // Expansion info for node shifting
   const expandedNodeInfoRef = useRef<{
     coordId: string
@@ -2232,13 +2235,22 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           minZoom={0.2}
           maxZoom={1.5}
           defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
-          defaultEdgeOptions={{ type: 'step', style: { strokeWidth: 2 } }} // DRAW.IO STYLE ORTHOGONAL
+          defaultEdgeOptions={{ 
+            type: 'step', 
+            style: { strokeWidth: 2 },
+            // Düz çizgiler için - grid'e hizalanmış
+            animated: false,
+            markerEnd: { type: 'arrowclosed', color: '#60a5fa' }
+          }} // DRAW.IO STYLE ORTHOGONAL - Klavuz çizgileri ile düz çizgiler
           className="react-flow-custom"
           // Çoklu seçim özellikleri (masaüstü gibi)
           selectionOnDrag={true}
           panOnDrag={[1, 2]}
           selectNodesOnDrag={true}
           selectionKeyCode={null}
+          // Klavuz çizgileri (Snap to Grid) - Node'ları grid'e hizalar
+          snapToGrid={snapToGrid}
+          snapGrid={[20, 20]} // 20px grid boyutu (x, y)
         >
           <Background
             variant={BackgroundVariant.Dots}
@@ -2284,6 +2296,30 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
+            </button>
+
+            {/* Klavuz Çizgileri (Snap to Grid) Toggle */}
+            <button
+              onClick={() => {
+                setSnapToGrid(prev => !prev)
+                showToast(snapToGrid ? 'Klavuz çizgileri kapatıldı' : 'Klavuz çizgileri açıldı', 'info')
+              }}
+              className={`backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform ${
+                snapToGrid
+                  ? 'bg-blue-50 border-blue-200 hover:bg-blue-100'
+                  : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+              }`}
+              title={snapToGrid ? 'Klavuz Çizgilerini Kapat' : 'Klavuz Çizgilerini Aç'}
+            >
+              {snapToGrid ? (
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z" />
+                </svg>
+              )}
             </button>
 
             {/* Firebase'e Kaydet butonu - TÜM POZİSYONLARI KAYDET */}

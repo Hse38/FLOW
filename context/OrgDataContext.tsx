@@ -2927,6 +2927,20 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
   // Delete sub unit
   const deleteSubUnit = useCallback((coordinatorId: string, subUnitId: string) => {
     setData(prev => {
+      // Önce koordinatörü bul ve kontrol et
+      const coordinator = prev.coordinators.find(c => c.id === coordinatorId)
+      if (!coordinator) {
+        console.error('❌ deleteSubUnit: Koordinatör bulunamadı', { coordinatorId })
+        return prev
+      }
+      
+      // SubUnit'in var olup olmadığını kontrol et
+      const subUnitExists = coordinator.subUnits?.some(su => su.id === subUnitId)
+      if (!subUnitExists) {
+        console.error('❌ deleteSubUnit: Alt birim bulunamadı', { coordinatorId, subUnitId })
+        return prev
+      }
+      
       const newData = {
         ...prev,
         coordinators: prev.coordinators.map(c =>
@@ -2935,7 +2949,13 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
             : c
         )
       }
+      
+      // State'i güncelle ve kaydet
+      // saveToFirebase içinde setData çağrılıyor ama aynı veri olduğu için sorun olmaz
+      // Ancak önce state'i güncelleyelim, sonra kaydedelim
+      console.log('🗑️ deleteSubUnit: Alt birim siliniyor', { coordinatorId, subUnitId })
       saveToFirebase(newData)
+      
       return newData
     })
   }, [saveToFirebase])
@@ -3285,11 +3305,24 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
   // Delete coordinator
   const deleteCoordinator = useCallback((id: string) => {
     setData(prev => {
+      // Önce koordinatörün var olup olmadığını kontrol et
+      const coordinatorExists = prev.coordinators.some(c => c.id === id)
+      if (!coordinatorExists) {
+        console.error('❌ deleteCoordinator: Koordinatör bulunamadı', { id })
+        return prev
+      }
+      
       const newData = {
         ...prev,
         coordinators: prev.coordinators.filter(c => c.id !== id)
       }
+      
+      // State'i güncelle ve kaydet
+      // saveToFirebase içinde setData çağrılıyor ama aynı veri olduğu için sorun olmaz
+      // Ancak önce state'i güncelleyelim, sonra kaydedelim
+      console.log('🗑️ deleteCoordinator: Koordinatör siliniyor', { id })
       saveToFirebase(newData)
+      
       return newData
     })
   }, [saveToFirebase])
