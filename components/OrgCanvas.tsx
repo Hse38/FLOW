@@ -1334,8 +1334,12 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     }
 
     // FIREBASE CONNECTIONS'LARI DİREKT EDGE OLARAK EKLE
-    // Firebase'deki tüm connections'ları direkt edge olarak ekle
+    // Firebase'deki tüm connections'ları direkt edge olarak ekle (parent-child kontrolü olmadan)
     ;(firebaseConnections || []).forEach(conn => {
+      if (!conn || !conn.source || !conn.target) {
+        return // Geçersiz connection
+      }
+      
       const edgeId = `${conn.source}-${conn.target}`
       
       // Eğer bu edge zaten oluşturulmuşsa (parent-child relationship'ten), atla
@@ -1343,20 +1347,22 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         return
       }
       
-      // Source ve target node'ların var olduğundan emin ol
+      // Source ve target node'ların data'da var olduğundan emin ol
       const sourceExists = 
-        nodeList.some(n => n.id === conn.source) ||
-        data.management.some(m => m.id === conn.source) ||
-        data.executives.some(e => e.id === conn.source) ||
-        data.mainCoordinators.some(mc => mc.id === conn.source) ||
-        data.coordinators.some(c => c.id === conn.source)
+        data.management?.some(m => m.id === conn.source) ||
+        data.executives?.some(e => e.id === conn.source) ||
+        data.mainCoordinators?.some(mc => mc.id === conn.source) ||
+        data.coordinators?.some(c => c.id === conn.source) ||
+        conn.source === 'turkey-map-node' ||
+        conn.source.startsWith('detail-')
       
       const targetExists = 
-        nodeList.some(n => n.id === conn.target) ||
-        data.management.some(m => m.id === conn.target) ||
-        data.executives.some(e => e.id === conn.target) ||
-        data.mainCoordinators.some(mc => mc.id === conn.target) ||
-        data.coordinators.some(c => c.id === conn.target)
+        data.management?.some(m => m.id === conn.target) ||
+        data.executives?.some(e => e.id === conn.target) ||
+        data.mainCoordinators?.some(mc => mc.id === conn.target) ||
+        data.coordinators?.some(c => c.id === conn.target) ||
+        conn.target === 'turkey-map-node' ||
+        conn.target.startsWith('detail-')
       
       // Her iki node da varsa edge ekle
       if (sourceExists && targetExists) {
