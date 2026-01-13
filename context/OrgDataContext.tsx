@@ -1522,10 +1522,6 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       setIsLoading(false)
     })
     
-    return () => {
-      clearTimeout(loadingTimeout)
-    }
-
     // Pozisyonları dinle - Production'da Firebase'den otomatik yükle (GERÇEK ZAMANLI)
     const posRef = ref(database, `positions/${activeProjectId}`)
     console.log('🔍 [PRODUCTION] Pozisyonlar dinleniyor (gerçek zamanlı):', `positions/${activeProjectId}`)
