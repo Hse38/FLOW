@@ -1670,6 +1670,29 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     })
   }, [positions, activeProjectId]) // positions veya activeProjectId değiştiğinde çalış
 
+  // Firebase'e göndermeden önce undefined değerleri temizle
+  const removeUndefined = (obj: any): any => {
+    if (obj === null || obj === undefined) {
+      return null
+    }
+    if (Array.isArray(obj)) {
+      return obj.map(item => removeUndefined(item)).filter(item => item !== null && item !== undefined)
+    }
+    if (typeof obj === 'object') {
+      const cleaned: any = {}
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          const value = obj[key]
+          if (value !== undefined) {
+            cleaned[key] = removeUndefined(value)
+          }
+        }
+      }
+      return cleaned
+    }
+    return obj
+  }
+
   // Firebase'e veri kaydet (veya localStorage)
   const saveToFirebase = useCallback((newData: OrgData) => {
     try {
@@ -1690,20 +1713,23 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
         // ÖNEMLİ: State'i önce güncelle (UI responsive olsun)
         setData(newData)
         
+        // Firebase'e göndermeden önce undefined değerleri temizle
+        const cleanedData = removeUndefined(newData) as OrgData
+        
         console.log('🔥 [PRODUCTION] Firebase\'e kaydediliyor (GERÇEK ZAMANLI SENKRONİZASYON)...')
         console.log('  - Project ID:', activeProjectId)
-        console.log('  - Management:', newData.management?.length || 0)
-        console.log('  - Executives:', newData.executives?.length || 0)
-        console.log('  - Coordinators:', newData.coordinators?.length || 0)
-        console.log('  - Main Coordinators:', newData.mainCoordinators?.length || 0)
+        console.log('  - Management:', cleanedData.management?.length || 0)
+        console.log('  - Executives:', cleanedData.executives?.length || 0)
+        console.log('  - Coordinators:', cleanedData.coordinators?.length || 0)
+        console.log('  - Main Coordinators:', cleanedData.mainCoordinators?.length || 0)
         console.log('  - ⚡ Tüm kullanıcılar bu değişiklikleri anında görecek!')
         
-        // Firebase'e yaz - başarılı olmasını bekle
-        set(ref(database, `orgData/${activeProjectId}`), newData)
+        // Firebase'e yaz - başarılı olmasını bekle (temizlenmiş veri ile)
+        set(ref(database, `orgData/${activeProjectId}`), cleanedData)
           .then(() => {
             console.log('✅✅✅ [PRODUCTION] Firebase\'e başarıyla kaydedildi! ✅✅✅')
-            console.log('  - Executives:', newData.executives?.map(e => e.name).join(', ') || 'Yok')
-            console.log('  - Coordinators:', newData.coordinators?.length || 0, 'adet')
+            console.log('  - Executives:', cleanedData.executives?.map(e => e.name).join(', ') || 'Yok')
+            console.log('  - Coordinators:', cleanedData.coordinators?.length || 0, 'adet')
             console.log('  - 🌐 Gerçek zamanlı senkronizasyon aktif - tüm kullanıcılar güncel veriyi görecek')
           })
           .catch((error) => {
@@ -1713,9 +1739,9 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
               error: error.message || String(error),
               code: error.code || undefined
             })
-            // Hata durumunda tekrar dene (retry logic)
+            // Hata durumunda tekrar dene (retry logic) - temizlenmiş veri ile
             console.log('🔄 Firebase\'e tekrar yazma denemesi yapılıyor...')
-            set(ref(database, `orgData/${activeProjectId}`), newData)
+            set(ref(database, `orgData/${activeProjectId}`), cleanedData)
               .then(() => {
                 console.log('✅ Firebase\'e ikinci denemede başarıyla kaydedildi!')
               })
@@ -2867,6 +2893,14 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
           return prev
         }
         
+        // undefined değerleri temizle
+        const cleanedUpdates: Partial<SubUnit> = {}
+        for (const key in updates) {
+          if (updates[key] !== undefined) {
+            cleanedUpdates[key as keyof SubUnit] = updates[key]
+          }
+        }
+        
         const newData = {
           ...prev,
           coordinators: prev.coordinators.map(c =>
@@ -2874,7 +2908,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
               ? {
                   ...c,
                   subUnits: (c.subUnits || []).map(su =>
-                    su.id === subUnitId ? { ...su, ...updates } : su
+                    su.id === subUnitId ? { ...su, ...cleanedUpdates } : su
                   )
                 }
               : c
