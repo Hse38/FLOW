@@ -115,6 +115,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     getAllPersonnel,
     linkSchemaToCoordinator,
     restoreData,
+    saveData,
     // Firebase senkronizasyon
     isLocked: firebaseLocked,
     setLocked: setFirebaseLocked,
@@ -412,7 +413,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     return (firebaseConnections || []).map((conn, idx) => ({
       source: conn.source,
       target: conn.target,
-      sourceHandle: conn.sourceHandle || 'bottom',
+        sourceHandle: conn.sourceHandle || 'bottom-source',
       targetHandle: conn.targetHandle || 'top',
       id: `custom-${conn.source}-${conn.target}-${idx}`
     }))
@@ -551,6 +552,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           label: exec.name,
           title: exec.title,
           type: exec.type,
+          id: exec.id, // ID'yi de geç (renk kontrolü için)
         },
       })
     })
@@ -615,13 +617,13 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     data.coordinators.forEach((coord) => {
       // Main coordinator ile aynı ID'ye sahipse atla (duplicate önleme)
       if (mainCoordinatorIds.has(coord.id)) {
-        console.warn(`⚠️ Coordinator ID "${coord.id}" already exists as main coordinator. Skipping duplicate.`)
+        // Silent skip - duplicate önleme (uyarı kaldırıldı, normal davranış)
         return
       }
       
       // Executive ile aynı ID'ye sahipse atla (duplicate önleme)
       if (executiveIds.has(coord.id)) {
-        console.warn(`⚠️ Coordinator ID "${coord.id}" already exists as executive. Skipping duplicate.`)
+        // Silent skip - duplicate önleme (uyarı kaldırıldı, normal davranış)
         return
       }
 
@@ -676,7 +678,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         position: rootPosition, // getPosition zaten öncelik sırasına göre pozisyon döndürüyor
         draggable: !isLocked,
         data: {
-          label: expandedCoordinatorData.title,
+          // YÖNETİME BAĞLI BİRİMLER için özel yazı
+          label: coordId === 'yonetime-bagli-birimler' ? 'YÖNETİME BAĞLI BİRİMLER' : expandedCoordinatorData.title,
           type: 'coordinator',
           subtitle: expandedCoordinatorData.coordinator?.name,
           onPersonClick: (person: Person) => {
@@ -1084,6 +1087,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   // Convert data to React Flow edges
   const edges: Edge[] = useMemo(() => {
     const edgeList: Edge[] = []
+    const edgeIdsSeen = new Set<string>() // Track edge IDs to prevent duplicates
     
     // Get custom connections for handle lookup and waypoints (PERSISTENT STATE)
     const customConnMap = new Map<string, { 
@@ -1095,12 +1099,15 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     ;(firebaseConnections || []).forEach(conn => {
       const key = `${conn.source}-${conn.target}`
       customConnMap.set(key, {
-        sourceHandle: conn.sourceHandle || 'bottom',
+        sourceHandle: conn.sourceHandle || 'bottom-source',
         targetHandle: conn.targetHandle || 'top',
         waypoints: conn.waypoints || [],
         data: conn.data || {}
       })
     })
+    
+    // Track executive IDs to prevent duplicate edges from coordinators array
+    const executiveIds = new Set(data.executives.map(e => e.id))
 
     // Chairman to executives
     // FULL MANUAL CONTROL: User-defined handles and waypoints
@@ -1114,9 +1121,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           source: exec.parent,
           target: exec.id,
           type: 'manual', // FULL MANUAL CONTROL: User-defined path
-          sourceHandle: customConn?.sourceHandle || 'bottom',
+          sourceHandle: customConn?.sourceHandle || 'bottom-source',
           targetHandle: customConn?.targetHandle || 'top',
-          style: { stroke: '#ffffff', strokeWidth: 2.5 },
+          style: { stroke: '#3b82f6', strokeWidth: 2.5 },
           data: { 
             waypoints: customConn?.waypoints || [], // PERSISTENT: Load from Firebase
             ...customConn?.data 
@@ -1128,34 +1135,54 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     // Executives to main coordinators
     data.mainCoordinators.forEach((coord) => {
       if (coord.parent) {
+        const edgeId = `${coord.parent}-${coord.id}`
+        // Skip if edge already exists (prevent duplicates)
+        if (edgeIdsSeen.has(edgeId)) {
+          return
+        }
+        edgeIdsSeen.add(edgeId)
+        
         const connKey = `${coord.parent}-${coord.id}`
         const customConn = customConnMap.get(connKey)
         edgeList.push({
-          id: `${coord.parent}-${coord.id}`,
+          id: edgeId,
           source: coord.parent,
           target: coord.id,
           type: 'manual', // FULL MANUAL CONTROL
-          sourceHandle: customConn?.sourceHandle || 'bottom',
+          sourceHandle: customConn?.sourceHandle || 'bottom-source',
           targetHandle: customConn?.targetHandle || 'top',
-          style: { stroke: '#ffffff', strokeWidth: 2.5 },
-          data: { waypoints: [] },
+          style: { stroke: '#3b82f6', strokeWidth: 2.5 },
+          data: { waypoints: customConn?.waypoints || [] },
         })
       }
     })
 
     // Main coordinators to sub-coordinators
+    // SKIP coordinators that are already executives (prevent duplicate edges)
     data.coordinators.forEach((coord) => {
+      // Skip if this coordinator ID already exists as an executive
+      if (executiveIds.has(coord.id)) {
+        return // Already handled as executive edge
+      }
+      
       if (coord.parent) {
+        const edgeId = `${coord.parent}-${coord.id}`
+        // Skip if edge already exists (prevent duplicates)
+        if (edgeIdsSeen.has(edgeId)) {
+          return
+        }
+        edgeIdsSeen.add(edgeId)
+        
         const connKey = `${coord.parent}-${coord.id}`
         const customConn = customConnMap.get(connKey)
         edgeList.push({
-          id: `${coord.parent}-${coord.id}`,
+          id: edgeId,
           source: coord.parent,
           target: coord.id,
           type: 'manual', // FULL MANUAL CONTROL
-          sourceHandle: customConn?.sourceHandle || 'bottom',
+          sourceHandle: customConn?.sourceHandle || 'bottom-source',
           targetHandle: customConn?.targetHandle || 'top',
-          style: { stroke: '#ffffff', strokeWidth: 2 },
+          style: { stroke: '#3b82f6', strokeWidth: 2 },
           data: { 
             waypoints: customConn?.waypoints || [], // PERSISTENT: Load from Firebase
             ...customConn?.data 
@@ -1179,7 +1206,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         source: expandedCoordinator!,
         target: rootId,
         type: 'manual', // FULL MANUAL CONTROL
-        sourceHandle: mainToRootConn?.sourceHandle || 'bottom',
+        sourceHandle: mainToRootConn?.sourceHandle || 'bottom-source',
         targetHandle: mainToRootConn?.targetHandle || 'top',
         style: { stroke: '#3b82a0', strokeWidth: 2 },
         data: { 
@@ -1214,7 +1241,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           source: rootId,
           target: subUnitNodeId,
           type: 'manual', // FULL MANUAL CONTROL
-          sourceHandle: subUnitConn?.sourceHandle || 'bottom',
+          sourceHandle: subUnitConn?.sourceHandle || 'bottom-source',
           targetHandle: subUnitConn?.targetHandle || 'top',
           style: { stroke: '#9ca3af', strokeWidth: 1.5 },
           data: { waypoints: [] },
@@ -1231,7 +1258,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           source: rootId,
           target: personNodeId,
           type: 'manual', // FULL MANUAL CONTROL
-          sourceHandle: personConn?.sourceHandle || 'bottom',
+          sourceHandle: personConn?.sourceHandle || 'bottom-source',
           targetHandle: personConn?.targetHandle || 'top',
           style: { stroke: '#9ca3af', strokeWidth: 1.5 },
           data: { 
@@ -1251,7 +1278,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         source: 'toplumsal-calismalar',
         target: 'turkey-map-node',
         type: 'manual', // FULL MANUAL CONTROL
-        sourceHandle: mapConn?.sourceHandle || 'bottom',
+        sourceHandle: mapConn?.sourceHandle || 'bottom-source',
         targetHandle: mapConn?.targetHandle || 'top',
         style: { stroke: '#10b981', strokeWidth: 3 },
         data: { 
@@ -1265,37 +1292,45 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     const t3TeknofestCoord = data.mainCoordinators.find(c => c.id === 't3-teknofest-koordinatorlukleri')
     if (t3TeknofestCoord) {
       // Elvan'a bağlantı
-      const elvanConnKey = 'elvan-kuzucu-t3-teknofest-koordinatorlukleri'
-      const elvanConn = customConnMap.get(elvanConnKey)
-      edgeList.push({
-        id: 'elvan-kuzucu-to-t3-teknofest',
-        source: 'elvan-kuzucu',
-        target: 't3-teknofest-koordinatorlukleri',
-        type: 'manual', // FULL MANUAL CONTROL
-        sourceHandle: elvanConn?.sourceHandle || 'bottom',
-        targetHandle: elvanConn?.targetHandle || 'top',
-        style: { stroke: '#ffffff', strokeWidth: 2.5 },
-        data: { 
-          waypoints: elvanConn?.waypoints || [], // PERSISTENT: Load from Firebase
-          ...elvanConn?.data 
-        },
-      })
+      const elvanEdgeId = 'elvan-kuzucu-to-t3-teknofest'
+      if (!edgeIdsSeen.has(elvanEdgeId)) {
+        edgeIdsSeen.add(elvanEdgeId)
+        const elvanConnKey = 'elvan-kuzucu-t3-teknofest-koordinatorlukleri'
+        const elvanConn = customConnMap.get(elvanConnKey)
+        edgeList.push({
+          id: elvanEdgeId,
+          source: 'elvan-kuzucu',
+          target: 't3-teknofest-koordinatorlukleri',
+          type: 'manual', // FULL MANUAL CONTROL
+          sourceHandle: elvanConn?.sourceHandle || 'bottom-source',
+          targetHandle: elvanConn?.targetHandle || 'top',
+          style: { stroke: '#3b82f6', strokeWidth: 2.5 },
+          data: { 
+            waypoints: elvanConn?.waypoints || [], // PERSISTENT: Load from Firebase
+            ...elvanConn?.data 
+          },
+        })
+      }
       // Muhammet'e bağlantı
-      const muhammetConnKey = 'muhammet-saymaz-t3-teknofest-koordinatorlukleri'
-      const muhammetConn = customConnMap.get(muhammetConnKey)
-      edgeList.push({
-        id: 'muhammet-saymaz-to-t3-teknofest',
-        source: 'muhammet-saymaz',
-        target: 't3-teknofest-koordinatorlukleri',
-        type: 'manual', // FULL MANUAL CONTROL
-        sourceHandle: muhammetConn?.sourceHandle || 'bottom',
-        targetHandle: muhammetConn?.targetHandle || 'top',
-        style: { stroke: '#ffffff', strokeWidth: 2.5 },
-        data: { 
-          waypoints: muhammetConn?.waypoints || [], // PERSISTENT: Load from Firebase
-          ...muhammetConn?.data 
-        },
-      })
+      const muhammetEdgeId = 'muhammet-saymaz-to-t3-teknofest'
+      if (!edgeIdsSeen.has(muhammetEdgeId)) {
+        edgeIdsSeen.add(muhammetEdgeId)
+        const muhammetConnKey = 'muhammet-saymaz-t3-teknofest-koordinatorlukleri'
+        const muhammetConn = customConnMap.get(muhammetConnKey)
+        edgeList.push({
+          id: muhammetEdgeId,
+          source: 'muhammet-saymaz',
+          target: 't3-teknofest-koordinatorlukleri',
+          type: 'manual', // FULL MANUAL CONTROL
+          sourceHandle: muhammetConn?.sourceHandle || 'bottom-source',
+          targetHandle: muhammetConn?.targetHandle || 'top',
+          style: { stroke: '#3b82f6', strokeWidth: 2.5 },
+          data: { 
+            waypoints: muhammetConn?.waypoints || [], // PERSISTENT: Load from Firebase
+            ...muhammetConn?.data 
+          },
+        })
+      }
     }
 
     // STRICT HIERARCHY: Custom connections are DISABLED
@@ -1337,34 +1372,40 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   const [flowEdges, setFlowEdges, onEdgesChangeBase] = useEdgesState(edges)
 
   // Edge değişikliklerini Firebase'e kaydet (PERSISTENT STATE)
+  // STRUCTURAL LOCK: Prevent edge deletion, only allow geometry editing
   const handleEdgesChange = useCallback((changes: EdgeChange[]) => {
-    onEdgesChangeBase(changes)
-
-    // Edge değişikliklerini işle (waypoints, handles, vb.)
-    changes.forEach((change) => {
-      if (change.type === 'select' && change.selected) {
-        // Edge seçildi - editing mode'a geç
-        return
-      }
-
+    // Filter out deletion attempts - STRUCTURAL LOCK
+    const filteredChanges = changes.filter((change) => {
       if (change.type === 'remove') {
-        // Edge silindi - connection'ı kaldır
+        // BLOCK EDGE DELETION: Hierarchy is locked
         const edge = flowEdges.find(e => e.id === change.id)
         if (edge) {
-          removeFirebaseConnection(edge.source, edge.target)
+          console.warn('🚫 STRUCTURAL LOCK: Edge deletion blocked. Hierarchy cannot be broken.', {
+            edgeId: change.id,
+            source: edge.source,
+            target: edge.target
+          })
+          showToast('Bağlantı silinemez. Hiyerarşi yapısı kilitli.', 'warning')
         }
-        return
+        return false // Block this change
       }
+      return true // Allow other changes (select, geometry updates)
+    })
 
-      if (change.type === 'add') {
-        // Yeni edge eklendi - zaten onConnect'te işleniyor
+    // Apply only non-deletion changes
+    onEdgesChangeBase(filteredChanges)
+
+    // Edge değişikliklerini işle (waypoints, handles, vb.)
+    filteredChanges.forEach((change) => {
+      if (change.type === 'select' && change.selected) {
+        // Edge seçildi - editing mode'a geç
         return
       }
 
       // Edge data güncellemeleri için flowEdges state'ini takip ediyoruz
       // (useEffect ile ayrı bir handler'da işlenecek)
     })
-  }, [onEdgesChangeBase, flowEdges, removeFirebaseConnection])
+  }, [onEdgesChangeBase, flowEdges, showToast])
 
   const onEdgesChange = handleEdgesChange
 
@@ -1907,7 +1948,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           position: newPosition,
           parent: chairman.id
         })
-        setShouldAutoLayout(true)
+        // Otomatik layout devre dışı - manuel pozisyonlar korunuyor
       }
       setContextMenu(null)
     }
@@ -1930,7 +1971,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           position: newPosition,
           parent: exec.id
         })
-        setShouldAutoLayout(true)
+        // Otomatik layout devre dışı - manuel pozisyonlar korunuyor
       }
       setContextMenu(null)
     }
@@ -2109,7 +2150,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     // Guard'ı aktif et
     formSaveInProgressRef.current = true
 
-    const shouldAutoLayoutAfter = ['coordinator', 'subunit', 'deputy', 'person'].includes(currentModal.type)
+    // Otomatik layout devre dışı - kullanıcı manuel pozisyonları korumak istiyor
+    const shouldAutoLayoutAfter = false
 
     try {
       if (!currentModal.nodeId) {
@@ -2135,7 +2177,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             },
             hasDetailPage: true, // Detay sayfasını etkinleştir
           })
-          if (shouldAutoLayoutAfter) setShouldAutoLayout(true)
+          // Otomatik layout devre dışı - manuel pozisyonlar korunuyor
           break
         case 'subunit':
           try {
@@ -2191,7 +2233,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               // Koordinatörü expand et (yeni birimin görünmesi için)
               setTimeout(() => {
                 setExpandedCoordinator(currentModal.nodeId)
-                setShouldAutoLayout(true)
+                // Otomatik layout devre dışı - manuel pozisyonlar korunuyor
               }, 100)
             }
           } catch (error) {
@@ -2215,7 +2257,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             setExpandedCoordinator(currentModal.nodeId)
           }, 100)
           
-          if (shouldAutoLayoutAfter) setShouldAutoLayout(true)
+          // Otomatik layout devre dışı - manuel pozisyonlar korunuyor
           break
         case 'responsibility':
           formData.responsibilities?.forEach((resp: string) => {
@@ -2250,7 +2292,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               notes: formData.notes?.trim() || undefined,
             })
             showToast(`${formData.name.trim()} birime eklendi`, 'success')
-            if (shouldAutoLayoutAfter) setShouldAutoLayout(true)
+            // Otomatik layout devre dışı - manuel pozisyonlar korunuyor
             // Koordinatörü expand et (yeni personelin görünmesi için)
             setTimeout(() => {
               setExpandedCoordinator(currentModal.nodeId)
@@ -2432,11 +2474,15 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           // Klavuz çizgileri (Snap to Grid) - Node'ları grid'e hizalar
           snapToGrid={snapToGrid}
           snapGrid={[20, 20]} // 20px grid boyutu (x, y)
-          // FULL MANUAL EDGE CONTROL: Edges are editable
-          edgesUpdatable={!isLocked}
+          // STRUCTURAL LOCK: Edges are editable for geometry only (waypoints, handles)
+          // Hierarchy structure is locked - no deletion, no new connections
+          edgesUpdatable={!isLocked} // Allow geometry editing (waypoints, handles)
           edgesFocusable={true}
-          // Preserve edge paths when nodes move
-          nodesConnectable={!isLocked}
+          // STRUCTURAL LOCK: Disable new connections via handles
+          // Users can only edit geometry of existing edges
+          nodesConnectable={false} // Block new edge creation - hierarchy is locked
+          deleteKeyCode={null} // Disable Delete key for edges
+          multiSelectionKeyCode={null} // Disable multi-select deletion
           // Note: selectEdgesOnDrag is not a valid React Flow prop
         >
           <Background
@@ -2455,6 +2501,13 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         {/* Expanded indicator + Kilit durumu göstergesi */}
         <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
           <div className="flex items-center gap-2">
+            {/* STRUCTURAL LOCK Indicator - Hierarchy is locked */}
+            <div className="backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border bg-blue-50 border-blue-300 flex items-center gap-2" title="Hiyerarşi Yapısı Kilitli: Sadece bağlantı geometrisi (anchor noktaları, büküm noktaları) düzenlenebilir. Yeni bağlantı oluşturulamaz veya mevcut bağlantılar silinemez.">
+              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <span className="text-xs font-medium text-blue-700">Hiyerarşi Kilitli</span>
+            </div>
             {/* Kilit ikonu */}
             <div className={`backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform ${isLocked
               ? 'bg-red-50 border-red-200'
@@ -2530,23 +2583,49 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                     ...allCurrentPositions 
                   }
                   
-                  // Firebase'e kaydet
+                  // Firebase'e pozisyonları kaydet
                   updateFirebasePositions(finalPositions)
                   
                   // Lokal state'i de güncelle (hemen görünsün)
                   setLocalPositions(finalPositions)
                   
+                  // TÜM BAĞLANTILARI FIREBASE'E KAYDET
+                  const allConnections = flowEdges.map(edge => ({
+                    source: edge.source,
+                    target: edge.target,
+                    sourceHandle: edge.sourceHandle || 'bottom-source',
+                    targetHandle: edge.targetHandle || 'top',
+                    waypoints: edge.data?.waypoints || [],
+                    data: edge.data || {}
+                  }))
+                  
+                  // Firebase'e tüm bağlantıları kaydet (mevcut bağlantıları override et)
+                  allConnections.forEach(conn => {
+                    // Eski bağlantıyı kaldır (varsa)
+                    removeFirebaseConnection(conn.source, conn.target)
+                    // Yeni bağlantıyı ekle
+                    addFirebaseConnection(conn)
+                  })
+                  
+                  // TÜM VERİLERİ FIREBASE'E KAYDET (Kişiler, Birimler, Her Şey)
+                  // Bu fonksiyon tüm OrgData'yı (coordinators, executives, personnel, subUnits, vb.) kaydeder
+                  saveData()
+                  
                   // Başarı mesajı
                   const nodeCount = Object.keys(allCurrentPositions).length
-                  showToast(`${nodeCount} node pozisyonu Firebase'e kaydedildi!`, 'success')
+                  const connectionCount = allConnections.length
+                  showToast(`✅ TÜM VERİLER KAYDEDİLDİ: ${nodeCount} pozisyon, ${connectionCount} bağlantı, kişiler, birimler ve tüm veriler Firebase'e kaydedildi!`, 'success')
                   
-                  console.log('💾 Firebase\'e kaydedilen pozisyonlar:', {
-                    toplamNode: nodeCount,
-                    nodeIds: Object.keys(allCurrentPositions)
+                  console.log('💾 Firebase\'e kaydedilen TÜM VERİLER:', {
+                    pozisyonlar: nodeCount,
+                    baglantilar: connectionCount,
+                    orgData: 'Tüm veriler (kişiler, birimler, koordinatörler, vb.)',
+                    nodeIds: Object.keys(allCurrentPositions),
+                    connectionIds: allConnections.map(c => `${c.source}→${c.target}`)
                   })
                 }}
                 className="backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform bg-gradient-to-r from-blue-500 to-indigo-600 border-blue-400 hover:from-blue-600 hover:to-indigo-700"
-                title="Tüm Pozisyonları Firebase'e Kaydet"
+                title="TÜM VERİLERİ Firebase'e Kaydet: Pozisyonlar, Bağlantılar, Kişiler, Birimler ve Her Şey"
               >
                 <div className="flex items-center gap-2">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3547,7 +3626,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               showToast(`${existingPerson.name} birime eklendi`, 'success')
               setTimeout(() => {
                 setExpandedCoordinator(addPersonSelectionModal.coordinatorId)
-                setShouldAutoLayout(true)
+                // Otomatik layout devre dışı - manuel pozisyonlar korunuyor
               }, 200)
             }
           }}

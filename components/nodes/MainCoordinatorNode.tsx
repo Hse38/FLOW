@@ -24,12 +24,16 @@ const MainCoordinatorNode = memo(({ data }: MainCoordinatorNodeProps) => {
                         data.id === 'teknofest-koordinatorlukleri' || 
                         data.id === 't3-teknofest-koordinatorlukleri'
   
+  // TÜM BİRİM KOORDİNATÖR NODE'LARI AYNI BOYUTTA (özel node'lar hariç)
   const widthClass = isSpecialNode 
     ? 'min-w-[500px] max-w-[700px]' 
-    : 'min-w-[280px] max-w-[400px]'
+    : 'w-[320px]' // SABİT GENİŞLİK
+  const heightClass = isSpecialNode 
+    ? '' 
+    : 'h-[120px]' // SABİT YÜKSEKLİK
   const paddingClass = isSpecialNode 
     ? 'px-10 py-4' 
-    : 'px-8 py-7'
+    : 'px-6 py-4'
 
   return (
     <div className="relative group">
@@ -85,10 +89,10 @@ const MainCoordinatorNode = memo(({ data }: MainCoordinatorNodeProps) => {
       <div
         onClick={() => data.onClick?.(data.id)}
         onContextMenu={handleContextMenu}
-        className={`bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 ${paddingClass} rounded-xl shadow-xl border-3 border-yellow-600 ${widthClass} text-center cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-105 group-hover:border-yellow-700`}
+        className={`bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 ${paddingClass} rounded-xl shadow-xl border-3 border-yellow-600 ${widthClass} ${heightClass} text-center cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-105 group-hover:border-yellow-700 flex items-center justify-center`}
         style={{ borderWidth: '3px' }}
       >
-        <div className="text-4xl font-bold leading-relaxed uppercase tracking-wide break-words">
+        <div className="text-5xl font-bold leading-relaxed uppercase tracking-wide break-words flex items-center justify-center">
           {data.label}
         </div>
       </div>

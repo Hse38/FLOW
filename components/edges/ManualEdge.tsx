@@ -17,65 +17,69 @@ const ManualEdge = ({
   selected,
   data,
 }: EdgeProps) => {
-  // Use step path for orthogonal (90-degree) segments
-  const [edgePath, labelX, labelY] = getSmoothStepPath({
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX,
-    targetY,
-    targetPosition,
-    borderRadius: 0, // Sharp 90-degree corners
-  })
-
   // If edge has custom waypoints (bend points), use them
   const waypoints = data?.waypoints || []
   
-  // Build path with waypoints if they exist
-  let finalPath = edgePath
+  // Build path with waypoints if they exist - STRICT ORTHOGONAL (only horizontal/vertical)
+  let finalPath = ''
   if (waypoints.length > 0) {
     const pathParts: string[] = []
-    pathParts.push(`M ${sourceX} ${sourceY}`)
+    let currentX = sourceX
+    let currentY = sourceY
+    
+    pathParts.push(`M ${currentX} ${currentY}`)
     
     waypoints.forEach((point: { x: number; y: number }, index: number) => {
-      if (index === 0) {
-        // First waypoint - horizontal or vertical line from source
-        const dx = Math.abs(point.x - sourceX)
-        const dy = Math.abs(point.y - sourceY)
-        if (dx > dy) {
-          pathParts.push(`L ${point.x} ${sourceY}`)
-          pathParts.push(`L ${point.x} ${point.y}`)
-        } else {
-          pathParts.push(`L ${sourceX} ${point.y}`)
-          pathParts.push(`L ${point.x} ${point.y}`)
-        }
+      // STRICT ORTHOGONAL: Always move horizontally first, then vertically (or vice versa)
+      // Check which direction to move first based on source position
+      const dx = Math.abs(point.x - currentX)
+      const dy = Math.abs(point.y - currentY)
+      
+      // If horizontal distance is greater, move horizontally first
+      if (dx > dy) {
+        // Move horizontally first
+        pathParts.push(`L ${point.x} ${currentY}`)
+        // Then move vertically
+        pathParts.push(`L ${point.x} ${point.y}`)
       } else {
-        const prevPoint = waypoints[index - 1]
-        const dx = Math.abs(point.x - prevPoint.x)
-        const dy = Math.abs(point.y - prevPoint.y)
-        if (dx > dy) {
-          pathParts.push(`L ${point.x} ${prevPoint.y}`)
-          pathParts.push(`L ${point.x} ${point.y}`)
-        } else {
-          pathParts.push(`L ${prevPoint.x} ${point.y}`)
-          pathParts.push(`L ${point.x} ${point.y}`)
-        }
+        // Move vertically first
+        pathParts.push(`L ${currentX} ${point.y}`)
+        // Then move horizontally
+        pathParts.push(`L ${point.x} ${point.y}`)
       }
+      
+      currentX = point.x
+      currentY = point.y
     })
     
-    // Final segment to target
+    // Final segment to target - STRICT ORTHOGONAL
     const lastPoint = waypoints[waypoints.length - 1]
-    const dx = Math.abs(targetX - lastPoint.x)
-    const dy = Math.abs(targetY - lastPoint.y)
-    if (dx > dy) {
+    const finalDx = Math.abs(targetX - lastPoint.x)
+    const finalDy = Math.abs(targetY - lastPoint.y)
+    
+    if (finalDx > finalDy) {
+      // Move horizontally first, then vertically
       pathParts.push(`L ${targetX} ${lastPoint.y}`)
       pathParts.push(`L ${targetX} ${targetY}`)
     } else {
+      // Move vertically first, then horizontally
       pathParts.push(`L ${lastPoint.x} ${targetY}`)
       pathParts.push(`L ${targetX} ${targetY}`)
     }
     
     finalPath = pathParts.join(' ')
+  } else {
+    // No waypoints - use smooth step path with sharp corners for strict orthogonal
+    const [path] = getSmoothStepPath({
+      sourceX,
+      sourceY,
+      sourcePosition,
+      targetX,
+      targetY,
+      targetPosition,
+      borderRadius: 0, // Sharp 90-degree corners - STRICT ORTHOGONAL
+    })
+    finalPath = path
   }
 
   return (

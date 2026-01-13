@@ -2611,21 +2611,38 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       console.error('❌ updateCoordinator: Geçersiz parametreler', { id, updates })
       return
     }
-    
+
     setData(prev => {
       try {
+        // Tüm array'lerde ara: coordinators, mainCoordinators, executives
         const coordinator = prev.coordinators.find(c => c.id === id)
-        if (!coordinator) {
-          console.error('❌ updateCoordinator: Koordinatör bulunamadı', { id })
+        const mainCoordinator = prev.mainCoordinators?.find(c => c.id === id)
+        const executive = prev.executives?.find(e => e.id === id)
+        
+        if (!coordinator && !mainCoordinator && !executive) {
+          console.warn('⚠️ updateCoordinator: Koordinatör bulunamadı (coordinators, mainCoordinators, executives içinde)', { id })
+          // Hata verme, sadece uyar - belki başka bir yerde güncelleniyor
           return prev
         }
         
-        const newData = {
-          ...prev,
-          coordinators: prev.coordinators.map(c =>
+        // Hangi array'de bulunduysa orada güncelle
+        const newData = { ...prev }
+        
+        if (coordinator) {
+          newData.coordinators = prev.coordinators.map(c =>
             c.id === id ? { ...c, ...updates } : c
           )
+        } else if (mainCoordinator) {
+          newData.mainCoordinators = (prev.mainCoordinators || []).map(c =>
+            c.id === id ? { ...c, ...updates } : c
+          )
+        } else if (executive) {
+          // Executive'ler için sadece ilgili alanları güncelle
+          newData.executives = (prev.executives || []).map(e =>
+            e.id === id ? { ...e, ...updates } : e
+          )
         }
+        
         saveToFirebase(newData)
         return newData
       } catch (error) {

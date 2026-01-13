@@ -27,12 +27,16 @@ const SubCoordinatorNode = memo(({ data }: SubCoordinatorNodeProps) => {
                         data.id === 'teknofest-koordinatorlukleri' || 
                         data.id === 't3-teknofest-koordinatorlukleri'
   
+  // TÜM BİRİM KOORDİNATÖR NODE'LARI AYNI BOYUTTA (özel node'lar hariç)
   const widthClass = isSpecialNode 
     ? 'min-w-[500px] max-w-[700px]' 
-    : 'min-w-[240px] max-w-[360px]'
+    : 'w-[600px]' // SABİT GENİŞLİK - DAHA BÜYÜK
+  const heightClass = isSpecialNode 
+    ? '' 
+    : 'h-[300px]' // SABİT YÜKSEKLİK - DAHA BÜYÜK
   const paddingClass = isSpecialNode 
     ? 'px-10 py-6' 
-    : 'px-8 py-10'
+    : 'px-8 py-6'
 
   return (
     <div className="relative group">
@@ -88,20 +92,27 @@ const SubCoordinatorNode = memo(({ data }: SubCoordinatorNodeProps) => {
       <div
         onClick={() => data.onClick?.(data.id)}
         onContextMenu={handleContextMenu}
-        className={`bg-white text-gray-800 ${paddingClass} rounded-xl shadow-lg border ${widthClass} text-center cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
+        className={`bg-white text-gray-800 ${paddingClass} rounded-xl shadow-lg border ${widthClass} ${heightClass} text-center cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 flex items-center justify-center ${
           data.isExpanded 
             ? 'border-blue-400 ring-2 ring-blue-200' 
             : 'border-gray-200 hover:border-gray-300'
         }`}
       >
-        <div className="text-4xl font-semibold leading-relaxed flex items-center justify-center gap-1 break-words min-h-[80px]">
-          {data.hasDetails && (
-            data.isExpanded 
-              ? <ChevronDown className="w-5 h-5 text-blue-500" />
-              : <ChevronRight className="w-5 h-5 text-gray-400" />
-          )}
-          {data.label}
-        </div>
+        {/* YÖNETİME BAĞLI BİRİMLER node'u için özel yazı */}
+        {data.id === 'yonetime-bagli-birimler' ? (
+          <div className="text-5xl font-semibold leading-relaxed flex items-center justify-center gap-1 break-words">
+            YÖNETİME BAĞLI BİRİMLER
+          </div>
+        ) : (
+          <div className="text-5xl font-semibold leading-relaxed flex items-center justify-center gap-1 break-words">
+            {data.hasDetails && (
+              data.isExpanded 
+                ? <ChevronDown className="w-5 h-5 text-blue-500" />
+                : <ChevronRight className="w-5 h-5 text-gray-400" />
+            )}
+            {data.label}
+          </div>
+        )}
       </div>
     </div>
   )

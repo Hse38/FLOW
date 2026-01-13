@@ -53,9 +53,9 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
         <Handle type="source" position={Position.Right} id="right-source" className="!bg-[#3b82a0]" />
         <Handle type="source" position={Position.Bottom} id="bottom-source" className="!bg-[#3b82a0]" />
         <Handle type="source" position={Position.Left} id="left-source" className="!bg-[#3b82a0]" />
-        <h3 className="text-4xl font-bold text-[#3b82a0]">{data.label}</h3>
+        <h3 className="text-5xl font-bold text-[#3b82a0]">{data.label}</h3>
         {data.subtitle && (
-          <p className="text-3xl text-[#3b82a0] mt-1 font-semibold">{data.subtitle}</p>
+          <p className="text-4xl text-[#3b82a0] mt-1 font-semibold">{data.subtitle}</p>
         )}
       </div>
     )
@@ -95,11 +95,11 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
         <Handle type="source" position={Position.Bottom} id="bottom-source" className="!bg-gray-400" />
         <Handle type="source" position={Position.Left} id="left-source" className="!bg-gray-400" />
         {data.subtitle && data.subtitle.trim() ? (
-          <p className="text-xl text-blue-600 font-medium opacity-80">{data.subtitle}</p>
+          <p className="text-2xl text-blue-600 font-medium opacity-80">{data.subtitle}</p>
         ) : (
-          <p className="text-xl text-blue-600 font-medium opacity-80">Koordinatör Yardımcısı</p>
+          <p className="text-2xl text-blue-600 font-medium opacity-80">Koordinatör Yardımcısı</p>
         )}
-        <p className="text-3xl text-[#3b82a0] font-bold">{data.label}</p>
+        <p className="text-4xl text-[#3b82a0] font-bold">{data.label}</p>
       </div>
     )
   }
@@ -127,16 +127,16 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
         <Handle type="source" position={Position.Right} id="right-source" className="!bg-gray-400" />
         <Handle type="source" position={Position.Bottom} id="bottom-source" className="!bg-gray-400" />
         <Handle type="source" position={Position.Left} id="left-source" className="!bg-gray-400" />
-        <h4 className="font-bold text-[#3b82a0] text-4xl text-center mb-4">{data.label}</h4>
+        <h4 className="font-bold text-[#3b82a0] text-5xl text-center mb-4">{data.label}</h4>
 
         {/* Çalışanlar - Üstte - AYRI BÖLÜM */}
         {data.people && data.people.length > 0 && (
           <div className="mb-4 pb-4 border-b-2 border-gray-300">
             {/* Personel Başlığı */}
             <div className="mb-2">
-              <h5 className="text-3xl font-semibold text-gray-600 mb-2">Personel</h5>
+              <h5 className="text-4xl font-semibold text-gray-600 mb-2">Personel</h5>
             </div>
-            <ul className="text-4xl space-y-2">
+            <ul className="text-5xl space-y-2">
               {data.people.map((person, personIdx) => {
                 // Unique key oluştur - person.id + idx kombinasyonu
                 const personKey = person.id ? `${person.id}-${personIdx}` : `person-${data.subUnitId || 'subunit'}-${personIdx}`
@@ -155,8 +155,8 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
                       }
                     }}
                   >
-                    <span className="text-blue-500 font-bold text-2xl">•</span>
-                    <span className="text-gray-800 font-medium">{person.name}</span>
+                    <span className="text-blue-500 font-bold text-3xl">•</span>
+                    <span className="text-gray-800 font-medium text-3xl">{person.name}</span>
                     {person.cvFileName && (
                       <span className="text-green-500 text-[10px]" title="CV yüklü">📄</span>
                     )}
@@ -177,9 +177,9 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
             <div className="mt-2">
               {/* Görevler Başlığı */}
               <div className="mb-2">
-                <h5 className="text-3xl font-semibold text-gray-600 mb-2">Görevler</h5>
+                <h5 className="text-4xl font-semibold text-gray-600 mb-2">Görevler</h5>
               </div>
-              <ul className="text-4xl text-gray-800 space-y-2.5">
+              <ul className="text-gray-800 space-y-2.5">
                 {validResponsibilities.map((resp, idx) => {
                   // Unique key oluştur - resp içeriği + idx kombinasyonu
                   const respKey = data.subUnitId 
@@ -188,8 +188,8 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
                   
                   return (
                     <li key={respKey} className="flex items-start gap-2">
-                      <span className="text-[#3b82a0] mt-0.5 flex-shrink-0 font-bold text-2xl">•</span>
-                      <span className="leading-relaxed text-gray-700">{String(resp).trim()}</span>
+                      <span className="text-[#3b82a0] mt-0.5 flex-shrink-0 font-bold text-4xl">•</span>
+                      <span className="leading-relaxed text-gray-700 text-4xl">{String(resp).trim()}</span>
                     </li>
                   )
                 })}

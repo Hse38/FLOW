@@ -8,13 +8,15 @@ interface ExecutiveNodeProps {
     label: string
     title?: string
     type?: string
+    id?: string // ID'yi de al (renk kontrolü için)
   }
 }
 
 const ExecutiveNode = memo(({ data }: ExecutiveNodeProps) => {
   const isSpecial = data.type === 'special'
-  const isToplumsal = data.label?.includes('Toplumsal Çalışmalar')
-  const isKure = data.label?.includes('Küre Koordinatörlüğü') || data.label?.includes('Küre')
+  // ID'ye göre kontrol et (daha güvenilir - label değişse bile çalışır)
+  const isToplumsal = data.id === 'toplumsal-calismalar' || data.label?.toLowerCase().includes('toplumsal')
+  const isKure = data.id === 'kure-koordinatorlugu' || data.label?.toLowerCase().includes('küre') || data.label?.toLowerCase().includes('kure')
   const isBlue = isToplumsal || isKure
   
   return (
@@ -73,8 +75,8 @@ const ExecutiveNode = memo(({ data }: ExecutiveNodeProps) => {
         : isSpecial 
         ? 'bg-gradient-to-br from-rose-500 to-rose-700 border-rose-400 rounded-xl' 
         : 'bg-gradient-to-r from-rose-500 to-rose-600 border-rose-400 rounded-lg'
-      } text-white px-10 py-4 shadow-xl border-2 min-w-[350px] max-w-[450px] text-center transition-all duration-300 hover:shadow-2xl hover:scale-105`}>
-        <div className="font-bold text-4xl leading-relaxed break-words">
+      } text-white px-8 py-6 shadow-xl border-2 w-[600px] h-[300px] text-center transition-all duration-300 hover:shadow-2xl hover:scale-105 flex items-center justify-center`}>
+        <div className="font-bold text-5xl leading-relaxed break-words flex items-center justify-center">
           {data.label}
         </div>
       </div>
