@@ -30,8 +30,8 @@ const ExecutiveNode = memo(({ data }: ExecutiveNodeProps) => {
         : isSpecial 
         ? 'bg-gradient-to-br from-rose-500 to-rose-700 border-rose-400 rounded-xl' 
         : 'bg-gradient-to-r from-rose-500 to-rose-600 border-rose-400 rounded-lg'
-      } text-white px-6 py-3 shadow-xl border-2 min-w-[180px] text-center transition-all duration-300 hover:shadow-2xl hover:scale-105`}>
-        <div className={`font-bold ${isSpecial || isBlue ? 'text-base leading-tight' : 'text-lg'}`}>
+      } text-white px-10 py-4 shadow-xl border-2 min-w-[350px] max-w-[450px] text-center transition-all duration-300 hover:shadow-2xl hover:scale-105`}>
+        <div className="font-bold text-4xl leading-relaxed break-words">
           {data.label}
         </div>
       </div>

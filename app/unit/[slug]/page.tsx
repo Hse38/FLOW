@@ -2,9 +2,10 @@
 
 
 import { useParams, useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { ArrowLeft, Target, ListChecks, Users, Home } from 'lucide-react'
-import orgData from '@/data/org.json'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ArrowLeft, Target, ListChecks, Users, Home, ChevronDown, ChevronUp } from 'lucide-react'
+import { useState } from 'react'
+import { useOrgData } from '@/context/OrgDataContext'
 
 // Type definitions
 interface Coordinator {
@@ -33,6 +34,19 @@ export default function UnitDetailPage() {
   const params = useParams()
   const router = useRouter()
   const slug = params.slug as string
+  const { orgData } = useOrgData()
+
+  // Loading state - veri yüklenene kadar bekle
+  if (!orgData || !orgData.coordinators) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent mb-4"></div>
+          <p className="text-gray-600 font-medium">Veriler yükleniyor...</p>
+        </div>
+      </div>
+    )
+  }
 
   // Find coordinator or mainCoordinator
   const coordinator = (orgData.coordinators as Coordinator[]).find((c) => c.id === slug)
@@ -169,6 +183,20 @@ export default function UnitDetailPage() {
 
 // Kurumsal İletişim özel sayfası
 function KurumsalIletisimPage({ item, router }: { item: any; router: any }) {
+  const [expandedCoordinator, setExpandedCoordinator] = useState(true)
+  const [expandedSubUnits, setExpandedSubUnits] = useState<{ [key: string]: boolean }>({})
+
+  const toggleCoordinator = () => {
+    setExpandedCoordinator(!expandedCoordinator)
+  }
+
+  const toggleSubUnit = (subUnitId: string) => {
+    setExpandedSubUnits(prev => ({
+      ...prev,
+      [subUnitId]: !prev[subUnitId]
+    }))
+  }
+
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #e8f4fc 0%, #d4e8f5 100%)' }}>
       {/* Header */}
@@ -195,117 +223,175 @@ function KurumsalIletisimPage({ item, router }: { item: any; router: any }) {
       </motion.header>
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Koordinatör */}
+        {/* Koordinatör - Açılır Kapanır */}
         <motion.div
           initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
           className="flex flex-col items-center mb-8"
         >
-          <div className="bg-white border-2 border-[#3b82a0] rounded-lg px-8 py-4 shadow-lg text-center">
-            <h2 className="text-xl font-bold text-[#3b82a0]">{item.title}</h2>
-            <p className="text-[#3b82a0] font-semibold">{item.coordinator?.name}</p>
-          </div>
-          
-          {/* Connector line */}
-          <div className="w-0.5 h-8 bg-[#3b82a0]"></div>
-          
-          {/* Sorumluluklar kutusu */}
-          <div className="bg-white border border-gray-300 rounded-lg p-4 shadow-md max-w-xl">
-            <ul className="text-sm text-gray-700 space-y-1">
-              {item.responsibilities?.map((resp: string, idx: number) => (
-                <li key={idx} className="flex items-start gap-2">
-                  <span className="text-[#3b82a0]">•</span>
-                  <span>{resp}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          
-          {/* Connector line */}
-          <div className="w-0.5 h-8 bg-[#3b82a0]"></div>
-        </motion.div>
-
-        {/* Koordinatör Yardımcıları */}
-        <motion.div
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="flex justify-center gap-16 mb-8 flex-wrap"
-        >
-          {item.deputies?.map((deputy: any, idx: number) => (
-            <div key={idx} className="flex flex-col items-center">
-              <div className="bg-white border-2 border-[#3b82a0] rounded-full px-6 py-3 shadow-lg text-center min-w-[220px]">
-                <p className="text-sm text-[#3b82a0] font-medium">Koordinatör Yardımcısı</p>
-                <p className="text-[#3b82a0] font-bold">{deputy.name}</p>
-              </div>
-              
-              {/* Connector line */}
-              <div className="w-0.5 h-6 bg-gray-400"></div>
-              
-              {/* Yardımcı sorumlulukları */}
-              <div className="bg-white border border-gray-300 rounded-lg p-3 shadow-sm max-w-xs">
-                <ul className="text-xs text-gray-600 space-y-1">
-                  {deputy.responsibilities?.map((resp: string, rIdx: number) => (
-                    <li key={rIdx} className="flex items-start gap-2">
-                      <span className="text-gray-400">•</span>
-                      <span>{resp}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+          {/* Koordinatör Başlığı - Tıklanabilir */}
+          <button
+            onClick={toggleCoordinator}
+            className="bg-white border-2 border-[#3b82a0] rounded-lg px-8 py-4 shadow-lg text-center hover:shadow-xl transition-all cursor-pointer flex items-center gap-3"
+          >
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-[#3b82a0]">{item.title}</h2>
+              <p className="text-[#3b82a0] font-semibold">{item.coordinator?.name}</p>
             </div>
-          ))}
-        </motion.div>
-
-        {/* Alt Birimler */}
-        <motion.div
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-12"
-        >
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {item.subUnits?.map((subUnit: any, idx: number) => (
+            {expandedCoordinator ? (
+              <ChevronUp className="w-5 h-5 text-[#3b82a0]" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-[#3b82a0]" />
+            )}
+          </button>
+          
+          {/* Açılır Kapanır İçerik */}
+          <AnimatePresence>
+            {expandedCoordinator && (
               <motion.div
-                key={idx}
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.3, delay: 0.3 + idx * 0.05 }}
-                className="flex flex-col"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="w-full overflow-hidden"
               >
-                {/* Birim başlığı */}
-                <div className="bg-white border-l-4 border-[#3b82a0] rounded-lg px-4 py-3 shadow-md mb-3">
-                  <h3 className="font-bold text-[#3b82a0] text-center">{subUnit.title}</h3>
-                </div>
+                {/* Connector line */}
+                <div className="w-0.5 h-8 bg-[#3b82a0] mx-auto"></div>
                 
-                {/* Çalışanlar */}
-                <div className="mb-3">
-                  <ul className="text-sm space-y-1">
-                    {subUnit.people?.map((person: any, pIdx: number) => (
-                      <li key={pIdx} className="flex items-center gap-2">
-                        <span className="text-gray-400">•</span>
-                        <span className="text-gray-800">{person.name}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                
-                {/* Sorumluluklar */}
-                <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm flex-1">
-                  <ul className="text-xs text-gray-600 space-y-1">
-                    {subUnit.responsibilities?.map((resp: string, rIdx: number) => (
-                      <li key={rIdx} className="flex items-start gap-1">
-                        <span className="text-[#3b82a0] mt-0.5">•</span>
+                {/* Sorumluluklar kutusu */}
+                <div className="bg-white border border-gray-300 rounded-lg p-4 shadow-md max-w-xl mx-auto">
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    {item.responsibilities?.map((resp: string, idx: number) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <span className="text-[#3b82a0]">•</span>
                         <span>{resp}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
+                
+                {/* Connector line */}
+                <div className="w-0.5 h-8 bg-[#3b82a0] mx-auto"></div>
               </motion.div>
-            ))}
-          </div>
+            )}
+          </AnimatePresence>
         </motion.div>
+
+        {/* Koordinatör Yardımcıları */}
+        {item.deputies && item.deputies.length > 0 && (
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="flex justify-center gap-16 mb-8 flex-wrap"
+          >
+            {item.deputies.map((deputy: any, idx: number) => (
+              <div key={idx} className="flex flex-col items-center">
+                <div className="bg-white border-2 border-[#3b82a0] rounded-full px-6 py-3 shadow-lg text-center min-w-[220px]">
+                  <p className="text-sm text-[#3b82a0] font-medium">Koordinatör Yardımcısı</p>
+                  <p className="text-[#3b82a0] font-bold">{deputy.name}</p>
+                </div>
+                
+                {/* Connector line */}
+                <div className="w-0.5 h-6 bg-gray-400"></div>
+                
+                {/* Yardımcı sorumlulukları */}
+                <div className="bg-white border border-gray-300 rounded-lg p-3 shadow-sm max-w-xs">
+                  <ul className="text-xs text-gray-600 space-y-1">
+                    {deputy.responsibilities?.map((resp: string, rIdx: number) => (
+                      <li key={rIdx} className="flex items-start gap-2">
+                        <span className="text-gray-400">•</span>
+                        <span>{resp}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        )}
+
+        {/* Alt Birimler - Açılır Kapanır */}
+        {item.subUnits && item.subUnits.length > 0 && (
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mt-12"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {item.subUnits.map((subUnit: any, idx: number) => {
+                const subUnitId = subUnit.id || `subunit-${idx}`
+                const isExpanded = expandedSubUnits[subUnitId] !== false // Varsayılan olarak açık
+                
+                return (
+                  <motion.div
+                    key={subUnitId}
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.3, delay: 0.3 + idx * 0.05 }}
+                    className="flex flex-col"
+                  >
+                    {/* Birim başlığı - Tıklanabilir */}
+                    <button
+                      onClick={() => toggleSubUnit(subUnitId)}
+                      className="bg-white border-l-4 border-[#3b82a0] rounded-lg px-4 py-3 shadow-md mb-3 hover:shadow-lg transition-all cursor-pointer flex items-center justify-between group"
+                    >
+                      <h3 className="font-bold text-[#3b82a0] text-center flex-1">{subUnit.title}</h3>
+                      {isExpanded ? (
+                        <ChevronUp className="w-4 h-4 text-[#3b82a0] ml-2" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-[#3b82a0] ml-2" />
+                      )}
+                    </button>
+                    
+                    {/* Açılır Kapanır İçerik */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="overflow-hidden"
+                        >
+                          {/* Çalışanlar */}
+                          {subUnit.people && subUnit.people.length > 0 && (
+                            <div className="mb-3 bg-gray-50 rounded-lg p-3">
+                              <ul className="text-sm space-y-1">
+                                {subUnit.people.map((person: any, pIdx: number) => (
+                                  <li key={pIdx} className="flex items-center gap-2">
+                                    <span className="text-gray-400">•</span>
+                                    <span className="text-gray-800">{person.name}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          {/* Sorumluluklar */}
+                          {subUnit.responsibilities && subUnit.responsibilities.length > 0 && (
+                            <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
+                              <ul className="text-xs text-gray-600 space-y-1">
+                                {subUnit.responsibilities.map((resp: string, rIdx: number) => (
+                                  <li key={rIdx} className="flex items-start gap-1">
+                                    <span className="text-[#3b82a0] mt-0.5">•</span>
+                                    <span>{resp}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                )
+              })}
+            </div>
+          </motion.div>
+        )}
 
         {/* Back Button */}
         <motion.div

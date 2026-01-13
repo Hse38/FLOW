@@ -170,7 +170,7 @@ export default function AddPersonSelectionModal({
                             {item.person.name.charAt(0).toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-gray-900 group-hover:text-blue-700">
+                            <div className="font-semibold text-gray-900 group-hover:text-blue-700 break-words">
                               {item.person.name}
                             </div>
                             {item.person.title && (

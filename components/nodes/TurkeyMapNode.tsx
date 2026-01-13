@@ -43,7 +43,8 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
 
     if (!svgElement || !infoDiv) return
 
-    // İlk yüklemede şehir personel bilgilerine göre renklendirme yap
+    // CORPORATE STYLE: Kategori bazlı renklendirme (T3 Vakfı Temsilci Haritası stili)
+    // SOLID, FLAT COLORS - NO gradients, NO pastels, NO transparency
     const cityPersonnel = data.cityPersonnel
     if (cityPersonnel && cityPersonnel.length > 0) {
       svgElement.querySelectorAll('path').forEach(path => {
@@ -54,29 +55,39 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
           const cityName = ilAdi.replace(' (Asya)', '').replace(' (Avrupa)', '')
           const cityData = cityPersonnel.find(cp => cp.city === cityName)
           
-          // Boş iller (hem İl Sorumlusu hem de Deneyap Sorumlusu yok) -> beyaz
-          if (!cityData || (!cityData.ilSorumlusu && !cityData.deneyapSorumlusu)) {
-            path.setAttribute('fill', '#ffffff')
-            path.setAttribute('stroke', '#e5e7eb')
-            path.setAttribute('stroke-width', '1')
-          } else {
-            // Personel olan iller -> bölge renkleri
-            const bolge = (path.parentNode as SVGElement)?.parentNode as SVGElement
-            const bolgeNum = bolge?.getAttribute('id')?.replace('bolge-', '')
-            const bolgeRenkleri: Record<string, string> = {
-              '1': '#87cdde',
-              '2': '#ac93a7',
-              '3': '#ffb380',
-              '4': '#cccccc',
-              '5': '#decd87',
-              '6': '#de8787',
-              '7': '#aade87'
-            }
-            if (bolgeNum && bolgeRenkleri[bolgeNum]) {
-              path.setAttribute('fill', bolgeRenkleri[bolgeNum])
-              path.removeAttribute('stroke')
-            }
+          // CORPORATE COLOR LOGIC:
+          // 1. İl ve DENEYAP Sorumlusu Bulunan İller -> KIRMIZI (#dc2626)
+          // 2. DENEYAP Sorumlusu Bulunan İller -> KOYU MAVİ (#1e40af)
+          // 3. İl Sorumlusu Bulunan İller -> AÇIK MAVİ (#3b82f6)
+          // 4. İl Sorumlusu Bulunmayan İller -> GRİ (#9ca3af)
+          
+          const hasIlSorumlusu = cityData?.ilSorumlusu ? true : false
+          const hasDeneyapSorumlusu = cityData?.deneyapSorumlusu ? true : false
+          
+          let fillColor = '#9ca3af' // Default: Gri (sorumlu yok)
+          let strokeColor = '#6b7280'
+          let strokeWidth = '1'
+          
+          if (hasIlSorumlusu && hasDeneyapSorumlusu) {
+            // Hem İl hem DENEYAP Sorumlusu var -> KIRMIZI
+            fillColor = '#dc2626'
+            strokeColor = '#991b1b'
+            strokeWidth = '1'
+          } else if (hasDeneyapSorumlusu) {
+            // Sadece DENEYAP Sorumlusu var -> KOYU MAVİ
+            fillColor = '#1e40af'
+            strokeColor = '#1e3a8a'
+            strokeWidth = '1'
+          } else if (hasIlSorumlusu) {
+            // Sadece İl Sorumlusu var -> AÇIK MAVİ
+            fillColor = '#3b82f6'
+            strokeColor = '#2563eb'
+            strokeWidth = '1'
           }
+          
+          path.setAttribute('fill', fillColor)
+          path.setAttribute('stroke', strokeColor)
+          path.setAttribute('stroke-width', strokeWidth)
         }
       })
     }
@@ -122,6 +133,7 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
             data.onCityClick(cityName)
           }
           
+          // CORPORATE STYLE: Kategori bazlı renklendirme (yeniden uygula)
           svgElement.querySelectorAll('path').forEach(path => {
             const parent = path.parentNode as SVGElement
             const ilAdi = parent.getAttribute('data-iladi')
@@ -130,32 +142,33 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
               const cityName = ilAdi.replace(' (Asya)', '').replace(' (Avrupa)', '')
               const cityData = data.cityPersonnel?.find(cp => cp.city === cityName)
               
-              // Boş iller -> beyaz
-              if (!cityData || (!cityData.ilSorumlusu && !cityData.deneyapSorumlusu)) {
-                path.setAttribute('fill', '#ffffff')
-                path.setAttribute('stroke', '#e5e7eb')
-                path.setAttribute('stroke-width', '1')
-              } else {
-                // Personel olan iller -> bölge renkleri
-                const bolge = (path.parentNode as SVGElement)?.parentNode as SVGElement
-                const bolgeNum = bolge?.getAttribute('id')?.replace('bolge-', '')
-                const bolgeRenkleri: Record<string, string> = {
-                  '1': '#87cdde',
-                  '2': '#ac93a7',
-                  '3': '#ffb380',
-                  '4': '#cccccc',
-                  '5': '#decd87',
-                  '6': '#de8787',
-                  '7': '#aade87'
-                }
-                if (bolgeNum && bolgeRenkleri[bolgeNum]) {
-                  path.setAttribute('fill', bolgeRenkleri[bolgeNum])
-                  path.removeAttribute('stroke')
-                }
+              const hasIlSorumlusu = cityData?.ilSorumlusu ? true : false
+              const hasDeneyapSorumlusu = cityData?.deneyapSorumlusu ? true : false
+              
+              let fillColor = '#9ca3af' // Default: Gri
+              let strokeColor = '#6b7280'
+              let strokeWidth = '1'
+              
+              if (hasIlSorumlusu && hasDeneyapSorumlusu) {
+                fillColor = '#dc2626' // KIRMIZI
+                strokeColor = '#991b1b'
+              } else if (hasDeneyapSorumlusu) {
+                fillColor = '#1e40af' // KOYU MAVİ
+                strokeColor = '#1e3a8a'
+              } else if (hasIlSorumlusu) {
+                fillColor = '#3b82f6' // AÇIK MAVİ
+                strokeColor = '#2563eb'
               }
+              
+              path.setAttribute('fill', fillColor)
+              path.setAttribute('stroke', strokeColor)
+              path.setAttribute('stroke-width', strokeWidth)
             }
           })
-          target.setAttribute('fill', '#3b82f6')
+          // Seçili il'i highlight yap (koyu mavi)
+          target.setAttribute('fill', '#1e3a8a')
+          target.setAttribute('stroke', '#1e40af')
+          target.setAttribute('stroke-width', '2')
         }
       }
     }
@@ -180,6 +193,63 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
       <div ref={mapContainerRef} className="p-3 flex-shrink-0" style={{ width: '2000px', maxWidth: '2000px' }}>
           {/* İl İsimleri Tooltip */}
           <div ref={infoRef} className="il-isimleri fixed pointer-events-none z-10" style={{ display: 'none' }}></div>
+
+          {/* CORPORATE STYLE LEGEND */}
+          <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-xl border-2 border-gray-300 p-4 z-20" style={{ minWidth: '280px' }}>
+            <h3 className="text-lg font-bold text-gray-800 mb-3">T3 VAKFI TEMSİLCİ HARİTASI</h3>
+            <div className="space-y-2">
+              {(() => {
+                const cityPersonnel = data.cityPersonnel || []
+                let ilSorumlusuCount = 0
+                let deneyapSorumlusuCount = 0
+                let ilVeDeneyapCount = 0
+                let sorumluYokCount = 0
+                
+                // Her il için kategori say
+                cityPersonnel.forEach(cp => {
+                  const hasIl = cp.ilSorumlusu ? true : false
+                  const hasDeneyap = cp.deneyapSorumlusu ? true : false
+                  
+                  if (hasIl && hasDeneyap) {
+                    ilVeDeneyapCount++
+                  } else if (hasDeneyap) {
+                    deneyapSorumlusuCount++
+                  } else if (hasIl) {
+                    ilSorumlusuCount++
+                  } else {
+                    sorumluYokCount++
+                  }
+                })
+                
+                // Toplam 81 il - eğer veri eksikse tahmin et
+                const totalCounted = ilSorumlusuCount + deneyapSorumlusuCount + ilVeDeneyapCount + sorumluYokCount
+                if (totalCounted < 81) {
+                  sorumluYokCount += (81 - totalCounted)
+                }
+                
+                return (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#3b82f6' }}></div>
+                      <span className="text-sm font-medium text-gray-700">{ilSorumlusuCount} İl Sorumlusu Bulunan İller</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#dc2626' }}></div>
+                      <span className="text-sm font-medium text-gray-700">{ilVeDeneyapCount} İl ve DENEYAP Sorumlusu Bulunan İller</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#1e40af' }}></div>
+                      <span className="text-sm font-medium text-gray-700">{deneyapSorumlusuCount} DENEYAP Sorumlusu Bulunan İller</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#9ca3af' }}></div>
+                      <span className="text-sm font-medium text-gray-700">{sorumluYokCount} İl Sorumlusu Bulunmayan İller</span>
+                    </div>
+                  </>
+                )
+              })()}
+            </div>
+          </div>
 
           {/* SVG Haritası - Kullanıcının kodu buraya eklenecek */}
           <div className="svg-turkiye-haritasi">
@@ -498,30 +568,10 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
             transition: fill 0.2s ease;
           }
           #svg-turkiye-haritasi path:hover {
-            fill: #3b82f6 !important;
-            opacity: 0.8;
+            opacity: 0.85;
+            stroke-width: 2 !important;
           }
-          #bolge-1 g path {
-            fill: #87cdde;
-          }
-          #bolge-2 g path {
-            fill: #ac93a7;
-          }
-          #bolge-3 g path {
-            fill: #ffb380;
-          }
-          #bolge-4 g path {
-            fill: #cccccc;
-          }
-          #bolge-5 g path {
-            fill: #decd87;
-          }
-          #bolge-6 g path {
-            fill: #de8787;
-          }
-          #bolge-7 g path {
-            fill: #aade87;
-          }
+          /* CORPORATE STYLE: Bölge renkleri kaldırıldı - kategori bazlı renklendirme kullanılıyor */
         `}</style>
       </div>
 

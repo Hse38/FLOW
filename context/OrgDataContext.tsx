@@ -1181,6 +1181,39 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
   // Aktif projenin verilerini dinle
   useEffect(() => {
+    // Timeout: Eğer 5 saniye içinde yüklenmezse loading'i kapat ve localStorage'dan yükle
+    const loadingTimeout = setTimeout(() => {
+      console.warn('⚠️ Yükleme timeout - localStorage\'dan yükleniyor...')
+      const hostname = typeof window !== 'undefined' ? window.location.hostname : ''
+      const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
+      
+      if (isLocalhost) {
+        try {
+          const projectId = activeProjectId || 'main'
+          const savedData = localStorage.getItem(`orgData_${projectId}`)
+          if (savedData) {
+            const parsedData = JSON.parse(savedData)
+            const cleanedData = cleanDuplicateIds(parsedData)
+            setData(cleanedData)
+            console.log('✅ localStorage\'dan veri yüklendi (timeout)')
+          } else {
+            setData(cleanDuplicateIds(initialData))
+            console.log('✅ Initial data yüklendi (timeout)')
+          }
+          
+          const savedPositions = localStorage.getItem(`orgPositions_${projectId}`)
+          if (savedPositions) {
+            setPositions(JSON.parse(savedPositions))
+          }
+        } catch (error) {
+          console.error('localStorage yükleme hatası (timeout):', error)
+          setData(cleanDuplicateIds(initialData))
+        }
+      }
+      
+      setIsLoading(false)
+    }, 5000)
+    
     if (USE_LOCAL_ONLY) {
       // localStorage'dan verileri yükle (activeProjectId'ye göre)
       try {
@@ -1238,11 +1271,13 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
         setData(initialData)
       }
 
+      clearTimeout(loadingTimeout)
       setIsLoading(false)
       return
     }
     
     if (!activeProjectId) {
+      clearTimeout(loadingTimeout)
       setIsLoading(false)
       return
     }
@@ -1451,11 +1486,45 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
         const emptyData: OrgData = { management: [], executives: [], mainCoordinators: [], coordinators: [] }
         setData(cleanDuplicateIds(emptyData))
       }
+      clearTimeout(loadingTimeout)
       setIsLoading(false)
     }, (error) => {
       console.error('❌❌❌ [PRODUCTION] Firebase veri okuma hatası:', error)
+      clearTimeout(loadingTimeout)
+      
+      // Lokalde çalışıyorsa ve Firebase hatası varsa localStorage'dan yükle
+      const hostname = typeof window !== 'undefined' ? window.location.hostname : ''
+      const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
+      
+      if (isLocalhost) {
+        console.log('🔄 Lokalde Firebase hatası - localStorage\'dan yükleniyor...')
+        try {
+          const projectId = activeProjectId || 'main'
+          const savedData = localStorage.getItem(`orgData_${projectId}`)
+          if (savedData) {
+            const parsedData = JSON.parse(savedData)
+            const cleanedData = cleanDuplicateIds(parsedData)
+            setData(cleanedData)
+          } else {
+            setData(cleanDuplicateIds(initialData))
+          }
+          
+          const savedPositions = localStorage.getItem(`orgPositions_${projectId}`)
+          if (savedPositions) {
+            setPositions(JSON.parse(savedPositions))
+          }
+        } catch (localError) {
+          console.error('localStorage yükleme hatası:', localError)
+          setData(cleanDuplicateIds(initialData))
+        }
+      }
+      
       setIsLoading(false)
     })
+    
+    return () => {
+      clearTimeout(loadingTimeout)
+    }
 
     // Pozisyonları dinle - Production'da Firebase'den otomatik yükle (GERÇEK ZAMANLI)
     const posRef = ref(database, `positions/${activeProjectId}`)
@@ -1573,6 +1642,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     })
 
     return () => {
+      clearTimeout(loadingTimeout)
       unsubData()
       unsubPos()
       unsubConn()
