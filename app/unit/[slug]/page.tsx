@@ -34,7 +34,7 @@ export default function UnitDetailPage() {
   const params = useParams()
   const router = useRouter()
   const slug = params.slug as string
-  const { orgData } = useOrgData()
+  const { data: orgData } = useOrgData()
 
   // Loading state - veri yüklenene kadar bekle
   if (!orgData || !orgData.coordinators) {
