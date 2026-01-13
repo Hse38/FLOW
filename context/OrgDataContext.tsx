@@ -168,7 +168,14 @@ interface OrgDataContextType {
   activeProjectId: string
   isLocked: boolean
   positions: Record<string, { x: number; y: number }>
-  customConnections: Array<{ source: string; target: string; sourceHandle?: string; targetHandle?: string }>
+  customConnections: Array<{ 
+    source: string; 
+    target: string; 
+    sourceHandle?: string; 
+    targetHandle?: string;
+    waypoints?: Array<{ x: number; y: number }>;
+    data?: any;
+  }>
   isLoading: boolean
   updateCoordinator: (id: string, updates: Partial<Coordinator>) => void
   addSubUnit: (coordinatorId: string, subUnit: Omit<SubUnit, 'id'>) => void
@@ -225,8 +232,21 @@ interface OrgDataContextType {
   deleteProject: (projectId: string) => void
   setLocked: (locked: boolean) => void
   updatePositions: (newPositions: Record<string, { x: number; y: number }>) => void
-  addConnection: (connection: { source: string; target: string; sourceHandle?: string; targetHandle?: string }) => void
+  addConnection: (connection: { 
+    source: string; 
+    target: string; 
+    sourceHandle?: string; 
+    targetHandle?: string;
+    waypoints?: Array<{ x: number; y: number }>;
+    data?: any;
+  }) => void
   removeConnection: (source: string, target: string) => void
+  updateConnection: (source: string, target: string, updates: {
+    sourceHandle?: string;
+    targetHandle?: string;
+    waypoints?: Array<{ x: number; y: number }>;
+    data?: any;
+  }) => void
 }
 
 const OrgDataContext = createContext<OrgDataContextType | null>(null)
@@ -2025,8 +2045,15 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     }
   }, [activeProjectId])
 
-  // Bağlantı ekle
-  const addConnection = useCallback((connection: { source: string; target: string; sourceHandle?: string; targetHandle?: string }) => {
+  // Bağlantı ekle (edge data ile: waypoints, handles)
+  const addConnection = useCallback((connection: { 
+    source: string; 
+    target: string; 
+    sourceHandle?: string; 
+    targetHandle?: string;
+    waypoints?: Array<{ x: number; y: number }>;
+    data?: any;
+  }) => {
     const newConnections = [...customConnections, connection]
     if (USE_LOCAL_ONLY) {
       setCustomConnections(newConnections)
@@ -2055,6 +2082,35 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
         localStorage.setItem(`orgConnections_${projectId}`, JSON.stringify(newConnections))
       } catch (error) {
         console.error('localStorage bağlantı silme hatası:', error)
+      }
+      return
+    }
+    if (activeProjectId) {
+      set(ref(database, `connections/${activeProjectId}`), newConnections)
+    }
+  }, [activeProjectId, customConnections])
+
+  // Edge güncelle (waypoints, handles, data)
+  const updateConnection = useCallback((source: string, target: string, updates: {
+    sourceHandle?: string;
+    targetHandle?: string;
+    waypoints?: Array<{ x: number; y: number }>;
+    data?: any;
+  }) => {
+    const newConnections = customConnections.map(c => {
+      if (c.source === source && c.target === target) {
+        return { ...c, ...updates }
+      }
+      return c
+    })
+    
+    if (USE_LOCAL_ONLY) {
+      setCustomConnections(newConnections)
+      try {
+        const projectId = activeProjectId || 'main'
+        localStorage.setItem(`orgConnections_${projectId}`, JSON.stringify(newConnections))
+      } catch (error) {
+        console.error('localStorage bağlantı güncelleme hatası:', error)
       }
       return
     }
@@ -3565,6 +3621,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
       updatePositions,
       addConnection,
       removeConnection,
+      updateConnection,
     }}>
       {children}
     </OrgDataContext.Provider>

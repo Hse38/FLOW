@@ -2,904 +2,1983 @@
   "cityPersonnel": [
     {
       "city": "Adana",
-      "id": "city-1768335319450-0-wgonktif6",
+      "id": "city-1768166410694-0-s3tt8fuhh",
       "ilSorumlusu": {
-        "id": "person-1768335319449-0-pbz78jq2v",
-        "name": "KÜBRA İLKNUR ÇETİNUR TÜRK",
+        "department": "ELEKTRÝK - ELEKTRONÝK MÜHENDÝSLÝİÝ",
+        "id": "person-1768166410694-1-9uxg86dd9",
+        "name": "KÜBRA ÝLKNUR ÇETÝNUR TÜRK",
         "title": "İL SORUMLUSU",
-        "department": "ELEKTRİK - ELEKTRONİK MÜHENDİSLİĞİ"
+        "university": "19 MAYIS ÜNÝVERSÝTESÝ"
       }
+    },
+    {
+      "city": "Adıyaman",
+      "deneyapSorumlusu": {
+        "id": "person-1768248888704-kkblqr532",
+        "name": "SAADET BENLi",
+        "title": "DENEYAP SORUMLUSU"
+      },
+      "id": "city-1768248888704-dy8hg5rar"
     },
     {
       "city": "Adiyaman",
-      "id": "city-1768335319450-1-hfwm2b1x8",
       "deneyapSorumlusu": {
-        "id": "person-1768335319449-1-gg7sx1fel",
-        "name": "SAADET BENLİ",
+        "id": "person-1768166410694-2-r5tmdh21k",
+        "name": "SAADET BENL�",
         "title": "DENEYAP SORUMLUSU"
-      }
-    },
-    {
-      "city": "Afyon",
-      "id": "city-1768335319450-3-0f5l56waw",
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-3-98p9bxwqp",
-        "name": "BETÜL CAN",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "FEN BİLGİSİ ÖĞRETMENLİĞİ"
-      }
-    },
-    {
-      "city": "Afyonkarahi̇sar",
-      "id": "city-1768335319450-2-jopjr5s92",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-2-8agmv69w8",
-        "name": "MUSTAFA YALÇIN",
-        "title": "İL SORUMLUSU"
-      }
-    },
-    {
-      "city": "Ağri",
-      "id": "city-1768335319450-4-2zmd19coy",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-4-yz92dxvp9",
-        "name": "VEDAT AYDIN",
-        "title": "İL SORUMLUSU (VEKALETEN)",
-        "department": "TÜRK DİLİ VE EDEBİYATI"
-      }
-    },
-    {
-      "city": "Aksaray",
-      "id": "city-1768335319450-5-doqfxq9ph",
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-5-w56c5ene0",
-        "name": "AYŞENUR KAYIŞ",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ"
-      }
-    },
-    {
-      "city": "Amasya",
-      "id": "city-1768335319450-6-cpkhh7fgp",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-6-rrjxn93b5",
-        "name": "OĞUZHAN ÖZDEMİR",
-        "title": "İL SORUMLUSU",
-        "department": "FEN BİLGİSİ ÖĞRETMENLİĞİ"
-      }
-    },
-    {
-      "city": "Ankara",
-      "id": "city-1768335319450-7-wdkwxoe16",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-7-78fbaa8lc",
-        "name": "MUSTAFA FATİH SARI",
-        "title": "İL SORUMLUSU"
       },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-8-laniij8ao",
-        "name": "AYŞEGÜL BÜYÜKAKKAŞ",
-        "title": "DENEYAP SORUMLUSU"
-      }
+      "id": "city-1768166410694-1-uc468srm8"
     },
     {
-      "city": "Antalya",
-      "id": "city-1768335319450-8-fwse7zuv5",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-9-wl5nafc9n",
-        "name": "MUHSİN MUBİN PİŞİRİCİ",
-        "title": "İL SORUMLUSU"
+      "city": "Ağrı",
+      "deneyapSorumlusu": {
+        "department": "BÝLGÝSAYAR MÜHENDÝSLÝİÝ",
+        "id": "person-1768249006812-1m7dfrak3",
+        "name": "ÖZGE DEMÝREL HANSU",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "SAKARYA ÜNÝVERSÝTESÝ"
       },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-10-gsknxfxy8",
-        "name": "HALİL İBRAHİM AKBOĞA",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "BİLGİSAYAR MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Ardahan",
-      "id": "city-1768335319450-9-pi10qgflb",
+      "id": "city-1768166410694-3-hsj72jugk",
       "ilSorumlusu": {
-        "id": "person-1768335319449-11-vhfg86uei",
-        "name": "TAYFUN YILDIZ",
-        "title": "İL SORUMLUSU"
-      },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-12-wfhlt9ib3",
-        "name": "IŞILAY DENİZ",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "KAMU YÖNETİMİ VE SİYASET BİLİMİ ( AÖF )"
-      }
-    },
-    {
-      "city": "Artvi̇n",
-      "id": "city-1768335319450-10-x7o7zany6",
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-13-e9miupn0t",
-        "name": "RUMEYSA OKUMUŞ",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "METEOROLOJİ MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Aydin",
-      "id": "city-1768335319450-11-vzbhnt29c",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-14-zpkpgkj8z",
-        "name": "MESUT ALTUNKAYNAK",
-        "title": "İL SORUMLUSU",
-        "department": "İKTİSAT"
-      }
-    },
-    {
-      "city": "Balikesi̇r",
-      "id": "city-1768335319450-12-116956vg1",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-15-9acrwn5im",
-        "name": "GÖKHAN TANAYDIN",
-        "title": "İL SORUMLUSU"
-      },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-16-t30kqowcp",
-        "name": "GAMZE LEVENT",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ"
-      }
-    },
-    {
-      "city": "Bartin",
-      "id": "city-1768335319450-13-97zxf4r83",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-17-pri3ej9ci",
-        "name": "PELİN BİLGİN",
-        "title": "İL SORUMLUSU",
-        "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ ÖĞRETMENLİĞİ"
-      }
-    },
-    {
-      "city": "Batman",
-      "id": "city-1768335319450-14-bs2lw855d",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-18-9zt36v99j",
-        "name": "EMİNE ERYAĞMA",
-        "title": "İL SORUMLUSU (VEKALETEN)",
-        "department": "BEDEN EĞİTİMİ VE SPOR ÖĞRETMENLİĞİ"
-      }
-    },
-    {
-      "city": "Bayburt",
-      "id": "city-1768335319450-15-tohy7ernz",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-19-lf0p3othw",
-        "name": "EMRAH BAYRAMOĞLU",
-        "title": "İL SORUMLUSU",
-        "department": "KİMYA"
-      }
-    },
-    {
-      "city": "Bi̇leci̇k",
-      "id": "city-1768335319450-16-44bsc5d2a",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-20-y3x5itekc",
-        "name": "DAMLA KOÇAK",
-        "title": "İL SORUMLUSU (VEKALETEN)",
-        "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ ÖĞRETMENLİĞİ"
-      }
-    },
-    {
-      "city": "Bi̇ngöl",
-      "id": "city-1768335319450-17-twqcb69ci",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-21-kywr2mk1e",
-        "name": "MÜCAHİT FURKAN AY",
-        "title": "İL SORUMLUSU",
-        "department": "İNŞAAT MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Bi̇tli̇s",
-      "id": "city-1768335319450-18-5x4x4j957",
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-22-sgu5kiyx1",
-        "name": "BÜŞRA ÇOKTU",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "İLAHİYAT"
-      }
-    },
-    {
-      "city": "Bolu",
-      "id": "city-1768335319450-19-239x7xmpe",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-23-n3l7r54xt",
-        "name": "KADİR ÖZBEK",
-        "title": "İL SORUMLUSU"
-      }
-    },
-    {
-      "city": "Burdur",
-      "id": "city-1768335319450-20-809ylr5cp",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-24-jimtmzz4n",
-        "name": "EMİNE BÜŞRA AYGÜN",
-        "title": "İL SORUMLUSU",
-        "department": "SOSYAL HİZMET"
-      }
-    },
-    {
-      "city": "Bursa",
-      "id": "city-1768335319450-21-5xj5qxdw1",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-25-fd3pqmiqx",
-        "name": "AHMET DURMAZ",
-        "title": "İL SORUMLUSU"
-      },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-26-8hxbr2r97",
-        "name": "DAMLA KOÇAK",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ ÖĞRETMENLİĞİ"
-      }
-    },
-    {
-      "city": "Çanakkale",
-      "id": "city-1768335319450-22-h6o107f9v",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-27-qgtccbcpw",
-        "name": "MÜGE TEKER YILDIZ",
-        "title": "İL SORUMLUSU"
-      },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-28-9zgaz7unp",
-        "name": "AHMET TUNA ÖZEN",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "MOLEKÜLER BİYOLOJİ VE GENETİK"
-      }
-    },
-    {
-      "city": "Çankiri",
-      "id": "city-1768335319450-23-loibum25g",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-29-cx6ghp34q",
-        "name": "ENES YÜKSEL",
-        "title": "İL SORUMLUSU (VEKALETEN)",
-        "department": "BİLGİSAYAR MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Çorum",
-      "id": "city-1768335319450-24-icu51hu38",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-30-mput143pa",
-        "name": "OĞUZHAN ÖZDEMİR",
-        "title": "İL SORUMLUSU (VEKALETEN)",
-        "department": "FEN BİLGİSİ ÖĞRETMENLİĞİ"
-      }
-    },
-    {
-      "city": "Deni̇zli̇",
-      "id": "city-1768335319450-25-vy14tvzil",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-31-qo3ov5aiq",
-        "name": "EMRE VERİM",
-        "title": "İL SORUMLUSU",
-        "department": "MAKİNE MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Düzce",
-      "id": "city-1768335319450-26-jat3lp8dn",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-33-v6zt9jck1",
-        "name": "FERHAT ERDOĞAN",
-        "title": "İL SORUMLUSU",
-        "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ ÖĞRETMENLİĞİ"
-      }
-    },
-    {
-      "city": "Edi̇rne",
-      "id": "city-1768335319450-27-alrmyy222",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-34-yzjnflibo",
-        "name": "BURAK CANBAZ",
-        "title": "İL SORUMLUSU"
-      },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-35-022x2kbfw",
-        "name": "TUĞÇE DAĞ",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "HACETTEPE ÜNİVERSİTESİ BİYOLOJİ"
-      }
-    },
-    {
-      "city": "Elaziğ",
-      "id": "city-1768335319450-28-xfaw21a9x",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-36-q5b9smiiz",
-        "name": "SİNAN KOÇAK",
-        "title": "İL SORUMLUSU",
-        "department": "ASTRONOMİ VE UZAY BİLİMLERİ"
-      }
-    },
-    {
-      "city": "Erzi̇ncan",
-      "id": "city-1768335319450-29-mx01bwkzs",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-37-ni5dgpwlp",
-        "name": "NURETTİN OĞUZHAN AKOĞUZ",
-        "title": "İL SORUMLUSU"
-      },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-38-4v7qri53t",
-        "name": "ZEHRA YAYLA",
-        "title": "DENEYAP SORUMLUSU"
-      }
-    },
-    {
-      "city": "Erzurum",
-      "id": "city-1768335319450-30-hjh7oug24",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-39-gidgsuwgi",
-        "name": "RAGIP ÜMİT YALÇIN",
-        "title": "İL SORUMLUSU"
-      },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-40-563nx4ono",
-        "name": "VEDAT AYDIN",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "TÜRK DİLİ VE EDEBİYATI"
-      }
-    },
-    {
-      "city": "Eski̇şehi̇r",
-      "id": "city-1768335319450-31-d9bn0m3oa",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-41-bx634s7ff",
-        "name": "SAMET YURTSEVER",
-        "title": "İL SORUMLUSU",
-        "department": "ULUSLARARASI İLİŞKİLER"
-      },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-42-7crtvo0n8",
-        "name": "KASIM EMRE ANIL",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "MAKİNE MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Gazi̇antep",
-      "id": "city-1768335319450-32-qwxh8h9iz",
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-43-rzaibf4o5",
-        "name": "YAĞMUR ERBAY",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "BİLGİSAYAR PROGRAMLAMA VE TEKNOLOJİLERİ"
-      }
-    },
-    {
-      "city": "Gi̇resun",
-      "id": "city-1768335319450-33-9z6qrk0xo",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-44-k8wh5knsq",
-        "name": "FATİH YILDIRIM",
-        "title": "İL SORUMLUSU",
-        "department": "REHBERLİK VE PSİKOLOJİK DANIŞMANLIK (PDR)"
-      }
-    },
-    {
-      "city": "Gümüşhane",
-      "id": "city-1768335319450-34-m8wez9y0e",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-45-fea2mv0zl",
-        "name": "FATMA NUR TİP",
-        "title": "İL SORUMLUSU",
-        "department": "İŞLETME"
-      }
-    },
-    {
-      "city": "Hatay",
-      "id": "city-1768335319450-35-mjzrlwa6c",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-47-jo79hbblh",
-        "name": "MUHAMMED MAHFUZ ERKAN",
-        "title": "İL SORUMLUSU (VEKALETEN)",
-        "department": "BEDEN EGİTİMİ VE SPOR ÖĞRETMENLİĞİ"
-      }
-    },
-    {
-      "city": "Iğdir",
-      "id": "city-1768335319450-36-cd6m7xl49",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-48-twucw3ij3",
-        "name": "FIRAT ARSLANTÜRK",
-        "title": "İL SORUMLUSU"
-      },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-49-p6cithha6",
-        "name": "BEYZA AKOĞUL",
-        "title": "DENEYAP SORUMLUSU"
-      }
-    },
-    {
-      "city": "Isparta",
-      "id": "city-1768335319450-37-zg1y1xcpl",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-50-kb1js2vz3",
-        "name": "MEVLÜT YUNUS KAYACAN",
-        "title": "İL SORUMLUSU"
-      },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-51-6x16fkmfe",
-        "name": "BUSE NUR SÜLÜK",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "FİZYOLOJİ"
-      }
-    },
-    {
-      "city": "İstanbul",
-      "id": "city-1768335319450-38-ppuek0mdm",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-52-jxufqa18p",
-        "name": "ERKUT KALKAVAN",
-        "title": "İL SORUMLUSU",
-        "department": "ULUSLARARASI FİNANS VE KATILIM BANKACILIĞI"
-      }
-    },
-    {
-      "city": "İzmi̇r",
-      "id": "city-1768335319450-39-3rzmucd5p",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-53-j15s5yazq",
-        "name": "TÜRKER YAŞIN",
-        "title": "İL SORUMLUSU"
-      },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-54-0uu8aeomp",
-        "name": "İCLAL KOTAN",
-        "title": "DENEYAP SORUMLUSU"
-      }
-    },
-    {
-      "city": "Kahramanmaraş",
-      "id": "city-1768335319450-40-dmd1jbdpe",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-55-l4egiolle",
-        "name": "MUHAMMED MAHFUZ ERKAN",
-        "title": "İL SORUMLUSU",
-        "department": "BEDEN EGİTİMİ VE SPOR ÖĞRETMENLİĞİ"
-      },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-56-w0chb3jpa",
-        "name": "KÜBRA MERK",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "HARİTA MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Karabük",
-      "id": "city-1768335319450-41-9wcjqcnk6",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-57-imsc3hoxp",
-        "name": "YELDA DOĞAN",
-        "title": "İL SORUMLUSU",
-        "department": "BÖTE"
-      }
-    },
-    {
-      "city": "Karaman",
-      "id": "city-1768335319450-42-xv4ezrx4x",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-58-ektky3s0e",
-        "name": "DAMLA KOÇAK",
-        "title": "İL SORUMLUSU (VEKALETEN)",
-        "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ ÖĞRETMENLİĞİ"
-      }
-    },
-    {
-      "city": "Kars",
-      "id": "city-1768335319450-43-vvaboqxho",
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-59-nv7669q5h",
-        "name": "ESMA NUR HALİLOĞLU",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "KİMYA MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Kastamonu",
-      "id": "city-1768335319450-44-rpwo1d230",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-60-cqfnmfw7a",
-        "name": "PERVİN SÜRGÜÇOĞLU",
-        "title": "İL SORUMLUSU",
-        "department": "ELEKTRİK ELEKTRONİK MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Kayseri̇",
-      "id": "city-1768335319450-45-82vl7hmsi",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-61-e48l0w5yt",
-        "name": "ALİ OSMAN BAGIRGAN",
-        "title": "İL SORUMLUSU"
-      },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-62-vqqhjkqlc",
-        "name": "İREM KAHVECİ",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "MOLEKÜLER BİYOLOJİ VE GENETİK"
-      }
-    },
-    {
-      "city": "Kirikkale",
-      "id": "city-1768335319450-46-i6t2uk69c",
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-63-dw17w6y3n",
-        "name": "ENES YÜKSEL",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "BİLGİSAYAR MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Kirklareli̇",
-      "id": "city-1768335319450-47-5r8u1s9u6",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-64-lxpd5hztl",
-        "name": "YUNUS ÇOLAK",
-        "title": "İL SORUMLUSU"
-      },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-65-kc2oz6b83",
-        "name": "İNSUNUR ERYILMAZ",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "GENETİK VE BİYOMÜHENDLİĞİ"
-      }
-    },
-    {
-      "city": "Kirşehi̇r",
-      "id": "city-1768335319450-48-cqgkj8mso",
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-66-mimzdm91e",
-        "name": "İSA DOĞANTEKİN",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "MEKATRONİK MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Ki̇li̇s",
-      "id": "city-1768335319450-49-r68z9wjl4",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-67-tfufspzo9",
-        "name": "KÜBRA ARITI ŞİĞVA",
-        "title": "İL SORUMLUSU",
-        "department": "Teknoloji Fakültesi Yazılım Mühendisliği"
-      }
-    },
-    {
-      "city": "Kocaeli̇",
-      "id": "city-1768335319450-50-fd0ykfd72",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-68-62ywjloln",
-        "name": "YALÇIN UZUNER",
-        "title": "İL SORUMLUSU"
-      }
-    },
-    {
-      "city": "Kocaeli̇ (gebze)",
-      "id": "city-1768335319450-52-nqaznf3ss",
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-70-7nom7xquo",
-        "name": "SEVDE NUR HÜSEYİNOĞLU",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "FEN BİLGİSİ ÖĞRETMENLİĞİ"
-      }
-    },
-    {
-      "city": "Kocaeli̇ (i̇zmi̇t)",
-      "id": "city-1768335319450-51-pghjob37u",
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-69-5j2rkhlb1",
-        "name": "AHMET BERK BAKAN",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "TARIM MAKİNELERİ VE TEKNOLOJİLERİ MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Konya",
-      "id": "city-1768335319450-53-q6tuhoo24",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-71-wnk8chmvl",
-        "name": "MEHMET REHA KOÇAK",
-        "title": "İL SORUMLUSU"
-      },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-72-t0twgynfd",
-        "name": "YUNUS EMRE GÜÇLÜ",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "ELEKTRİK ELEKTRONİK MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Kütahya",
-      "id": "city-1768335319450-54-oc31jpo53",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-73-9qywp6t4j",
-        "name": "EDANUR KORKMAZ",
-        "title": "İL SORUMLUSU",
-        "department": "BİYOMEDİKAL MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Malatya",
-      "id": "city-1768335319450-55-tpaxdub34",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-74-d3pthmnf1",
-        "name": "ŞEYMA İNCELER",
-        "title": "İL SORUMLUSU",
-        "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ ÖĞRETMENLİĞİ"
-      }
-    },
-    {
-      "city": "Mani̇sa",
-      "id": "city-1768335319450-56-kii0oa7wv",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-75-fbkcxhctp",
-        "name": "MUSTAFA GÜVEN",
-        "title": "İL SORUMLUSU",
-        "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ EĞİTİMİ"
-      }
-    },
-    {
-      "city": "Mardi̇n",
-      "id": "city-1768335319450-57-jra02156n",
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-76-bjrcelryi",
-        "name": "EMİNE ERYAĞMA",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "BEDEN EĞİTİMİ VE SPOR ÖĞRETMENLİĞİ"
-      }
-    },
-    {
-      "city": "Mersi̇n",
-      "id": "city-1768335319450-58-yh78a39nz",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-77-vmlkp2q7n",
-        "name": "AHMET BOZDOĞAN",
-        "title": "İL SORUMLUSU",
-        "department": "MAKİNE MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Muğla",
-      "id": "city-1768335319450-59-aiwgowhxm",
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-78-ofi57xvd1",
-        "name": "TUĞBA EVCİ",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "MEKATRONİK MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Muş",
-      "id": "city-1768335319450-60-vodjzt7nl",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-79-f50gagvl5",
-        "name": "SALİH ÖZER",
-        "title": "İL SORUMLUSU"
-      },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-80-jbt1cbl5s",
-        "name": "SÜREYYA ŞENTÜRK",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "BİLGİSAYAR MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Nevşehi̇r",
-      "id": "city-1768335319450-61-uq7oo6xfs",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-81-dziypy23r",
-        "name": "MELİKE SARAÇ",
-        "title": "İL SORUMLUSU (VEKALETEN)",
-        "department": "İKTİSAT"
-      }
-    },
-    {
-      "city": "Ni̇ğde",
-      "id": "city-1768335319450-62-2g8c7cfda",
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-82-gl3fbdf0r",
-        "name": "MELİKE SARAÇ",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "İKTİSAT"
-      }
-    },
-    {
-      "city": "Ordu",
-      "id": "city-1768335319450-63-xwmh9mm79",
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-83-wleoe3w3q",
-        "name": "GÖKÇENUR KALPAKLI EKİNCİ",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "MALİYE"
-      }
-    },
-    {
-      "city": "Osmani̇ye",
-      "id": "city-1768335319450-64-ndgp1o4cs",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-84-sdif1ljb5",
-        "name": "HATİCE KUBAT",
-        "title": "İL SORUMLUSU",
-        "department": "MALİYE"
-      }
-    },
-    {
-      "city": "Ri̇ze",
-      "id": "city-1768335319450-65-h37tptgbo",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-85-rxvni5aqk",
-        "name": "GÖKHAN SIRMALI",
-        "title": "İL SORUMLUSU"
-      },
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-86-poe0r22f1",
-        "name": "AYSEL TOPÇU",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "HALKLA İLİŞKİLER VE TANITIM"
-      }
-    },
-    {
-      "city": "Sakarya",
-      "id": "city-1768335319450-67-b6f8az0ox",
-      "deneyapSorumlusu": {
-        "id": "person-1768335319449-88-s4uz3doda",
-        "name": "ÖZGE DEMİREL HANSU",
-        "title": "DENEYAP SORUMLUSU",
-        "department": "BİLGİSAYAR MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Sakarya (adapazari)",
-      "id": "city-1768335319450-66-fdr1dfv8e",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-87-o3iqun1w6",
+        "id": "person-1768166410694-5-yjo1nd0d0",
         "name": "MUHAMMED KALAYCI",
         "title": "İL SORUMLUSU"
       }
     },
     {
-      "city": "Si̇i̇rt",
-      "id": "city-1768335319450-68-c8ql4qe78",
+      "city": "Afyonkarahisar",
       "deneyapSorumlusu": {
-        "id": "person-1768335319449-90-hdur1qnbd",
+        "department": "FEN BİLGİSİ ÖĞRETMENLİĞİ",
+        "id": "person-1768249006808-xgjcvkb61",
+        "name": "BETÜL CAN",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "AFYON KOCATEPE"
+      },
+      "id": "city-1768249006808-v4qfmc7s7",
+      "ilSorumlusu": {
+        "id": "person-1768249006808-wvszp27q6",
+        "name": "MUSTAFA YALÇIN",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Afyonkarahýsar",
+      "deneyapSorumlusu": {
+        "department": "FEN BÝLGÝSÝ ÖİRETMENLÝİÝ",
+        "id": "person-1768166410694-4-79d92x32w",
+        "name": "BETÜL CAN",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "AFYON KOCATEPE"
+      },
+      "id": "city-1768166410694-2-qce182gos",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-3-mj4q0v570",
+        "name": "MUSTAFA YALÇIN",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "AFYONKARAH�SAR",
+      "deneyapSorumlusu": {
+        "department": "FEN B�LG�S� ��RETMENL���",
+        "id": "person-1768248761708-ysiyvz6a4",
+        "name": "BET�L CAN",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "AFYON KOCATEPE"
+      },
+      "id": "city-1768248761708-syb4wndiz",
+      "ilSorumlusu": {
+        "id": "person-1768248761708-2ex580te2",
+        "name": "MUSTAFA YAL�IN",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Ağrı",
+      "id": "city-1768248888704-u5tk080zl",
+      "ilSorumlusu": {
+        "department": "TÜRK DÝLÝ VE EDEBÝYATI",
+        "id": "person-1768248888704-m8slwxsqy",
+        "name": "VEDAT AYDIN (VEKALETEN)",
+        "title": "İL SORUMLUSU",
+        "university": "KARAMANOİLU MEHMET BEY ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Aksaray",
+      "deneyapSorumlusu": {
+        "department": "BÝLGÝSAYAR VE ÖİRETÝM TEKNOLOJÝLERÝ",
+        "id": "person-1768166410694-6-nmosytucf",
+        "name": "AYÞENUR KAYIÞ",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "SAKARYA ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-4-5rz7xn8d8"
+    },
+    {
+      "city": "Amasya",
+      "id": "city-1768166410694-5-mwz8q1agr",
+      "ilSorumlusu": {
+        "department": "FEN BÝLGÝSÝ ÖİRETMENLÝİÝ",
+        "id": "person-1768166410694-7-dasr50zdh",
+        "name": "OİUZHAN ÖZDEMÝR",
+        "title": "İL SORUMLUSU",
+        "university": "GAZÝOMANPAÞA ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Ankara",
+      "deneyapSorumlusu": {
+        "id": "person-1768166410694-9-92speywux",
+        "name": "AYÞEGÜL BÜYÜKAKKAÞ",
+        "title": "DENEYAP SORUMLUSU"
+      },
+      "id": "city-1768166410694-6-e2q37o2qf",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-8-iyp22a1jp",
+        "name": "MUSTAFA FATÝH SARI",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Antalya",
+      "deneyapSorumlusu": {
+        "department": "BÝLGÝSAYAR MÜHENDÝSLÝİÝ",
+        "id": "person-1768166410694-11-c4495aewb",
+        "name": "HALÝL ÝBRAHÝM AKBOİA",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "MUİLA SITKI KOÇMAN ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-7-2qawnpv6e",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-10-18tslhtqp",
+        "name": "MUHSÝN MUBÝN PÝÞÝRÝCÝ",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Ardahan",
+      "deneyapSorumlusu": {
+        "department": "KAMU YÖNETÝMÝ VE SÝYASET BÝLÝMÝ ( AÖF )",
+        "id": "person-1768166410694-13-h4jlcidcw",
+        "name": "IÞILAY DENÝZ",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "ERZÝNCAN BÝNALÝ YILDIRIM ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-8-mki398uks",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-12-hckjv2npo",
+        "name": "TAYFUN YILDIZ",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Artvın",
+      "deneyapSorumlusu": {
+        "department": "METEOROLOJİ MÜHENDİSLİĞİ",
+        "id": "person-1768249006808-q8pwsi75d",
+        "name": "RUMEYSA OKUMUÞ",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "SAMSUN ÜNİVERSİTESİ"
+      },
+      "id": "city-1768249006808-01h5rfi5m"
+    },
+    {
+      "city": "Artvýn",
+      "deneyapSorumlusu": {
+        "department": "METEOROLOJÝ MÜHENDÝSLÝİÝ",
+        "id": "person-1768166410694-14-prj510ity",
+        "name": "RUMEYSA OKUMUÞ",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "SAMSUN ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-9-wx7kfqhde"
+    },
+    {
+      "city": "ARTV�N",
+      "deneyapSorumlusu": {
+        "department": "METEOROLOJ� M�HEND�SL���",
+        "id": "person-1768248761709-neijt21li",
+        "name": "RUMEYSA OKUMU�",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "SAMSUN �N�VERS�TES�"
+      },
+      "id": "city-1768248761709-m0pk3vsrn"
+    },
+    {
+      "city": "Aydın",
+      "id": "city-1768248888705-cpsddjf7x",
+      "ilSorumlusu": {
+        "department": "İKTİSAT",
+        "id": "person-1768248888705-4thqs1tmn",
+        "name": "MESUT ALTUNKAYNAK",
+        "title": "İL SORUMLUSU",
+        "university": "MUĞLA SITKI KOÇMAN ÜNİVERSİTESİ"
+      }
+    },
+    {
+      "city": "Aydin",
+      "id": "city-1768166410694-10-fpv0kq39p",
+      "ilSorumlusu": {
+        "department": "�KT�SAT",
+        "id": "person-1768166410694-15-u1x8osa2x",
+        "name": "MESUT ALTUNKAYNAK",
+        "title": "İL SORUMLUSU",
+        "university": "MU�LA SITKI KO�MAN �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "A�RI",
+      "id": "city-1768248761708-58j3j6xdj",
+      "ilSorumlusu": {
+        "department": "T�RK D�L� VE EDEB�YATI",
+        "id": "person-1768248761708-d9osk6hs5",
+        "name": "VEDAT AYDIN (VEKALETEN)",
+        "title": "İL SORUMLUSU",
+        "university": "KARAMANO�LU MEHMET BEY �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "Balıkesır",
+      "deneyapSorumlusu": {
+        "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ",
+        "id": "person-1768249006809-3ipjwucyf",
+        "name": "GAMZE LEVENT",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "BALIKESİR ÜNİVERSİTESİ"
+      },
+      "id": "city-1768249006809-lo5czowth",
+      "ilSorumlusu": {
+        "id": "person-1768249006809-zw1v7bz1t",
+        "name": "GÖKHAN TANAYDIN",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "BALIKES�R",
+      "deneyapSorumlusu": {
+        "department": "B�LG�SAYAR VE ��RET�M TEKNOLOJ�LER�",
+        "id": "person-1768248761709-mvriekwcb",
+        "name": "GAMZE LEVENT",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "BALIKES�R �N�VERS�TES�"
+      },
+      "id": "city-1768248761709-31xabeppr",
+      "ilSorumlusu": {
+        "id": "person-1768248761709-uplfk99e5",
+        "name": "G�KHAN TANAYDIN",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Balikesýr",
+      "deneyapSorumlusu": {
+        "department": "BÝLGÝSAYAR VE ÖİRETÝM TEKNOLOJÝLERÝ",
+        "id": "person-1768166410694-17-4r090iox9",
+        "name": "GAMZE LEVENT",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "BALIKESÝR ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-11-9zi6hvpsw",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-16-cge2zfcrb",
+        "name": "GÖKHAN TANAYDIN",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Bartın",
+      "id": "city-1768248888705-gw1j6yh99",
+      "ilSorumlusu": {
+        "department": "BÝLGÝSAYAR VE ÖİRETÝM TEKNOLOJÝLERÝ ÖİRETMENLÝİÝ",
+        "id": "person-1768248888705-97vjj8syb",
+        "name": "PELÝN BÝLGÝN",
+        "title": "İL SORUMLUSU",
+        "university": "KASTAMONU ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Bartin",
+      "id": "city-1768166410694-12-j2dyb7dm9",
+      "ilSorumlusu": {
+        "department": "B�LG�SAYAR VE ��RET�M TEKNOLOJ�LER� ��RETMENL���",
+        "id": "person-1768166410694-18-q1vxcypg1",
+        "name": "PEL�N B�LG�N",
+        "title": "İL SORUMLUSU",
+        "university": "KASTAMONU �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "Batman",
+      "id": "city-1768166410694-13-8ig1jim29",
+      "ilSorumlusu": {
+        "department": "BEDEN EİÝTÝMÝ VE SPOR ÖİRETMENLÝİÝ",
+        "id": "person-1768166410694-19-xj5jm5nm9",
+        "name": "EMÝNE ERYAİMA (VEKALETEN)",
+        "title": "İL SORUMLUSU",
+        "university": "DÝCLE ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Bayburt",
+      "id": "city-1768166410694-14-1wxrjjs43",
+      "ilSorumlusu": {
+        "department": "KÝMYA",
+        "id": "person-1768166410694-20-k8eg7jemi",
+        "name": "EMRAH BAYRAMOİLU",
+        "title": "İL SORUMLUSU",
+        "university": "BAYBURT ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Bılecık",
+      "id": "city-1768249006809-g6qjpxlzn",
+      "ilSorumlusu": {
+        "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ ÖĞRETMENLİĞİ",
+        "id": "person-1768249006809-ixqnwke4p",
+        "name": "DAMLA KOÇAK (VEKALETEN)",
+        "title": "İL SORUMLUSU",
+        "university": "TRAKYA ÜNİVERSİTESİ"
+      }
+    },
+    {
+      "city": "Bıngöl",
+      "id": "city-1768249006809-kjusjqvid",
+      "ilSorumlusu": {
+        "department": "ÝNÞAAT MÜHENDÝSLÝİÝ",
+        "id": "person-1768249006809-3fpe8f03h",
+        "name": "MÜCAHÝT FURKAN AY",
+        "title": "İL SORUMLUSU",
+        "university": "KAHRAMANMARAÞ SÜTÇÜ ÝMAM ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Bıtlıs",
+      "deneyapSorumlusu": {
+        "department": "ÝLAHÝYAT",
+        "id": "person-1768249006809-6dc3wdxrc",
+        "name": "BÜÞRA ÇOKTU",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "VAN YÜZÜNCÜ YIL ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768249006809-et042ztkv"
+    },
+    {
+      "city": "Bolu",
+      "id": "city-1768166410694-18-q0ow5emxn",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-24-koup3ctmj",
+        "name": "KADÝR ÖZBEK",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Burdur",
+      "id": "city-1768166410694-19-fqmppqqnh",
+      "ilSorumlusu": {
+        "department": "SOSYAL HÝZMET",
+        "id": "person-1768166410694-25-ll2ky3mqr",
+        "name": "EMÝNE BÜÞRA AYGÜN",
+        "title": "İL SORUMLUSU",
+        "university": "SÜLEYMAN DEMÝREL ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Bursa",
+      "deneyapSorumlusu": {
+        "department": "BÝLGÝSAYAR VE ÖİRETÝM TEKNOLOJÝLERÝ ÖİRETMENLÝİÝ",
+        "id": "person-1768166410694-27-0chfjic4u",
+        "name": "DAMLA KOÇAK",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "TRAKYA ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-20-o02sbgtx5",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-26-vemw9mqek",
+        "name": "AHMET DURMAZ",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Býlecýk",
+      "id": "city-1768166410694-15-hwtok0mop",
+      "ilSorumlusu": {
+        "department": "BÝLGÝSAYAR VE ÖİRETÝM TEKNOLOJÝLERÝ ÖİRETMENLÝİÝ",
+        "id": "person-1768166410694-21-a1tvfuvgd",
+        "name": "DAMLA KOÇAK (VEKALETEN)",
+        "title": "İL SORUMLUSU",
+        "university": "TRAKYA ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Býngöl",
+      "id": "city-1768166410694-16-uk26d5zmt",
+      "ilSorumlusu": {
+        "department": "ÝNÞAAT MÜHENDÝSLÝİÝ",
+        "id": "person-1768166410694-22-ddvqqbhl4",
+        "name": "MÜCAHÝT FURKAN AY",
+        "title": "İL SORUMLUSU",
+        "university": "KAHRAMANMARAÞ SÜTÇÜ ÝMAM ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Býtlýs",
+      "deneyapSorumlusu": {
+        "department": "ÝLAHÝYAT",
+        "id": "person-1768166410694-23-ou12gkp6k",
+        "name": "BÜÞRA ÇOKTU",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "VAN YÜZÜNCÜ YIL ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-17-s1q3e71o6"
+    },
+    {
+      "city": "B�LEC�K",
+      "id": "city-1768248761709-q3berzdkk",
+      "ilSorumlusu": {
+        "department": "B�LG�SAYAR VE ��RET�M TEKNOLOJ�LER� ��RETMENL���",
+        "id": "person-1768248761709-4p3imc5ci",
+        "name": "DAMLA KO�AK (VEKALETEN)",
+        "title": "İL SORUMLUSU",
+        "university": "TRAKYA �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "B�NG�L",
+      "id": "city-1768248761709-9tlhu33zo",
+      "ilSorumlusu": {
+        "department": "�N�AAT M�HEND�SL���",
+        "id": "person-1768248761709-h7cqcmvqk",
+        "name": "M�CAH�T FURKAN AY",
+        "title": "İL SORUMLUSU",
+        "university": "KAHRAMANMARA� S�T�� �MAM �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "B�TL�S",
+      "deneyapSorumlusu": {
+        "department": "�LAH�YAT",
+        "id": "person-1768248761709-gi6o9k1uy",
+        "name": "B��RA �OKTU",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "VAN Y�Z�NC� YIL �N�VERS�TES�"
+      },
+      "id": "city-1768248761709-o9ntdclf9"
+    },
+    {
+      "city": "Çanakkale",
+      "deneyapSorumlusu": {
+        "department": "MOLEKÜLER BİYOLOJİ ve GENETİK",
+        "id": "person-1768166410694-29-pawn7zgaz",
+        "name": "AHMET TUNA ÖZEN",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "ÇANAKKALE 18 MART ÜNİVERSİESİ"
+      },
+      "id": "city-1768166410694-21-o550jdizy",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-28-ivrb9cnxp",
+        "name": "MÜGE TEKER YILDIZ",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Çankiri",
+      "id": "city-1768166410694-22-0xvlcy93l",
+      "ilSorumlusu": {
+        "department": "BİLGİSAYAR MÜHENDİSLİĞİ",
+        "id": "person-1768166410694-30-gn3ph7s2x",
+        "name": "ENES YÜKSEL (VEKALETEN)",
+        "title": "İL SORUMLUSU",
+        "university": "KASTAMONU ÜNİVERSİTESİ"
+      }
+    },
+    {
+      "city": "Çorum",
+      "id": "city-1768166410694-23-q922dicaf",
+      "ilSorumlusu": {
+        "department": "FEN BÝLGÝSÝ ÖİRETMENLÝİÝ",
+        "id": "person-1768166410694-31-xgdmaslyv",
+        "name": "OİUZHAN ÖZDEMÝR (VEKALETEN)",
+        "title": "İL SORUMLUSU",
+        "university": "GAZÝOMANPAÞA ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Denızlı",
+      "id": "city-1768249006809-31klff7sw",
+      "ilSorumlusu": {
+        "department": "MAKÝNE MÜHENDÝSLÝİÝ",
+        "id": "person-1768249006809-3jb5x3bds",
+        "name": "EMRE VERÝM",
+        "title": "İL SORUMLUSU",
+        "university": "PAMUKKALE ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Denýzlý",
+      "id": "city-1768166410694-24-bwhjj9hp0",
+      "ilSorumlusu": {
+        "department": "MAKÝNE MÜHENDÝSLÝİÝ",
+        "id": "person-1768166410694-32-xlpgbxtel",
+        "name": "EMRE VERÝM",
+        "title": "İL SORUMLUSU",
+        "university": "PAMUKKALE ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "DEN�ZL�",
+      "id": "city-1768248761709-xfe7nrlaw",
+      "ilSorumlusu": {
+        "department": "MAK�NE M�HEND�SL���",
+        "id": "person-1768248761709-d6vzw8dwa",
+        "name": "EMRE VER�M",
+        "title": "İL SORUMLUSU",
+        "university": "PAMUKKALE �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "Düzce",
+      "id": "city-1768166410694-25-zwqaoahug",
+      "ilSorumlusu": {
+        "department": "BÝLGÝSAYAR VE ÖİRETÝM TEKNOLOJÝLERÝ ÖİRETMENLÝİÝ",
+        "id": "person-1768166410694-33-tli614pax",
+        "name": "FERHAT ERDOİAN",
+        "title": "İL SORUMLUSU",
+        "university": "ÇANAKKALE 18 MART ÜNÝVERSÝESÝ"
+      }
+    },
+    {
+      "city": "D�ZCE",
+      "id": "city-1768248761709-ql9voopeh",
+      "ilSorumlusu": {
+        "department": "B�LG�SAYAR VE ��RET�M TEKNOLOJ�LER� ��RETMENL���",
+        "id": "person-1768248761709-z7nqsm5u1",
+        "name": "FERHAT ERDO�AN",
+        "title": "İL SORUMLUSU",
+        "university": "�ANAKKALE 18 MART �N�VERS�ES�"
+      }
+    },
+    {
+      "city": "Edırne",
+      "deneyapSorumlusu": {
+        "department": "HACETTEPE ÜNÝVERSÝTESÝ BÝYOLOJÝ",
+        "id": "person-1768249006809-knaw96rmc",
+        "name": "TUİÇE DAİ",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "HACETTEPE ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768249006809-iyaqn56a8",
+      "ilSorumlusu": {
+        "id": "person-1768249006809-nxioy65dv",
+        "name": "BURAK CANBAZ",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Edýrne",
+      "deneyapSorumlusu": {
+        "department": "HACETTEPE ÜNÝVERSÝTESÝ BÝYOLOJÝ",
+        "id": "person-1768166410694-35-srmtdon9f",
+        "name": "TUİÇE DAİ",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "HACETTEPE ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-26-l6fnti7u4",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-34-j9abr8f8o",
+        "name": "BURAK CANBAZ",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "ED�RNE",
+      "deneyapSorumlusu": {
+        "department": "HACETTEPE �N�VERS�TES� B�YOLOJ�",
+        "id": "person-1768248761709-ml4maeje9",
+        "name": "TU��E DA�",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "HACETTEPE �N�VERS�TES�"
+      },
+      "id": "city-1768248761709-qs94o66h2",
+      "ilSorumlusu": {
+        "id": "person-1768248761709-jffvjxuoc",
+        "name": "BURAK CANBAZ",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "ELAZI�",
+      "id": "city-1768248761709-jsdz8xaer",
+      "ilSorumlusu": {
+        "department": "ASTRONOMÝ VE UZAY BÝLÝMLERÝ",
+        "id": "person-1768248761709-3leyeu7is",
+        "name": "SÝNAN KOÇAK",
+        "title": "İL SORUMLUSU",
+        "university": "ERCÝYES ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Elazið",
+      "id": "city-1768166410694-27-6usyg9vn2",
+      "ilSorumlusu": {
+        "department": "ASTRONOMÝ VE UZAY BÝLÝMLERÝ",
+        "id": "person-1768166410694-36-289lpv4u4",
+        "name": "SÝNAN KOÇAK",
+        "title": "İL SORUMLUSU",
+        "university": "ERCÝYES ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Elazığ",
+      "id": "city-1768248888705-yjldk0fac",
+      "ilSorumlusu": {
+        "department": "ASTRONOMÝ VE UZAY BÝLÝMLERÝ",
+        "id": "person-1768248888705-ltw1ztpfr",
+        "name": "SÝNAN KOÇAK",
+        "title": "İL SORUMLUSU",
+        "university": "ERCÝYES ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Erzıncan",
+      "deneyapSorumlusu": {
+        "id": "person-1768249006809-glvmayigj",
+        "name": "ZEHRA YAYLA",
+        "title": "DENEYAP SORUMLUSU"
+      },
+      "id": "city-1768249006809-cysxma7u2",
+      "ilSorumlusu": {
+        "id": "person-1768249006809-zorc0bq4p",
+        "name": "NURETTÝN OİUZHAN AKOİUZ",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Erzurum",
+      "deneyapSorumlusu": {
+        "department": "TÜRK DÝLÝ VE EDEBÝYATI",
+        "id": "person-1768166410694-40-paku8fqql",
+        "name": "VEDAT AYDIN",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "KARAMANOİLU MEHMET BEY ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-29-2lbysffky",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-39-p1mr4coj2",
+        "name": "RAGIP ÜMÝT YALÇIN",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Erzýncan",
+      "deneyapSorumlusu": {
+        "id": "person-1768166410694-38-9wd5x33ad",
+        "name": "ZEHRA YAYLA",
+        "title": "DENEYAP SORUMLUSU"
+      },
+      "id": "city-1768166410694-28-sa3zmzh0k",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-37-ins8ze9xb",
+        "name": "NURETTÝN OİUZHAN AKOİUZ",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "ERZ�NCAN",
+      "deneyapSorumlusu": {
+        "id": "person-1768248761709-hw95s1bqx",
+        "name": "ZEHRA YAYLA",
+        "title": "DENEYAP SORUMLUSU"
+      },
+      "id": "city-1768248761709-237gurqae",
+      "ilSorumlusu": {
+        "id": "person-1768248761709-7hqoij90b",
+        "name": "NURETT�N O�UZHAN AKO�UZ",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Eskısehır",
+      "deneyapSorumlusu": {
+        "department": "MAKİNE MÜHENDİSLİĞİ",
+        "id": "person-1768249006810-sgla2hgcb",
+        "name": "KASIM EMRE ANIL",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "HARRAN ÜNİVERSİTESİ"
+      },
+      "id": "city-1768249006810-hgz5sbm1o",
+      "ilSorumlusu": {
+        "department": "ULUSLARARASI İLİŞKİLER",
+        "id": "person-1768249006810-b8esskn4n",
+        "name": "SAMET YURTSEVER",
+        "title": "İL SORUMLUSU",
+        "university": "SELÇUK ÜNİVERSİTESİ"
+      }
+    },
+    {
+      "city": "Eskýþehýr",
+      "deneyapSorumlusu": {
+        "department": "MAKÝNE MÜHENDÝSLÝİÝ",
+        "id": "person-1768166410694-42-77d32vyie",
+        "name": "KASIM EMRE ANIL",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "HARRAN ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-30-1dvs4deut",
+      "ilSorumlusu": {
+        "department": "ULUSLARARASI ÝLÝÞKÝLER",
+        "id": "person-1768166410694-41-ydtq85hje",
+        "name": "SAMET YURTSEVER",
+        "title": "İL SORUMLUSU",
+        "university": "SELÇUK ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "ESK��EH�R",
+      "deneyapSorumlusu": {
+        "department": "MAK�NE M�HEND�SL���",
+        "id": "person-1768248761710-wa1oe7e0o",
+        "name": "KASIM EMRE ANIL",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "HARRAN �N�VERS�TES�"
+      },
+      "id": "city-1768248761710-k6sr4x5sm",
+      "ilSorumlusu": {
+        "department": "ULUSLARARASI �L��K�LER",
+        "id": "person-1768248761710-lbatv6ffu",
+        "name": "SAMET YURTSEVER",
+        "title": "İL SORUMLUSU",
+        "university": "SEL�UK �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "Gazıantep",
+      "deneyapSorumlusu": {
+        "department": "BÝLGÝSAYAR PROGRAMLAMA VE TEKNOLOJÝLERÝ",
+        "id": "person-1768249006810-rx62h7so1",
+        "name": "YAİMUR ERBAY",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "GAZÝANTEP ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768249006810-yk1p5a82s"
+    },
+    {
+      "city": "Gazýantep",
+      "deneyapSorumlusu": {
+        "department": "BÝLGÝSAYAR PROGRAMLAMA VE TEKNOLOJÝLERÝ",
+        "id": "person-1768166410694-43-73inowa0w",
+        "name": "YAİMUR ERBAY",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "GAZÝANTEP ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-31-ylvbrgbuw"
+    },
+    {
+      "city": "GAZ�ANTEP",
+      "deneyapSorumlusu": {
+        "department": "B�LG�SAYAR PROGRAMLAMA VE TEKNOLOJ�LER�",
+        "id": "person-1768248761710-53apckgmf",
+        "name": "YA�MUR ERBAY",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "GAZ�ANTEP �N�VERS�TES�"
+      },
+      "id": "city-1768248761710-u88imv7pl"
+    },
+    {
+      "city": "Gıresun",
+      "id": "city-1768249006810-1i2zwegol",
+      "ilSorumlusu": {
+        "department": "REHBERLÝK VE PSÝKOLOJÝK DANIÞMANLIK (PDR)",
+        "id": "person-1768249006810-nc96pgza9",
+        "name": "FATÝH YILDIRIM",
+        "title": "İL SORUMLUSU",
+        "university": "TRABZON ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Gümüþhane",
+      "id": "city-1768166410694-33-77gsq3dsf",
+      "ilSorumlusu": {
+        "department": "ÝÞLETME",
+        "id": "person-1768166410694-45-u0ejusz05",
+        "name": "FATMA NUR TÝP",
+        "title": "İL SORUMLUSU",
+        "university": "GÜMÜÞHANE ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Gýresun",
+      "id": "city-1768166410694-32-fieyduh6f",
+      "ilSorumlusu": {
+        "department": "REHBERLÝK VE PSÝKOLOJÝK DANIÞMANLIK (PDR)",
+        "id": "person-1768166410694-44-3val2dmjs",
+        "name": "FATÝH YILDIRIM",
+        "title": "İL SORUMLUSU",
+        "university": "TRABZON ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "G�M��HANE",
+      "id": "city-1768248761710-ov4bkmaky",
+      "ilSorumlusu": {
+        "department": "��LETME",
+        "id": "person-1768248761710-wglb0m02o",
+        "name": "FATMA NUR T�P",
+        "title": "İL SORUMLUSU",
+        "university": "G�M��HANE �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "G�RESUN",
+      "id": "city-1768248761710-e906sjekv",
+      "ilSorumlusu": {
+        "department": "REHBERL�K VE PS�KOLOJ�K DANI�MANLIK (PDR)",
+        "id": "person-1768248761710-33cdtjqxr",
+        "name": "FAT�H YILDIRIM",
+        "title": "İL SORUMLUSU",
+        "university": "TRABZON �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "Hatay",
+      "id": "city-1768166410694-34-fsuq86510",
+      "ilSorumlusu": {
+        "department": "BEDEN EGİTİMİ VE SPOR ÖĞRETMENLİĞİ",
+        "id": "person-1768166410694-46-hvdbehm5n",
+        "name": "MUHAMMED MAHFUZ ERKAN (VEKALETEN)",
+        "title": "İL SORUMLUSU",
+        "university": "KAHRAMANMARAŞ SÜTÇÜ İMAM ÜNİVERSİTESİ"
+      }
+    },
+    {
+      "city": "Iğdır",
+      "deneyapSorumlusu": {
+        "id": "person-1768248888705-2ow5atw4t",
+        "name": "BEYZA AKOİUL",
+        "title": "DENEYAP SORUMLUSU"
+      },
+      "id": "city-1768248888705-o4rcuf1pk",
+      "ilSorumlusu": {
+        "id": "person-1768248888705-vqcwdpm6d",
+        "name": "FIRAT ARSLANTÜRK",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "ISPARTA",
+      "deneyapSorumlusu": {
+        "department": "NEÜ- BESLENME VE DİYETETİK/ YÜKSEK LİSANS:FİZYOLOJİ",
+        "id": "person-1768248761710-nqn7iuawg",
+        "name": "BUSE NUR SÜLÜK",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "SÜLEYMAN DEMİREL ÜNİVERSİTESİ"
+      },
+      "id": "city-1768248761710-tu0mpwp11",
+      "ilSorumlusu": {
+        "id": "person-1768248761710-6q28flzvd",
+        "name": "MEVLÜT YUNUS KAYACAN",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Izmır",
+      "deneyapSorumlusu": {
+        "department": "YOK",
+        "id": "person-1768249006810-7plbqzk73",
+        "name": "ÝCLAL KOTAN",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "DOKUZ EYLÜL ÜNİVERSİTESİ (DEVAM)"
+      },
+      "id": "city-1768249006810-qmnwx5i0r",
+      "ilSorumlusu": {
+        "id": "person-1768249006810-eiwi1i7o9",
+        "name": "TÜRKER YAÞIN",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "I�DIR",
+      "deneyapSorumlusu": {
+        "id": "person-1768248761710-zpzc9ia8w",
+        "name": "BEYZA AKO�UL",
+        "title": "DENEYAP SORUMLUSU"
+      },
+      "id": "city-1768248761710-myo2r8xv5",
+      "ilSorumlusu": {
+        "id": "person-1768248761710-u9mz2i7zr",
+        "name": "FIRAT ARSLANT�RK",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "İðdir",
+      "deneyapSorumlusu": {
+        "id": "person-1768166410694-48-jjqod8shg",
+        "name": "BEYZA AKOÐUL",
+        "title": "DENEYAP SORUMLUSU"
+      },
+      "id": "city-1768166410694-35-dnd3xdhh9",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-47-lhm1pspte",
+        "name": "FIRAT ARSLANTÜRK",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "İsparta",
+      "deneyapSorumlusu": {
+        "department": "FÝZYOLOJÝ",
+        "id": "person-1768166410694-50-bh7lkorm6",
+        "name": "BUSE NUR SÜLÜK",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "SÜLEYMAN DEMÝREL ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-36-iilrwougx",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-49-22i3b27i4",
+        "name": "MEVLÜT YUNUS KAYACAN",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Kahramanmaraþ",
+      "deneyapSorumlusu": {
+        "department": "HARİTA MÜHENDİSLİĞİ",
+        "id": "person-1768166410694-55-g9llqze9x",
+        "name": "KÜBRA MERK",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "KARADENİZ TEKNİK ÜNİVERSİTESİ"
+      },
+      "id": "city-1768166410694-39-c4fs2mati",
+      "ilSorumlusu": {
+        "department": "BEDEN EGÝTÝMÝ VE SPOR ÖİRETMENLÝİÝ",
+        "id": "person-1768166410694-54-x5jfiulb1",
+        "name": "MUHAMMED MAHFUZ ERKAN",
+        "title": "İL SORUMLUSU",
+        "university": "KAHRAMANMARAÞ SÜTÇÜ ÝMAM ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "KAHRAMANMARA�",
+      "deneyapSorumlusu": {
+        "department": "HAR�TA M�HEND�SL���",
+        "id": "person-1768248761710-77s6i8cci",
+        "name": "K�BRA MERK",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "KARADEN�Z TEKN�K �N�VERS�TES�"
+      },
+      "id": "city-1768248761710-b8mw5m757",
+      "ilSorumlusu": {
+        "department": "BEDEN EG�T�M� VE SPOR ��RETMENL���",
+        "id": "person-1768248761710-n1g7tgfx7",
+        "name": "MUHAMMED MAHFUZ ERKAN",
+        "title": "İL SORUMLUSU",
+        "university": "KAHRAMANMARA� S�T�� �MAM �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "Karabük",
+      "id": "city-1768166410694-40-a5sw9lryh",
+      "ilSorumlusu": {
+        "department": "BÖTE",
+        "id": "person-1768166410694-56-2yz5t2g98",
+        "name": "YELDA DOİAN",
+        "title": "İL SORUMLUSU",
+        "university": "KASTAMONU ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "KARAB�K",
+      "id": "city-1768248761710-w11qqet25",
+      "ilSorumlusu": {
+        "department": "B�TE",
+        "id": "person-1768248761710-mckf4bme8",
+        "name": "YELDA DO�AN",
+        "title": "İL SORUMLUSU",
+        "university": "KASTAMONU �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "Karaman",
+      "id": "city-1768166410694-41-7ei58ly6m",
+      "ilSorumlusu": {
+        "department": "BÝLGÝSAYAR VE ÖİRETÝM TEKNOLOJÝLERÝ ÖİRETMENLÝİÝ",
+        "id": "person-1768166410694-57-ye82ihzpb",
+        "name": "DAMLA KOÇAK (VEKALETEN)",
+        "title": "İL SORUMLUSU",
+        "university": "TRAKYA ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Kars",
+      "deneyapSorumlusu": {
+        "department": "KÝMYA MÜHENDÝSLÝİÝ",
+        "id": "person-1768166410694-58-e5fyp3xsb",
+        "name": "ESMA NUR HALÝLOİLU",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "ATATÜRK ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-42-pkvxz92d3"
+    },
+    {
+      "city": "Kastamonu",
+      "id": "city-1768166410694-43-aqsei446r",
+      "ilSorumlusu": {
+        "department": "ELEKTRÝK ELEKTRONÝK MÜHENDÝSLÝİÝ",
+        "id": "person-1768166410694-59-hfx5pscus",
+        "name": "PERVÝN SÜRGÜÇOİLU",
+        "title": "İL SORUMLUSU",
+        "university": "KASTAMONU ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Kayseri",
+      "deneyapSorumlusu": {
+        "department": "MOLEKÜLER BİYOLOJİ VE GENETİK",
+        "id": "person-1768166410694-61-56z6fw0es",
+        "name": "ÝREM KAHVECÝ",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "ABDULLAH GÜL ÜNİVERSİTESİ"
+      },
+      "id": "city-1768166410694-44-muq6492vq",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-60-6i2pqqlmj",
+        "name": "Ali Osman Bağırgan",
+        "title": "KAYSERI İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "KAYSER�",
+      "deneyapSorumlusu": {
+        "department": "MOLEK�LER B�YOLOJ� VE GENET�K",
+        "id": "person-1768248761711-qhsk73igk",
+        "name": "�REM KAHVEC�",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "ABDULLAH G�L �N�VERS�TES�"
+      },
+      "id": "city-1768248761711-kj9yep8yp",
+      "ilSorumlusu": {
+        "id": "person-1768248761711-4yu1ufa9z",
+        "name": "AL� OSMAN BAGIRGAN",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Kılıs",
+      "id": "city-1768249006811-g2ut8indb",
+      "ilSorumlusu": {
+        "department": "Teknoloji Fakültesi Yazılım Mühendisliği",
+        "id": "person-1768249006811-bcaufa8u6",
+        "name": "KÜBRA ARITI ÞÝİVA",
+        "title": "İL SORUMLUSU",
+        "university": "FIRAT ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Kırıkkale",
+      "deneyapSorumlusu": {
+        "department": "BÝLGÝSAYAR MÜHENDÝSLÝİÝ",
+        "id": "person-1768248888705-gbv26aqqt",
+        "name": "ENES YÜKSEL",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "KASTAMONU ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768248888705-0bt31qbo3"
+    },
+    {
+      "city": "KIRKLAREL�",
+      "deneyapSorumlusu": {
+        "department": "GENETİK VE BİYOMÜHENDLİĞİ",
+        "id": "person-1768248761711-4dgnh3ky2",
+        "name": "ÝNSUNUR ERYILMAZ",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "TRAKYA ÜNİVERSİTESİ"
+      },
+      "id": "city-1768248761711-3gri2rooz",
+      "ilSorumlusu": {
+        "id": "person-1768248761711-kyndkjowj",
+        "name": "YUNUS ÇOLAK",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Kırsehır",
+      "deneyapSorumlusu": {
+        "department": "MEKATRONÝK MÜHENDÝSLÝİÝ",
+        "id": "person-1768249006811-uyssp0cxk",
+        "name": "ÝSA DOİANTEKÝN",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "KARABÜK ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768249006811-5dfjmz75z"
+    },
+    {
+      "city": "KIR�EH�R",
+      "deneyapSorumlusu": {
+        "department": "MEKATRON�K M�HEND�SL���",
+        "id": "person-1768248761711-6kclgerg5",
+        "name": "�SA DO�ANTEK�N",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "KARAB�K �N�VERS�TES�"
+      },
+      "id": "city-1768248761711-taumdiu8x"
+    },
+    {
+      "city": "Kirikkale",
+      "deneyapSorumlusu": {
+        "department": "B�LG�SAYAR M�HEND�SL���",
+        "id": "person-1768166410694-62-a45xzyh8e",
+        "name": "ENES Y�KSEL",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "KASTAMONU �N�VERS�TES�"
+      },
+      "id": "city-1768166410694-45-2jey1kg4g"
+    },
+    {
+      "city": "Kirklarelý",
+      "deneyapSorumlusu": {
+        "department": "GENETÝK VE BÝYOMÜHENDLÝİÝ",
+        "id": "person-1768166410694-64-gn2sbhxg4",
+        "name": "ÝNSUNUR ERYILMAZ",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "TRAKYA ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-46-lvqktjod4",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-63-sgaj96dhw",
+        "name": "YUNUS ÇOLAK",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Kirþehýr",
+      "deneyapSorumlusu": {
+        "department": "MEKATRONÝK MÜHENDÝSLÝİÝ",
+        "id": "person-1768166410694-65-9uya9ghb1",
+        "name": "ÝSA DOİANTEKÝN",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "KARABÜK ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-47-5o0tji57v"
+    },
+    {
+      "city": "Kocaelý",
+      "deneyapSorumlusu": {
+        "id": "person-1768248888706-jh7hz1rwe",
+        "name": "SEVDE NUR HÜSEYÝNOİLU",
+        "title": "DENEYAP SORUMLUSU"
+      },
+      "id": "city-1768166410694-49-d7nwcw7au",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-67-uae8k6w99",
+        "name": "YALÇIN UZUNER",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Kocaelý (GEBZE)",
+      "deneyapSorumlusu": {
+        "id": "person-1768166410694-69-eoozp8658",
+        "name": "SEVDE NUR HÜSEYÝNOÐLU",
+        "title": "DENEYAP SORUMLUSU"
+      },
+      "id": "city-1768166410694-51-zlp30v9r7"
+    },
+    {
+      "city": "Kocaeli (İzmit)",
+      "deneyapSorumlusu": {
+        "department": "TARIM MAKİNELERİ VE TEKNOLOJİLERİ MÜHENDİSLİĞİ",
+        "id": "person-1768166410694-68-vw650jnxr",
+        "name": "Ahmet Berk Bakan",
+        "title": "KOCAELI (İZMIT) DENEYAP SORUMLUSU",
+        "university": "ANKARA ÜNİVERSİTESİ"
+      },
+      "id": "city-1768166410694-50-pt1l9ace4"
+    },
+    {
+      "city": "KOCAEL�",
+      "deneyapSorumlusu": {
+        "id": "person-1768248761711-bue2aax5n",
+        "name": "SEVDE NUR H�SEY�NO�LU",
+        "title": "DENEYAP SORUMLUSU"
+      },
+      "id": "city-1768248761711-rg7aygl6q",
+      "ilSorumlusu": {
+        "id": "person-1768248761711-k4kr5sakf",
+        "name": "YAL�IN UZUNER",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Konya",
+      "deneyapSorumlusu": {
+        "department": "ELEKTRİK ELEKTRONİK MÜHENDİSLİĞİ",
+        "id": "person-1768166410694-71-r0f9lana7",
+        "name": "YUNUS EMRE GÜÇLÜ",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "KONYA GIDA VE TARIM ÜNİVERSİTESİ"
+      },
+      "id": "city-1768166410694-52-510e4q911",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-70-7xmc6ubmo",
+        "name": "MEHMET REHA KOÇAK",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Kütahya",
+      "id": "city-1768166410694-53-4hs9o0e1s",
+      "ilSorumlusu": {
+        "department": "LİSANS:TIP MÜHENDİSLİĞİ/YÜKSEK LİSANS:BİYOMEDİKAL MÜHENDİSLİĞİ",
+        "id": "person-1768166410694-72-fkhf7p64a",
+        "name": "EDANUR KORKMAZ",
+        "title": "İL SORUMLUSU",
+        "university": "NECMETTİN ERBAKAN ÜNİVERSİTESİ"
+      }
+    },
+    {
+      "city": "Kýlýs",
+      "id": "city-1768166410694-48-zirdpr2c7",
+      "ilSorumlusu": {
+        "department": "Teknoloji Fakültesi Yazılım Mühendisliği",
+        "id": "person-1768166410694-66-yfwn9nqf2",
+        "name": "KÜBRA ARITI ÞÝİVA",
+        "title": "İL SORUMLUSU",
+        "university": "FIRAT ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "K�L�S",
+      "id": "city-1768248761711-xsifmdrfc",
+      "ilSorumlusu": {
+        "department": "Teknoloji Fak�ltesi Yaz�l�m M�hendisli�i",
+        "id": "person-1768248761711-fh57xl1qm",
+        "name": "K�BRA ARITI ���VA",
+        "title": "İL SORUMLUSU",
+        "university": "FIRAT �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "K�TAHYA",
+      "id": "city-1768248761711-ke3f3skfc",
+      "ilSorumlusu": {
+        "department": "B�YOMED�KAL M�HEND�SL���",
+        "id": "person-1768248761711-t3pi9vt8u",
+        "name": "EDANUR KORKMAZ",
+        "title": "İL SORUMLUSU",
+        "university": "NECMETT�N ERBAKAN �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "Malatya",
+      "id": "city-1768166410694-54-9z4ozt0q2",
+      "ilSorumlusu": {
+        "department": "BÝLGÝSAYAR VE ÖİRETÝM TEKNOLOJÝLERÝ ÖİRETMENLÝİÝ",
+        "id": "person-1768166410694-73-ktrq3v9zg",
+        "name": "ÞEYMA ÝNCELER",
+        "title": "İL SORUMLUSU",
+        "university": "ÝBRAHÝM ÇEÇEN ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Manısa",
+      "id": "city-1768249006811-op9b5xtp3",
+      "ilSorumlusu": {
+        "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ EĞİTİMİ",
+        "id": "person-1768249006811-nd3sc4qya",
+        "name": "MUSTAFA GÜVEN",
+        "title": "İL SORUMLUSU",
+        "university": "ÇANAKKALE 18 MART ÜNİVERSİESİ"
+      }
+    },
+    {
+      "city": "Manýsa",
+      "id": "city-1768166410694-55-uy97w49xz",
+      "ilSorumlusu": {
+        "department": "BÝLGÝSAYAR VE ÖİRETÝM TEKNOLOJÝLERÝ EİÝTÝMÝ",
+        "id": "person-1768166410694-74-20pkc7v3x",
+        "name": "MUSTAFA GÜVEN",
+        "title": "İL SORUMLUSU",
+        "university": "ÇANAKKALE 18 MART ÜNÝVERSÝESÝ"
+      }
+    },
+    {
+      "city": "MAN�SA",
+      "id": "city-1768248761711-v8sznt0zw",
+      "ilSorumlusu": {
+        "department": "B�LG�SAYAR VE ��RET�M TEKNOLOJ�LER� E��T�M�",
+        "id": "person-1768248761711-w5srdmi4z",
+        "name": "MUSTAFA G�VEN",
+        "title": "İL SORUMLUSU",
+        "university": "�ANAKKALE 18 MART �N�VERS�ES�"
+      }
+    },
+    {
+      "city": "Mardın",
+      "deneyapSorumlusu": {
+        "department": "BEDEN EİÝTÝMÝ VE SPOR ÖİRETMENLÝİÝ",
+        "id": "person-1768249006812-w77j5sa3y",
+        "name": "EMÝNE ERYAİMA",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "DÝCLE ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768249006812-sppecn3rm"
+    },
+    {
+      "city": "Mardýn",
+      "deneyapSorumlusu": {
+        "department": "BEDEN EİÝTÝMÝ VE SPOR ÖİRETMENLÝİÝ",
+        "id": "person-1768166410694-75-z7t5czhje",
+        "name": "EMÝNE ERYAİMA",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "DÝCLE ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-56-4siprjekc"
+    },
+    {
+      "city": "MARD�N",
+      "deneyapSorumlusu": {
+        "department": "BEDEN E��T�M� VE SPOR ��RETMENL���",
+        "id": "person-1768248761711-kyfmlsivq",
+        "name": "EM�NE ERYA�MA",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "D�CLE �N�VERS�TES�"
+      },
+      "id": "city-1768248761711-bo3mjyy36"
+    },
+    {
+      "city": "Mersın",
+      "id": "city-1768249006812-k82hrq0ev",
+      "ilSorumlusu": {
+        "department": "MAKÝNE MÜHENDÝSLÝİÝ",
+        "id": "person-1768249006812-iis1fj1mu",
+        "name": "AHMET BOZDOİAN",
+        "title": "İL SORUMLUSU",
+        "university": "GAZÝANTEP ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Mersýn",
+      "id": "city-1768166410694-57-eevv7u3vl",
+      "ilSorumlusu": {
+        "department": "MAKÝNE MÜHENDÝSLÝİÝ",
+        "id": "person-1768166410694-76-v0dgaa2x3",
+        "name": "AHMET BOZDOİAN",
+        "title": "İL SORUMLUSU",
+        "university": "GAZÝANTEP ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "MERS�N",
+      "id": "city-1768248761711-8fpi4wezv",
+      "ilSorumlusu": {
+        "department": "MAK�NE M�HEND�SL���",
+        "id": "person-1768248761711-df22hjv59",
+        "name": "AHMET BOZDO�AN",
+        "title": "İL SORUMLUSU",
+        "university": "GAZ�ANTEP �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "Muðla",
+      "deneyapSorumlusu": {
+        "department": "MEKATRONÝK MÜHENDÝSLÝÐÝ",
+        "id": "person-1768166410694-77-gp1dq54dp",
+        "name": "TUÐBA EVCÝ",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "NECMETTÝN ERBAKAN ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-58-fyep6rmei"
+    },
+    {
+      "city": "Muğla",
+      "deneyapSorumlusu": {
+        "department": "MEKATRONÝK MÜHENDÝSLÝİÝ",
+        "id": "person-1768248888706-wtv2lte0r",
+        "name": "TUİBA EVCÝ",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "NECMETTÝN ERBAKAN ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768248888706-bx5c14dif"
+    },
+    {
+      "city": "Muþ",
+      "deneyapSorumlusu": {
+        "department": "BÝLGÝSAYAR MÜHENDÝSLÝİÝ",
+        "id": "person-1768166410694-79-6w62n2vhq",
+        "name": "SÜREYYA ÞENTÜRK",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "ÝNÖNÜ ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-59-v6dv6y3gn",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-78-i6u9fk40x",
+        "name": "SALÝH ÖZER",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "MU�LA",
+      "deneyapSorumlusu": {
+        "department": "B�LG�SAYAR M�HEND�SL���",
+        "id": "person-1768248761711-ta612c42f",
+        "name": "S�REYYA �ENT�RK",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "�N�N� �N�VERS�TES�"
+      },
+      "id": "city-1768248761711-9tqx3xnmq",
+      "ilSorumlusu": {
+        "id": "person-1768248761711-z4ttx4s2z",
+        "name": "SAL�H �ZER",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Nevsehır",
+      "id": "city-1768249006812-ilpj1ev21",
+      "ilSorumlusu": {
+        "department": "ÝKTÝSAT",
+        "id": "person-1768249006812-0yjl3f1xo",
+        "name": "MELÝKE SARAÇ (VEKALETEN",
+        "title": "İL SORUMLUSU",
+        "university": "NÝİDE ÖMER HALÝSDEMÝR ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Nevþehýr",
+      "id": "city-1768166410694-60-wl144d98z",
+      "ilSorumlusu": {
+        "department": "ÝKTÝSAT",
+        "id": "person-1768166410694-80-7eiw5vx7y",
+        "name": "MELÝKE SARAÇ (VEKALETEN",
+        "title": "İL SORUMLUSU",
+        "university": "NÝİDE ÖMER HALÝSDEMÝR ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "NEV�EH�R",
+      "id": "city-1768248761711-plmr3mdl4",
+      "ilSorumlusu": {
+        "department": "�KT�SAT",
+        "id": "person-1768248761711-w6xszk9bc",
+        "name": "MEL�KE SARA� (VEKALETEN",
+        "title": "İL SORUMLUSU",
+        "university": "N��DE �MER HAL�SDEM�R �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "Nıı̇de",
+      "deneyapSorumlusu": {
+        "department": "ÝKTÝSAT",
+        "id": "person-1768249006812-p1bv1losv",
+        "name": "MELÝKE SARAÇ",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "NÝİDE ÖMER HALÝSDEMÝR ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768249006812-21p2u0qga"
+    },
+    {
+      "city": "Nýðde",
+      "deneyapSorumlusu": {
+        "department": "ÝKTÝSAT",
+        "id": "person-1768166410694-81-n0zakagr0",
+        "name": "MELÝKE SARAÇ",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "NÝÐDE ÖMER HALÝSDEMÝR ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-61-k8sdyoost"
+    },
+    {
+      "city": "Niğde",
+      "deneyapSorumlusu": {
+        "department": "ÝKTÝSAT",
+        "id": "person-1768248888706-wbtlughgo",
+        "name": "MELÝKE SARAÇ",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "NÝİDE ÖMER HALÝSDEMÝR ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768248888706-a5xuap2ij"
+    },
+    {
+      "city": "N��DE",
+      "deneyapSorumlusu": {
+        "department": "�KT�SAT",
+        "id": "person-1768248761712-lmufd02gj",
+        "name": "MEL�KE SARA�",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "N��DE �MER HAL�SDEM�R �N�VERS�TES�"
+      },
+      "id": "city-1768248761712-zho95c6t1"
+    },
+    {
+      "city": "Ordu",
+      "deneyapSorumlusu": {
+        "department": "MALÝYE",
+        "id": "person-1768166410694-82-3pqzosloz",
+        "name": "GÖKÇENUR KALPAKLI EKÝNCÝ",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "ANADOLU ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-62-bt1csf29r"
+    },
+    {
+      "city": "Osmanıye",
+      "id": "city-1768249006812-0d5edbsxa",
+      "ilSorumlusu": {
+        "department": "MALÝYE",
+        "id": "person-1768249006812-bcsjbhfud",
+        "name": "HATÝCE KUBAT",
+        "title": "İL SORUMLUSU",
+        "university": "MERSÝN ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Osmanýye",
+      "id": "city-1768166410694-63-ci3dxfwnv",
+      "ilSorumlusu": {
+        "department": "MALÝYE",
+        "id": "person-1768166410694-83-9zp3l0thf",
+        "name": "HATÝCE KUBAT",
+        "title": "İL SORUMLUSU",
+        "university": "MERSÝN ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "OSMAN�YE",
+      "id": "city-1768248761712-0m20pslmp",
+      "ilSorumlusu": {
+        "department": "MAL�YE",
+        "id": "person-1768248761712-xetivtk1n",
+        "name": "HAT�CE KUBAT",
+        "title": "İL SORUMLUSU",
+        "university": "MERS�N �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "Rize",
+      "deneyapSorumlusu": {
+        "department": "HALKLA İLİŞKİLER VE TANITIM",
+        "id": "person-1768249006812-l86azedc9",
+        "name": "Aysel Topçu",
+        "title": "RIZE DENEYAP SORUMLUSU",
+        "university": "GÜMÜŞHANE ÜNİVERSİTESİ"
+      },
+      "id": "city-1768249006812-2wfpigfjk",
+      "ilSorumlusu": {
+        "id": "person-1768249006812-ccjzfmvg5",
+        "name": "GÖKHAN SIRMALI",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Rize",
+      "deneyapSorumlusu": {
+        "department": "HALKLA İLİŞKİLER VE TANITIM",
+        "id": "person-1768166410694-85-4grpkm04k",
+        "name": "Aysel Topçu",
+        "title": "RIZE DENEYAP SORUMLUSU",
+        "university": "GÜMÜŞHANE ÜNİVERSİTESİ"
+      },
+      "id": "city-1768166410694-64-8sxj3dk85",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-84-zfcjpqstu",
+        "name": "GÖKHAN SIRMALI",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "R�ZE",
+      "deneyapSorumlusu": {
+        "department": "HALKLA �L��K�LER VE TANITIM",
+        "id": "person-1768248761712-7rdgeu67m",
+        "name": "AYSEL TOP�U",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "G�M��HANE �N�VERS�TES�"
+      },
+      "id": "city-1768248761712-3ixvxwn9y",
+      "ilSorumlusu": {
+        "id": "person-1768248761712-3nglcg0i1",
+        "name": "G�KHAN SIRMALI",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Sakarya (Adapazarı)",
+      "deneyapSorumlusu": {
+        "department": "BÝLGÝSAYAR MÜHENDÝSLÝİÝ",
+        "id": "person-1768248761712-4fb46dvns",
+        "name": "ÖZGE DEMÝREL HANSU",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "SAKARYA ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768248761712-0pl3mtyji",
+      "ilSorumlusu": {
+        "id": "person-1768248761712-ktxx53gia",
+        "name": "MUHAMMED KALAYCI",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "Sakarya (ADAPAZARI)",
+      "deneyapSorumlusu": {
+        "department": "BÝLGÝSAYAR MÜHENDÝSLÝÐÝ",
+        "id": "person-1768166410694-87-km0mhj7bo",
+        "name": "ÖZGE DEMÝREL HANSU",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "SAKARYA ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-65-qm3gy2ru3",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-86-e2sky7j7n",
+        "name": "MUHAMMED KALAYCI",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "SAMSUN",
+      "id": "city-1768248761712-66exu3b8h"
+    },
+    {
+      "city": "Sıırt",
+      "deneyapSorumlusu": {
+        "department": "BİLGİSAYAR MÜHENDİSLİĞİ",
+        "id": "person-1768249006812-q44y5bfh4",
         "name": "EDA YILMAZ",
         "title": "DENEYAP SORUMLUSU",
-        "department": "BİLGİSAYAR MÜHENDİSLİĞİ"
-      }
+        "university": "SİİRT ÜNİVERSİTESİ"
+      },
+      "id": "city-1768249006812-6jos1vla9"
     },
     {
-      "city": "Si̇nop",
-      "id": "city-1768335319450-69-hn991vj34",
+      "city": "Sınop",
+      "id": "city-1768249006812-xvr918oyo",
       "ilSorumlusu": {
-        "id": "person-1768335319449-91-0y14hhomb",
-        "name": "PERVİN SÜRGÜÇOĞLU",
-        "title": "İL SORUMLUSU (VEKALETEN)",
-        "department": "ELEKTRİK ELEKTRONİK MÜHENDİSLİĞİ"
-      }
-    },
-    {
-      "city": "Si̇vas",
-      "id": "city-1768335319450-70-jwbhzth69",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-92-55uvjkdle",
-        "name": "ABDULKADİR BAYGÜL",
+        "department": "ELEKTRÝK ELEKTRONÝK MÜHENDÝSLÝİÝ",
+        "id": "person-1768249006812-48nymglpt",
+        "name": "PERVÝN SÜRGÜÇOİLU (VEKALETEN)",
         "title": "İL SORUMLUSU",
-        "department": "FEN BİLGİSİ"
+        "university": "KASTAMONU ÜNÝVERSÝTESÝ"
       }
     },
     {
-      "city": "Şanliurfa",
-      "id": "city-1768335319450-71-pshlnk3w6",
+      "city": "Sıvas",
+      "id": "city-1768249006812-3tkdh5773",
+      "ilSorumlusu": {
+        "department": "FEN BÝLGÝSÝ",
+        "id": "person-1768249006812-214vpogpn",
+        "name": "ABDULKADÝR BAYGÜL",
+        "title": "İL SORUMLUSU",
+        "university": "SÝVAS CUMHURÝYET ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Sýnop",
+      "id": "city-1768166410694-67-juicmpxtu",
+      "ilSorumlusu": {
+        "department": "ELEKTRÝK ELEKTRONÝK MÜHENDÝSLÝİÝ",
+        "id": "person-1768166410694-89-rj33wmfm3",
+        "name": "PERVÝN SÜRGÜÇOİLU (VEKALETEN)",
+        "title": "İL SORUMLUSU",
+        "university": "KASTAMONU ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Sivas",
+      "id": "city-1768166410694-68-j6wzhj9z5",
+      "ilSorumlusu": {
+        "department": "FEN BİLGİSİ",
+        "id": "person-1768166410694-90-0ib2f07qy",
+        "name": "Abdülkadir Baygül",
+        "title": "İL SORUMLUSU",
+        "university": "SİVAS CUMHURİYET ÜNİVERSİTESİ"
+      }
+    },
+    {
+      "city": "Sýýrt",
       "deneyapSorumlusu": {
-        "id": "person-1768335319449-93-fk7ij6nhe",
-        "name": "MUHAMMED ŞERİF FIRAT",
+        "department": "BÝLGÝSAYAR MÜHENDÝSLÝİÝ",
+        "id": "person-1768166410694-88-a3aa1d9zp",
+        "name": "EDA YILMAZ",
         "title": "DENEYAP SORUMLUSU",
-        "department": "MAKİNE MÜHENDİSLİĞİ"
+        "university": "SÝÝRT ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-66-rsn9wvrqc"
+    },
+    {
+      "city": "S�NOP",
+      "id": "city-1768248761712-dhnso85ku",
+      "ilSorumlusu": {
+        "department": "ELEKTR�K ELEKTRON�K M�HEND�SL���",
+        "id": "person-1768248761712-qw0h4o01n",
+        "name": "PERV�N S�RG��O�LU (VEKALETEN)",
+        "title": "İL SORUMLUSU",
+        "university": "KASTAMONU �N�VERS�TES�"
       }
     },
     {
-      "city": "Şirnak",
-      "id": "city-1768335319450-72-0rnz3885z",
+      "city": "S�VAS",
+      "id": "city-1768248761712-l8h0qtt9k",
       "ilSorumlusu": {
-        "id": "person-1768335319449-94-tsmttism5",
-        "name": "RUKİYE ASAN",
+        "department": "FEN B�LG�S�",
+        "id": "person-1768248761712-063wrehan",
+        "name": "ABDULKAD�R BAYG�L",
         "title": "İL SORUMLUSU",
-        "department": "BEDEN EĞİTİMİ VE SPOR YÜKSEKOKULU - ANTRENÖRLÜK EĞİTİMİ"
+        "university": "S�VAS CUMHUR�YET �N�VERS�TES�"
       }
+    },
+    {
+      "city": "S��RT",
+      "deneyapSorumlusu": {
+        "department": "B�LG�SAYAR M�HEND�SL���",
+        "id": "person-1768248761712-5w57fbnc8",
+        "name": "EDA YILMAZ",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "S��RT �N�VERS�TES�"
+      },
+      "id": "city-1768248761712-mqgka6o2l"
     },
     {
       "city": "Tokat",
-      "id": "city-1768335319450-73-l1omyjx33",
+      "id": "city-1768166410694-71-kh12xb263",
       "ilSorumlusu": {
-        "id": "person-1768335319449-95-za6fwurqd",
-        "name": "FURKAN ÇETİNKAYA",
+        "department": "ÝNÞAAT MÜHENDÝSLÝİÝ",
+        "id": "person-1768166410694-93-5xjqblc8u",
+        "name": "FURKAN ÇETÝNKAYA",
         "title": "İL SORUMLUSU",
-        "department": "İNŞAAT MÜHENDİSLİĞİ"
+        "university": "ISPARTA UYGULAMALI BÝLÝMLER ÜNÝVERSÝTESÝ"
       }
     },
     {
       "city": "Trabzon",
-      "id": "city-1768335319450-74-ckxvfmncu",
+      "id": "city-1768166410694-72-cg0uo093i",
       "ilSorumlusu": {
-        "id": "person-1768335319449-96-u3pu3lu2x",
+        "id": "person-1768166410694-94-o6ty3czp0",
         "name": "RECEP ÇOLAK",
         "title": "İL SORUMLUSU"
       }
     },
     {
-      "city": "Tunceli̇",
-      "id": "city-1768335319450-75-1xuf1mkk7",
+      "city": "Tuncelý",
+      "id": "city-1768166410694-73-0l9pvmpow",
       "ilSorumlusu": {
-        "id": "person-1768335319449-97-s2o9444m9",
-        "name": "ELA NUR İSPİR",
+        "department": "PSÝKOLOJÝK DANIÞMANLIK VE REHBERLÝK",
+        "id": "person-1768166410694-95-twyaic834",
+        "name": "ELA NUR ÝSPÝR",
         "title": "İL SORUMLUSU",
-        "department": "PSİKOLOJİK DANIŞMANLIK VE REHBERLİK"
+        "university": "YOZGOT BOZOK ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "TUNCEL�",
+      "id": "city-1768248761713-mlkxeg9df",
+      "ilSorumlusu": {
+        "department": "PS�KOLOJ�K DANI�MANLIK VE REHBERL�K",
+        "id": "person-1768248761713-kgc061xok",
+        "name": "ELA NUR �SP�R",
+        "title": "İL SORUMLUSU",
+        "university": "YOZGOT BOZOK �N�VERS�TES�"
       }
     },
     {
       "city": "Uşak",
-      "id": "city-1768335319450-76-gcp3c9twa",
+      "id": "city-1768249006813-3d2crludo",
       "ilSorumlusu": {
-        "id": "person-1768335319449-98-5amvapsld",
-        "name": "ALPEREN REFİK BİLAL ÖZSARI",
+        "department": "METALURJİ VE MALZEME MÜHENDİSLİĞİ, İŞLETME",
+        "id": "person-1768249006813-4feg7g6il",
+        "name": "Alperen Refik Bilal Özsarı",
+        "title": "UŞAK İL SORUMLUSU",
+        "university": "UŞAK ÜNİVERSİTESİ"
+      }
+    },
+    {
+      "city": "U�AK",
+      "ilSorumlusu": {
+        "department": "METALURJ� VE MALZEME M�HEND�SL���, ��LETME",
+        "id": "person-1768248761713-yz12dh12l",
+        "name": "ALPEREN REF�K B�LAL �ZSARI",
         "title": "İL SORUMLUSU",
-        "department": "METALURJİ VE MALZEME MÜHENDİSLİĞİ, İŞLETME"
+        "university": "U�AK �N�VERS�TES�"
       }
     },
     {
       "city": "Van",
-      "id": "city-1768335319450-77-tnzyuwq9v",
       "deneyapSorumlusu": {
-        "id": "person-1768335319449-99-qsj7cwady",
-        "name": "ŞÜHEDA NUR ARVASİ",
+        "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ ÖĞRETMENLİĞİ",
+        "id": "person-1768166410694-97-2nnwhjf6v",
+        "name": "ÞÜHEDA NUR ARVASÝ",
         "title": "DENEYAP SORUMLUSU",
-        "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ ÖĞRETMENLİĞİ"
-      }
+        "university": "YILDIZ TEKNİK ÜNİVERSİTESİ"
+      },
+      "id": "city-1768166410694-75-wm8bmm7iz"
     },
     {
       "city": "Yalova",
-      "id": "city-1768335319450-78-nn5hd4wgg",
-      "ilSorumlusu": {
-        "id": "person-1768335319449-100-ne2iq4gtx",
-        "name": "MUHAMMED YASİR ŞAHİN",
-        "title": "İL SORUMLUSU"
-      },
       "deneyapSorumlusu": {
-        "id": "person-1768335319449-101-r4obeijxn",
-        "name": "MİNE YARDI",
+        "department": "ELEKTRÝK-ELEKTRONÝK MUHENDÝSLÝİÝ (%30 ÝNGÝLÝZCE)",
+        "id": "person-1768166410694-99-f62m8xgro",
+        "name": "MÝNE YARDI",
         "title": "DENEYAP SORUMLUSU",
-        "department": "ELEKTRİK-ELEKTRONİK MUHENDİSLİĞİ (%30 İNGİLİZCE)"
+        "university": "TRAKYA ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-76-z6cp9xej1",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-98-mohjqnhkc",
+        "name": "MUHAMMED YASÝR ÞAHÝN",
+        "title": "İL SORUMLUSU"
       }
     },
     {
       "city": "Yozgat",
-      "id": "city-1768335319450-79-z6n2l2zzv",
+      "id": "city-1768166410694-77-rmrc2v5uy",
       "ilSorumlusu": {
-        "id": "person-1768335319449-102-7ml7myjzn",
-        "name": "ŞEVVAL ÜNAL",
+        "department": "REHBERLİK VE PSİKOLOJİK DANIŞMANLIK",
+        "id": "person-1768166410694-100-rp73ijs93",
+        "name": "ÞEVVAL ÜNAL",
         "title": "İL SORUMLUSU",
-        "department": "REHBERLİK VE PSİKOLOJİK DANIŞMANLIK"
+        "university": "BOZOK ÜNİVERSİTESİ"
+      }
+    },
+    {
+      "city": "Ýstanbul",
+      "id": "city-1768166410694-37-97mszcp9g",
+      "ilSorumlusu": {
+        "department": "ULUSLARARASI FÝNANS VE KATILIM BANKACILIİI",
+        "id": "person-1768166410694-51-my7rn5dug",
+        "name": "ERKUT KALKAVAN",
+        "title": "İL SORUMLUSU",
+        "university": "ÝSTANBUL SABAHATTÝN ZAÝM ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Ýzmýr",
+      "deneyapSorumlusu": {
+        "id": "person-1768166410694-53-slwc7aim5",
+        "name": "ÝCLAL KOTAN",
+        "title": "DENEYAP SORUMLUSU"
+      },
+      "id": "city-1768166410694-38-3u115ls69",
+      "ilSorumlusu": {
+        "id": "person-1768166410694-52-1jk45g2v5",
+        "name": "TÜRKER YAÞIN",
+        "title": "İL SORUMLUSU"
       }
     },
     {
       "city": "Zonguldak",
-      "id": "city-1768335319450-80-ghocf9q6z",
+      "id": "city-1768166410694-78-jt3xvr3dr",
       "ilSorumlusu": {
-        "id": "person-1768335319449-103-pe4wvctfk",
-        "name": "NERMİN ZOR",
+        "department": "BÝLGÝSAYAR VE ÖİRETÝM TEKNOLOJÝLERÝ EİÝTÝMÝ ÖİRETMENLÝİÝ",
+        "id": "person-1768166410694-101-763hd2uh2",
+        "name": "NERMÝN ZOR",
         "title": "İL SORUMLUSU",
-        "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ EĞİTİMİ ÖĞRETMENLİĞİ"
+        "university": "AMASYA ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "Þanliurfa",
+      "deneyapSorumlusu": {
+        "department": "MAKÝNE MÜHENDÝSLÝİÝ",
+        "id": "person-1768166410694-91-fiapoqo31",
+        "name": "MUHAMMED ÞERÝF FIRAT",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "HARRAN ÜNÝVERSÝTESÝ"
+      },
+      "id": "city-1768166410694-69-e2y7lzuh3"
+    },
+    {
+      "city": "Þirnak",
+      "id": "city-1768166410694-70-3hjq4qici",
+      "ilSorumlusu": {
+        "department": "BEDEN EİÝTÝMÝ VE SPOR YÜKSEKOKULU - ANTRENÖRLÜK EİÝTÝMÝ",
+        "id": "person-1768166410694-92-efsmetql9",
+        "name": "RUKÝYE ASAN",
+        "title": "İL SORUMLUSU",
+        "university": "MARDÝN ARTUKLU ÜNÝVERSÝTESÝ"
+      }
+    },
+    {
+      "city": "�ANAKKALE",
+      "deneyapSorumlusu": {
+        "department": "MOLEK�LER B�YOLOJ� VE GENET�K",
+        "id": "person-1768248761709-57ezv2wf3",
+        "name": "AHMET TUNA �ZEN",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "�ANAKKALE 18 MART �N�VERS�ES�"
+      },
+      "id": "city-1768248761709-mxw0bkuli",
+      "ilSorumlusu": {
+        "id": "person-1768248761709-15vg6j53c",
+        "name": "M�GE TEKER YILDIZ",
+        "title": "İL SORUMLUSU"
+      }
+    },
+    {
+      "city": "�ANKIRI",
+      "id": "city-1768248761709-crommk95e",
+      "ilSorumlusu": {
+        "department": "B�LG�SAYAR M�HEND�SL���",
+        "id": "person-1768248761709-ztohnveb2",
+        "name": "ENES Y�KSEL (VEKALETEN)",
+        "title": "İL SORUMLUSU",
+        "university": "KASTAMONU �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "�ANLIURFA",
+      "deneyapSorumlusu": {
+        "department": "MAK�NE M�HEND�SL���",
+        "id": "person-1768248761713-hb2213l2o",
+        "name": "MUHAMMED �ER�F FIRAT",
+        "title": "DENEYAP SORUMLUSU",
+        "university": "HARRAN �N�VERS�TES�"
+      },
+      "id": "city-1768248761713-1cqw6gsg2"
+    },
+    {
+      "city": "�IRNAK",
+      "id": "city-1768248761713-h7rxr1inh",
+      "ilSorumlusu": {
+        "department": "BEDEN E��T�M� VE SPOR Y�KSEKOKULU - ANTREN�RL�K E��T�M�",
+        "id": "person-1768248761713-28v4evnek",
+        "name": "RUK�YE ASAN",
+        "title": "İL SORUMLUSU",
+        "university": "MARD�N ARTUKLU �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "�ORUM",
+      "id": "city-1768248761709-x90hd56of",
+      "ilSorumlusu": {
+        "department": "FEN B�LG�S� ��RETMENL���",
+        "id": "person-1768248761709-4ect30ww7",
+        "name": "O�UZHAN �ZDEM�R (VEKALETEN)",
+        "title": "İL SORUMLUSU",
+        "university": "GAZ�OMANPA�A �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "�STANBUL",
+      "id": "city-1768248761710-87seplwzs",
+      "ilSorumlusu": {
+        "department": "ULUSLARARASI F�NANS VE KATILIM BANKACILI�I",
+        "id": "person-1768248761710-rp41koyep",
+        "name": "ERKUT KALKAVAN",
+        "title": "İL SORUMLUSU",
+        "university": "�STANBUL SABAHATT�N ZA�M �N�VERS�TES�"
+      }
+    },
+    {
+      "city": "�ZM�R",
+      "deneyapSorumlusu": {
+        "id": "person-1768248761710-0hoxfbblc",
+        "name": "�CLAL KOTAN",
+        "title": "DENEYAP SORUMLUSU"
+      },
+      "id": "city-1768248761710-xkmhoz3m3",
+      "ilSorumlusu": {
+        "id": "person-1768248761710-8i30ffexs",
+        "name": "T�RKER YA�IN",
+        "title": "İL SORUMLUSU"
       }
     }
   ],

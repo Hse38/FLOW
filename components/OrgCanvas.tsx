@@ -12,6 +12,7 @@ import ReactFlow, {
   ConnectionMode,
   ReactFlowProvider,
   NodeChange,
+  EdgeChange,
   useReactFlow,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
@@ -122,6 +123,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     customConnections: firebaseConnections,
     addConnection: addFirebaseConnection,
     removeConnection: removeFirebaseConnection,
+    updateConnection: updateFirebaseConnection,
     isLoading
   } = useOrgData()
   const reactFlowInstance = useReactFlow()
@@ -1083,13 +1085,20 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   const edges: Edge[] = useMemo(() => {
     const edgeList: Edge[] = []
     
-    // Get custom connections for handle lookup
-    const customConnMap = new Map<string, { sourceHandle: string; targetHandle: string }>()
+    // Get custom connections for handle lookup and waypoints (PERSISTENT STATE)
+    const customConnMap = new Map<string, { 
+      sourceHandle: string; 
+      targetHandle: string;
+      waypoints?: Array<{ x: number; y: number }>;
+      data?: any;
+    }>()
     ;(firebaseConnections || []).forEach(conn => {
       const key = `${conn.source}-${conn.target}`
       customConnMap.set(key, {
         sourceHandle: conn.sourceHandle || 'bottom',
-        targetHandle: conn.targetHandle || 'top'
+        targetHandle: conn.targetHandle || 'top',
+        waypoints: conn.waypoints || [],
+        data: conn.data || {}
       })
     })
 
@@ -1108,7 +1117,10 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           sourceHandle: customConn?.sourceHandle || 'bottom',
           targetHandle: customConn?.targetHandle || 'top',
           style: { stroke: '#ffffff', strokeWidth: 2.5 },
-          data: { waypoints: [] }, // User can add bend points
+          data: { 
+            waypoints: customConn?.waypoints || [], // PERSISTENT: Load from Firebase
+            ...customConn?.data 
+          },
         })
       }
     })
@@ -1144,7 +1156,10 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           sourceHandle: customConn?.sourceHandle || 'bottom',
           targetHandle: customConn?.targetHandle || 'top',
           style: { stroke: '#ffffff', strokeWidth: 2 },
-          data: { waypoints: [] },
+          data: { 
+            waypoints: customConn?.waypoints || [], // PERSISTENT: Load from Firebase
+            ...customConn?.data 
+          },
         })
       }
     })
@@ -1167,7 +1182,10 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         sourceHandle: mainToRootConn?.sourceHandle || 'bottom',
         targetHandle: mainToRootConn?.targetHandle || 'top',
         style: { stroke: '#3b82a0', strokeWidth: 2 },
-        data: { waypoints: [] },
+        data: { 
+          waypoints: mainToRootConn?.waypoints || [], // PERSISTENT: Load from Firebase
+          ...mainToRootConn?.data 
+        },
       })
 
       // Root to deputies - VERTICAL STACK with ORTHOGONAL connectors
@@ -1216,20 +1234,30 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           sourceHandle: personConn?.sourceHandle || 'bottom',
           targetHandle: personConn?.targetHandle || 'top',
           style: { stroke: '#9ca3af', strokeWidth: 1.5 },
-          data: { waypoints: [] },
+          data: { 
+            waypoints: personConn?.waypoints || [], // PERSISTENT: Load from Firebase
+            ...personConn?.data 
+          },
         })
       })
     }
 
     // Toplumsal Çalışmalar için harita edge'i
     if (turkeyMapExpanded) {
+      const mapConnKey = 'toplumsal-calismalar-turkey-map-node'
+      const mapConn = customConnMap.get(mapConnKey)
       edgeList.push({
         id: 'toplumsal-calismalar-to-map',
         source: 'toplumsal-calismalar',
         target: 'turkey-map-node',
         type: 'manual', // FULL MANUAL CONTROL
+        sourceHandle: mapConn?.sourceHandle || 'bottom',
+        targetHandle: mapConn?.targetHandle || 'top',
         style: { stroke: '#10b981', strokeWidth: 3 },
-        data: { waypoints: [] },
+        data: { 
+          waypoints: mapConn?.waypoints || [], // PERSISTENT: Load from Firebase
+          ...mapConn?.data 
+        },
       })
     }
 
@@ -1247,7 +1275,10 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         sourceHandle: elvanConn?.sourceHandle || 'bottom',
         targetHandle: elvanConn?.targetHandle || 'top',
         style: { stroke: '#ffffff', strokeWidth: 2.5 },
-        data: { waypoints: [] },
+        data: { 
+          waypoints: elvanConn?.waypoints || [], // PERSISTENT: Load from Firebase
+          ...elvanConn?.data 
+        },
       })
       // Muhammet'e bağlantı
       const muhammetConnKey = 'muhammet-saymaz-t3-teknofest-koordinatorlukleri'
@@ -1260,7 +1291,10 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         sourceHandle: muhammetConn?.sourceHandle || 'bottom',
         targetHandle: muhammetConn?.targetHandle || 'top',
         style: { stroke: '#ffffff', strokeWidth: 2.5 },
-        data: { waypoints: [] },
+        data: { 
+          waypoints: muhammetConn?.waypoints || [], // PERSISTENT: Load from Firebase
+          ...muhammetConn?.data 
+        },
       })
     }
 
@@ -1300,7 +1334,65 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   }, [data, expandedCoordinator, expandedCoordinatorData, firebaseConnections, turkeyMapExpanded])
 
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState(nodes)
-  const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState(edges)
+  const [flowEdges, setFlowEdges, onEdgesChangeBase] = useEdgesState(edges)
+
+  // Edge değişikliklerini Firebase'e kaydet (PERSISTENT STATE)
+  const handleEdgesChange = useCallback((changes: EdgeChange[]) => {
+    onEdgesChangeBase(changes)
+
+    // Edge değişikliklerini işle (waypoints, handles, vb.)
+    changes.forEach((change) => {
+      if (change.type === 'select' && change.selected) {
+        // Edge seçildi - editing mode'a geç
+        return
+      }
+
+      if (change.type === 'remove') {
+        // Edge silindi - connection'ı kaldır
+        const edge = flowEdges.find(e => e.id === change.id)
+        if (edge) {
+          removeFirebaseConnection(edge.source, edge.target)
+        }
+        return
+      }
+
+      if (change.type === 'add') {
+        // Yeni edge eklendi - zaten onConnect'te işleniyor
+        return
+      }
+
+      // Edge data güncellemesi (waypoints, handles)
+      if (change.type === 'change' && 'item' in change && change.item) {
+        const edge = change.item as Edge
+        if (edge.source && edge.target) {
+          // Edge data'sını güncelle (waypoints, sourceHandle, targetHandle)
+          const updates: any = {}
+          
+          if (edge.data?.waypoints) {
+            updates.waypoints = edge.data.waypoints
+          }
+          
+          if (edge.sourceHandle) {
+            updates.sourceHandle = edge.sourceHandle
+          }
+          
+          if (edge.targetHandle) {
+            updates.targetHandle = edge.targetHandle
+          }
+
+          if (edge.data) {
+            updates.data = edge.data
+          }
+
+          if (Object.keys(updates).length > 0) {
+            updateFirebaseConnection(edge.source, edge.target, updates)
+          }
+        }
+      }
+    })
+  }, [onEdgesChangeBase, flowEdges, removeFirebaseConnection, updateFirebaseConnection])
+
+  const onEdgesChange = handleEdgesChange
 
   // nodes veya edges değiştiğinde flowNodes ve flowEdges'i güncelle
   useEffect(() => {
