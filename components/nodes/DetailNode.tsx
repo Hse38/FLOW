@@ -34,7 +34,7 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
   if (data.type === 'coordinator') {
     return (
       <div
-        className="bg-white border-2 border-[#3b82a0] rounded-lg px-6 py-4 shadow-lg text-center min-w-[200px] cursor-pointer hover:bg-gray-50 transition-colors"
+        className="bg-white border-2 border-[#3b82a0] rounded-lg px-10 py-4 shadow-lg text-center min-w-[400px] max-w-[600px] cursor-pointer hover:bg-gray-50 transition-colors"
         onClick={(e) => {
           e.stopPropagation()
           if (data.onPersonClick) {
@@ -45,9 +45,9 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
         }}
       >
         <Handle type="target" position={Position.Top} className="!bg-[#3b82a0]" />
-        <h3 className="text-xl font-bold text-[#3b82a0]">{data.label}</h3>
+        <h3 className="text-4xl font-bold text-[#3b82a0]">{data.label}</h3>
         {data.subtitle && (
-          <p className="text-base text-[#3b82a0] mt-1">{data.subtitle}</p>
+          <p className="text-3xl text-[#3b82a0] mt-1 font-semibold">{data.subtitle}</p>
         )}
         <Handle type="source" position={Position.Bottom} className="!bg-[#3b82a0]" />
       </div>
@@ -57,7 +57,7 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
   if (data.type === 'deputy') {
     return (
       <div
-        className="bg-white border-2 border-[#3b82a0] rounded-full px-5 py-3 shadow-lg text-center min-w-[180px] cursor-pointer hover:bg-gray-50 transition-colors"
+        className="bg-white border-2 border-[#3b82a0] rounded-full px-7 py-5 shadow-lg text-center min-w-[220px] cursor-pointer hover:bg-gray-50 transition-colors"
         onClick={(e) => {
           e.stopPropagation()
           if (data.onPersonClick) {
@@ -80,11 +80,11 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
       >
         <Handle type="target" position={Position.Top} className="!bg-[#3b82a0]" />
         {data.subtitle && data.subtitle.trim() ? (
-          <p className="text-sm text-blue-600 font-medium opacity-80">{data.subtitle}</p>
+          <p className="text-xl text-blue-600 font-medium opacity-80">{data.subtitle}</p>
         ) : (
-          <p className="text-sm text-blue-600 font-medium opacity-80">Koordinatör Yardımcısı</p>
+          <p className="text-xl text-blue-600 font-medium opacity-80">Koordinatör Yardımcısı</p>
         )}
-        <p className="text-base text-[#3b82a0] font-bold">{data.label}</p>
+        <p className="text-3xl text-[#3b82a0] font-bold">{data.label}</p>
         <Handle type="source" position={Position.Bottom} className="!bg-gray-400" />
       </div>
     )
@@ -101,16 +101,16 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
 
     return (
       <div
-        className="bg-white border-l-4 border-[#3b82a0] rounded-lg px-4 py-3 shadow-md min-w-[180px] max-w-[240px] relative"
+        className="bg-white border-l-4 border-[#3b82a0] rounded-lg px-8 py-4 shadow-md min-w-[400px] max-w-[600px] relative"
         onContextMenu={data.onContextMenu}
       >
         <Handle type="target" position={Position.Top} className="!bg-gray-400" />
-        <h4 className="font-bold text-[#3b82a0] text-lg text-center mb-2">{data.label}</h4>
+        <h4 className="font-bold text-[#3b82a0] text-2xl text-center mb-2">{data.label}</h4>
 
         {/* Çalışanlar - Üstte */}
         {data.people && data.people.length > 0 && (
           <div className="mb-2.5 pb-2.5 border-b border-gray-300">
-            <ul className="text-base space-y-0.5">
+            <ul className="text-4xl space-y-1.5">
               {data.people.map((person, personIdx) => {
                 // Unique key oluştur - person.id + idx kombinasyonu
                 const personKey = person.id ? `${person.id}-${personIdx}` : `person-${data.subUnitId || 'subunit'}-${personIdx}`
@@ -149,7 +149,7 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
           
           return validResponsibilities.length > 0 ? (
             <div className="mt-2">
-              <ul className="text-base text-gray-800 space-y-1.5">
+              <ul className="text-4xl text-gray-800 space-y-2.5">
                 {validResponsibilities.map((resp, idx) => {
                   // Unique key oluştur - resp içeriği + idx kombinasyonu
                   const respKey = data.subUnitId 
@@ -175,7 +175,7 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
     return (
       <div className="bg-white border border-gray-300 rounded-lg p-3 shadow-sm max-w-[280px]">
         <Handle type="target" position={Position.Top} className="!bg-[#3b82a0]" />
-        <ul className="text-sm text-gray-700 space-y-1">
+        <ul className="text-base text-gray-700 space-y-1">
           {data.responsibilities?.map((resp, idx) => {
             // Unique key oluştur - resp içeriği + idx kombinasyonu
             const respKey = `responsibility-${idx}-${resp.slice(0, 15).replace(/\s/g, '')}`
@@ -196,7 +196,7 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
   if (data.type === 'person') {
     return (
       <div
-        className="bg-white border text-gray-800 px-4 py-3 rounded-xl shadow-md border-gray-200 min-w-[160px] max-w-[180px] text-center cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 hover:border-blue-300 relative group"
+        className="bg-white border text-gray-800 px-5 py-3 rounded-xl shadow-md border-gray-200 min-w-[200px] max-w-[280px] text-center cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 hover:border-blue-300 relative group"
         onClick={(e) => {
           e.stopPropagation()
           if (data.onPersonClick && data.people && data.people.length > 0) {
@@ -216,8 +216,8 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
           <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg mb-1">
             {data.label.charAt(0)}
           </div>
-          <div className="text-base font-semibold leading-tight">{data.label}</div>
-          {data.subtitle && <div className="text-sm text-gray-500 mt-2">{data.subtitle}</div>}
+          <div className="text-3xl font-semibold leading-tight">{data.label}</div>
+          {data.subtitle && <div className="text-2xl text-gray-500 mt-2">{data.subtitle}</div>}
         </div>
         <Handle type="source" position={Position.Bottom} className="!bg-gray-400 !w-2.5 !h-2.5 !border-2 !border-white" />
       </div>

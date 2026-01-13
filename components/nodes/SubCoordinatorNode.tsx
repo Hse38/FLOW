@@ -22,6 +22,18 @@ const SubCoordinatorNode = memo(({ data }: SubCoordinatorNodeProps) => {
     data.onContextMenu?.(e, data.id, 'subCoordinator')
   }
 
+  // Özel node'lar için daha dikdörtgen (geniş, kısa) yap
+  const isSpecialNode = data.id === 't3-vakfi-koordinatorlukleri' || 
+                        data.id === 'teknofest-koordinatorlukleri' || 
+                        data.id === 't3-teknofest-koordinatorlukleri'
+  
+  const widthClass = isSpecialNode 
+    ? 'min-w-[500px] max-w-[700px]' 
+    : 'min-w-[220px] max-w-[320px]'
+  const paddingClass = isSpecialNode 
+    ? 'px-10 py-4' 
+    : 'px-6 py-6'
+
   return (
     <div className="relative group">
       <Handle
@@ -33,17 +45,17 @@ const SubCoordinatorNode = memo(({ data }: SubCoordinatorNodeProps) => {
       <div
         onClick={() => data.onClick?.(data.id)}
         onContextMenu={handleContextMenu}
-        className={`bg-white text-gray-800 px-4 py-3 rounded-xl shadow-lg border min-w-[160px] max-w-[180px] text-center cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
+        className={`bg-white text-gray-800 ${paddingClass} rounded-xl shadow-lg border ${widthClass} text-center cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
           data.isExpanded 
             ? 'border-blue-400 ring-2 ring-blue-200' 
             : 'border-gray-200 hover:border-gray-300'
         }`}
       >
-        <div className="text-sm font-semibold leading-tight flex items-center justify-center gap-1">
+        <div className="text-4xl font-semibold leading-relaxed flex items-center justify-center gap-1 break-words">
           {data.hasDetails && (
             data.isExpanded 
-              ? <ChevronDown className="w-4 h-4 text-blue-500" />
-              : <ChevronRight className="w-4 h-4 text-gray-400" />
+              ? <ChevronDown className="w-5 h-5 text-blue-500" />
+              : <ChevronRight className="w-5 h-5 text-gray-400" />
           )}
           {data.label}
         </div>

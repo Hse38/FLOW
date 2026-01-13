@@ -61,14 +61,14 @@ const nodeTypes = {
   turkeyMap: TurkeyMapNode,
 }
 
-// Basit node boyutları - dagre yerleşimi için
+// Basit node boyutları - dagre yerleşimi için (güncellenmiş boyutlar)
 const NODE_SIZE: Record<string, { width: number; height: number }> = {
-  chairman: { width: 320, height: 140 },
-  executive: { width: 280, height: 120 },
-  mainCoordinator: { width: 280, height: 120 },
-  subCoordinator: { width: 260, height: 110 },
-  detail: { width: 220, height: 100 },
-  default: { width: 260, height: 110 }
+  chairman: { width: 500, height: 140 }, // Daha dikdörtgen (geniş, kısa)
+  executive: { width: 450, height: 120 }, // Daha dikdörtgen (geniş, kısa)
+  mainCoordinator: { width: 600, height: 120 }, // Daha dikdörtgen (geniş, kısa) - özellikle T3 Vakfı/Teknofest için
+  subCoordinator: { width: 600, height: 100 }, // Daha dikdörtgen (geniş, kısa) - özellikle T3 Vakfı/Teknofest için
+  detail: { width: 550, height: 180 }, // Açılır node'lar için daha dikdörtgen (geniş, kısa)
+  default: { width: 280, height: 140 }
 }
 
 interface OrgCanvasProps {
@@ -151,7 +151,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       const previousData = history[historyIndex - 1]
       restoreData(previousData)
       setHistoryIndex(prev => prev - 1)
-      setShouldAutoLayout(true)
+      // MANUEL KONTROL: Otomatik layout devre dışı
     }
   }, [history, historyIndex, restoreData])
 
@@ -162,7 +162,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       const nextData = history[historyIndex + 1]
       restoreData(nextData)
       setHistoryIndex(prev => prev + 1)
-      setShouldAutoLayout(true)
+      // MANUEL KONTROL: Otomatik layout devre dışı
     }
   }, [history, historyIndex, restoreData])
 
@@ -398,9 +398,23 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   const handleUnitClickRef = useRef<(unitId: string) => void>(() => { })
 
   handleUnitClickRef.current = (unitId: string) => {
-    // Bağlantı modundaysa hedef seçimi için modal aç
-    if (connectionMode.active) {
-      setPendingTarget({ targetId: unitId })
+    // MANUEL BAĞLANTI MODU: Aktif - hedef node seçildi
+    if (connectionMode.active && connectionMode.sourceId) {
+      if (connectionMode.sourceId !== unitId) {
+        // Hedef node seçildi - target handle seçimi için modal aç
+        setPendingTarget({ targetId: unitId })
+        // Node bilgisini bul
+        const node = flowNodes.find(n => n.id === unitId)
+        setConnectionHandleModal({
+          isOpen: true,
+          nodeId: unitId,
+          nodeName: (node?.data?.label || unitId) as string
+        })
+      } else {
+        // Aynı node'a tıklandı - iptal et
+        setConnectionMode({ active: false, sourceId: null, sourceName: null, sourceHandle: 'bottom' })
+        showToast('Bağlantı modu iptal edildi.', 'info')
+      }
       return
     }
 
@@ -454,7 +468,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       // En son default pozisyon (InitialData)
       return customPositions[id] || localPositions[id] || defaultPos
     }
-
+    
     // Add chairman
     data.management.forEach((item) => {
       nodeList.push({
@@ -566,19 +580,25 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     // If a coordinator is expanded, add detail nodes
     // If a coordinator is expanded, add detail nodes
     if (expandedCoordinatorData) {
-      // Varsayılan pozisyon (custom position yoksa)
-      const basePos = expandedCoordinatorData.position
-      const defaultBaseX = basePos.x
-      const defaultBaseY = basePos.y + 350
-
+      // Ana koordinatör node'unun gerçek pozisyonunu al (direkt altına açılsın)
       const coordId = expandedCoordinatorData.id
+      // nodeList'te koordinatör node'unu bul (yukarıda eklenmiş olmalı)
+      const mainCoordNode = nodeList.find(n => n.id === coordId)
+      const mainCoordPosition = mainCoordNode?.position || getPosition(coordId, expandedCoordinatorData.position)
+      
+      // Node yüksekliğini al (NODE_SIZE'dan - subCoordinator için)
+      const nodeHeight = NODE_SIZE['subCoordinator']?.height || 140
+      
+      // Direkt altına açılsın - ana node'un alt kenarından başla
+      const defaultBaseX = mainCoordPosition.x
+      const defaultBaseY = mainCoordPosition.y + nodeHeight + 250 // Ana node'un altından 250px aşağıda başla (daha fazla mesafe)
 
-      // Koordinatör node
+      // Koordinatör node - direkt ana node'un altında
       const rootId = `detail-${coordId}-root`
       nodeList.push({
         id: rootId,
         type: 'detail',
-        position: getPosition(rootId, { x: defaultBaseX - 50, y: defaultBaseY }),
+        position: getPosition(rootId, { x: defaultBaseX, y: defaultBaseY }), // Direkt altında
         draggable: !isLocked,
         data: {
           label: expandedCoordinatorData.title,
@@ -613,16 +633,20 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         arr.findIndex(d => d.id === deputy.id) === idx
       ) || []
       
-      uniqueDeputies.forEach((deputy, idx) => {
-        const xOffset = uniqueDeputies.length === 1 ? 0 :
-          idx === 0 ? -150 : 150
+        uniqueDeputies.forEach((deputy, idx) => {
+        // Simetrik yerleşim - deputy'ler ortalanmış şekilde, görseldeki gibi
+        const deputyCount = uniqueDeputies.length
+        const nodeSpacing = 360 // Node genişliği + mesafe (daha geniş)
+        const totalWidth = deputyCount > 1 ? (deputyCount - 1) * nodeSpacing : 0
+        const startX = -totalWidth / 2
+        const xOffset = deputyCount === 1 ? 0 : startX + (idx * nodeSpacing)
 
         // Node ID olarak deputy.id kullan (unique ID garantisi için)
         const deputyNodeId = `detail-${coordId}-deputy-${deputy.id}`
         nodeList.push({
           id: deputyNodeId,
           type: 'detail',
-          position: getPosition(deputyNodeId, { x: defaultBaseX + xOffset - 50, y: defaultBaseY + 120 }),
+          position: getPosition(deputyNodeId, { x: defaultBaseX + xOffset, y: defaultBaseY + 250 }), // Root node'un altında (daha fazla mesafe)
           draggable: !isLocked,
           data: {
             label: deputy.name,
@@ -680,21 +704,29 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         })
       })
 
-      // Sub-unit nodes
+      // Sub-unit nodes - görseldeki gibi: 3 sütun, simetrik, düzenli, DİREKT ALTINA AÇILSIN
+      // ÖZEL: Yönetime Bağlı Birimler için daha fazla mesafe (6 birim var)
+      const isYonetimeBagli = coordId === 'yonetime-bagli-birimler'
       expandedCoordinatorData.subUnits?.forEach((subUnit, idx) => {
-        const cols = Math.min(expandedCoordinatorData.subUnits!.length, 3)
+        const subUnitCount = expandedCoordinatorData.subUnits!.length
+        const cols = 3 // Görseldeki gibi her zaman 3 sütun
         const col = idx % cols
         const row = Math.floor(idx / cols)
-        const totalWidth = (cols - 1) * 200
-        const xOffset = (col * 200) - (totalWidth / 2)
-        const yOffset = row * 200
+        // Yönetime Bağlı Birimler için daha geniş mesafe
+        const nodeWidth = isYonetimeBagli ? 520 : 480 // SubUnit node genişliği + mesafe (daha geniş, üst üste gelmesin)
+        const totalWidth = (cols - 1) * nodeWidth
+        const xOffset = (col * nodeWidth) - (totalWidth / 2)
+        // Yönetime Bağlı Birimler için çok daha fazla dikey mesafe
+        const yOffset = isYonetimeBagli ? (row * 650) : (row * 550) // Dikey mesafe (çok daha fazla, üst üste gelmesin)
 
         // Unique ID için subUnit.id kullan (idx yerine)
         const subUnitNodeId = `detail-${coordId}-subunit-${subUnit.id}`
+        // Yönetime Bağlı Birimler için daha aşağıda başla
+        const startYOffset = isYonetimeBagli ? 500 : 400
         nodeList.push({
           id: subUnitNodeId,
           type: 'detail',
-          position: getPosition(subUnitNodeId, { x: defaultBaseX + xOffset - 50, y: defaultBaseY + 240 + yOffset }),
+          position: getPosition(subUnitNodeId, { x: defaultBaseX + xOffset, y: defaultBaseY + startYOffset + yOffset }), // Root/Deputy'lerin çok altında
           draggable: !isLocked,
           data: {
             label: subUnit.title,
@@ -742,25 +774,26 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       })
 
 
-      // People nodes (direct employees)
+      // People nodes (direct employees) - görseldeki gibi simetrik yerleşim, DİREKT ALTINA AÇILSIN
       const subUnitCount = expandedCoordinatorData.subUnits?.length || 0
       const subUnitRows = Math.ceil(subUnitCount / 3)
-      const peopleStartY = subUnitRows > 0 ? (subUnitRows * 220) : 0 // Add extra spacing if subunits exist
+      const peopleStartY = subUnitRows > 0 ? (subUnitRows * 550) : 0 // SubUnit'lerden sonra çok daha fazla mesafe
 
       expandedCoordinatorData.people?.forEach((person, idx) => {
         const cols = 3
         const col = idx % cols
         const row = Math.floor(idx / cols)
-        const totalWidth = (cols - 1) * 200
-        const xOffset = (col * 200) - (totalWidth / 2)
-        const yOffset = row * 200
+        const nodeWidth = 320 // Person node genişliği + mesafe
+        const totalWidth = (cols - 1) * nodeWidth
+        const xOffset = (col * nodeWidth) - (totalWidth / 2)
+        const yOffset = row * 350
 
         // Unique ID için person.id kullan (idx yerine)
         const personNodeId = `detail-${coordId}-person-${person.id || idx}`
         nodeList.push({
           id: personNodeId,
           type: 'detail',
-          position: getPosition(personNodeId, { x: defaultBaseX + xOffset - 50, y: defaultBaseY + 240 + peopleStartY + yOffset }),
+          position: getPosition(personNodeId, { x: defaultBaseX + xOffset, y: defaultBaseY + 400 + peopleStartY + yOffset }), // Root/Deputy'lerin çok altında
           draggable: !isLocked,
           data: {
             label: person.name,
@@ -864,7 +897,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           id: `${exec.parent}-${exec.id}`,
           source: exec.parent,
           target: exec.id,
-          type: 'smoothstep',
+          type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
           style: { stroke: '#ffffff', strokeWidth: 2.5 },
         })
       }
@@ -877,7 +910,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           id: `${coord.parent}-${coord.id}`,
           source: coord.parent,
           target: coord.id,
-          type: 'smoothstep',
+          type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
           style: { stroke: '#ffffff', strokeWidth: 2.5 },
         })
       }
@@ -890,7 +923,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           id: `${coord.parent}-${coord.id}`,
           source: coord.parent,
           target: coord.id,
-          type: 'smoothstep',
+          type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
           style: { stroke: '#ffffff', strokeWidth: 2 },
         })
       }
@@ -906,7 +939,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         id: `detail-main-to-coord-${coordId}`,
         source: expandedCoordinator!,
         target: rootId,
-        type: 'smoothstep',
+        type: 'straight',
         style: { stroke: '#3b82a0', strokeWidth: 2 },
       })
 
@@ -923,52 +956,34 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           id: `detail-coord-to-deputy-${coordId}-${deputy.id}-${idx}`,
           source: rootId,
           target: deputyNodeId,
-          type: 'smoothstep',
+          type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
           style: { stroke: '#9ca3af', strokeWidth: 1.5 },
         })
       })
 
-      // Deputies to sub-units - unique deputy listesini kullan
-      const deputies = uniqueDeputiesForEdges
-      const deputyCount = deputies.length
-      
-      expandedCoordinatorData.subUnits?.forEach((subUnit, idx) => {
-        let sourceId = rootId
-        if (deputyCount > 0 && deputies.length > 0) {
-          const deputyIdx = idx % deputyCount
-          const deputy = deputies[deputyIdx]
-          if (deputy) {
-            sourceId = `detail-${coordId}-deputy-${deputy.id}`
-          }
-        }
-
-        // Sub-unit node ID formatını güncelle (subUnit.id kullanıyoruz)
+      // STRICT HIERARCHY: Sub-units connect ONLY to root coordinator
+      // Each sub-unit has exactly ONE parent (the coordinator root)
+      // NO deputy-to-subunit connections to maintain strict hierarchy
+      expandedCoordinatorData.subUnits?.forEach((subUnit) => {
         const subUnitNodeId = `detail-${coordId}-subunit-${subUnit.id}`
         edgeList.push({
           id: `detail-to-subunit-${coordId}-${subUnit.id}`,
-          source: sourceId,
+          source: rootId, // Always connect to root coordinator
           target: subUnitNodeId,
-          type: 'smoothstep',
+          type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
           style: { stroke: '#9ca3af', strokeWidth: 1.5 },
         })
       })
 
-      // Deputies to people (or root to people) - unique deputy listesini kullan
+      // STRICT HIERARCHY: People connect ONLY to root coordinator
+      // Each person has exactly ONE parent (the coordinator root)
+      // NO deputy-to-people connections to maintain strict hierarchy
       expandedCoordinatorData.people?.forEach((_, idx) => {
-        let sourceId = rootId
-        if (deputyCount > 0 && deputies.length > 0) {
-          const deputyIdx = idx % deputyCount
-          const deputy = deputies[deputyIdx]
-          if (deputy) {
-            sourceId = `detail-${coordId}-deputy-${deputy.id}`
-          }
-        }
-
         edgeList.push({
           id: `detail-to-person-${coordId}-${idx}`,
-          source: sourceId,
+          source: rootId, // Always connect to root coordinator
           target: `detail-${coordId}-person-${idx}`,
-          type: 'smoothstep',
+          type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
           style: { stroke: '#9ca3af', strokeWidth: 1.5 },
         })
       })
@@ -980,34 +995,36 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         id: 'toplumsal-calismalar-to-map',
         source: 'toplumsal-calismalar',
         target: 'turkey-map-node',
-        type: 'smoothstep',
+        type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
         style: { stroke: '#10b981', strokeWidth: 3 },
       })
     }
 
-    // Custom connections (manuel bağlantılar) - beyaz çizgi, diğerleri gibi
-    customConnections.forEach((conn) => {
-      // Custom connection ID yoksa oluştur
-      const edgeId = conn.id || `${conn.source}-${conn.target}-${conn.sourceHandle || ''}-${conn.targetHandle || ''}`
-      edgeList.push({
-        id: edgeId,
-        source: conn.source,
-        target: conn.target,
-        sourceHandle: conn.sourceHandle || 'bottom',
-        targetHandle: conn.targetHandle || 'top',
-        type: 'smoothstep',
-        style: { stroke: '#ffffff', strokeWidth: 2.5 },
-      })
-    })
+    // STRICT HIERARCHY: Custom connections are DISABLED
+    // Only explicit parent-child relationships from data structure are allowed
+    // This ensures strict hierarchical org chart with no cross-links or lateral connections
 
-    // Duplicate edge ID kontrolü ve filtreleme
+    // STRICT HIERARCHY: Validate edges and remove duplicates
+    // Also ensure no unit has multiple incoming connections (violates hierarchy)
     const seenEdgeIds = new Set<string>()
+    const targetToSource = new Map<string, string>() // Track which source connects to each target
+    
     const uniqueEdges = edgeList.filter(edge => {
+      // Check for duplicate edge IDs
       if (seenEdgeIds.has(edge.id)) {
         console.warn(`⚠️ Duplicate edge ID detected: ${edge.id}. Skipping duplicate.`)
         return false
       }
       seenEdgeIds.add(edge.id)
+      
+      // STRICT HIERARCHY RULE: Each target must have exactly ONE source
+      if (targetToSource.has(edge.target)) {
+        const existingSource = targetToSource.get(edge.target)
+        console.warn(`⚠️ HIERARCHY VIOLATION: Node ${edge.target} has multiple parents (${existingSource} and ${edge.source}). Removing duplicate connection.`)
+        return false
+      }
+      targetToSource.set(edge.target, edge.source)
+      
       return true
     })
 
@@ -1045,13 +1062,15 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   const applyAutoLayoutInternal = useCallback((direction: 'TB' | 'LR' = 'TB', nodeIds?: string[]) => {
     const g = new dagre.graphlib.Graph()
     g.setGraph({
-      rankdir: direction,
-      // Node'lar arası mesafe - optimize edilmiş (okunabilir ama kompakt)
-      nodesep: 100,
-      ranksep: 120,
-      ranker: 'tight-tree',
-      marginx: 80,
-      marginy: 80
+      rankdir: direction, // TOP to BOTTOM - strict hierarchy
+      // Node'lar arası mesafe - üst üste gelmesin, aşağıya açılsın
+      nodesep: 150, // Horizontal spacing between nodes at same level (artırıldı - üst üste gelmesin)
+      ranksep: 200, // Vertical spacing between levels (ranks) (artırıldı - aşağıya açılsın)
+      ranker: 'tight-tree', // Better for strict hierarchy (tree structure)
+      marginx: 100,
+      marginy: 150, // Alt boşluk artırıldı
+      acyclicer: 'greedy', // Ensure no cycles
+      align: 'UL' // Align nodes to upper-left for consistency
     })
     g.setDefaultEdgeLabel(() => ({}))
 
@@ -1145,68 +1164,81 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     applyAutoLayoutInternal(direction, nodeIds)
   }, [customPositions, localPositions, applyAutoLayoutInternal, setConfirmationModal])
 
-  // Otomatik layout uygula (applyAutoLayout tanımlandıktan sonra)
+  // Otomatik layout uygula (SADECE kullanıcı manuel olarak butona bastığında)
+  // MANUEL KONTROL MODU: shouldAutoLayout artık otomatik tetiklenmiyor
   useEffect(() => {
     if (shouldAutoLayout) {
-      // Kısa bir gecikme ile layout uygula (render'ın tamamlanmasını bekle)
-      // Otomatik tetiklenen layout'larda uyarı gösterme (skipWarning: true)
+      // Kullanıcı manuel olarak "Oto Yerleştir" butonuna bastığında çalışır
+      // Uyarı göster (skipWarning: false) - kullanıcı bilinçli olarak layout istiyor
       const timer = setTimeout(() => {
-        applyAutoLayoutInternal('TB', undefined) // Otomatik tetiklenen layout'larda uyarı yok
+        applyAutoLayout('TB', false, undefined) // Uyarı göster
         setShouldAutoLayout(false)
       }, 100)
       return () => clearTimeout(timer)
     }
-  }, [shouldAutoLayout, applyAutoLayoutInternal])
+  }, [shouldAutoLayout, applyAutoLayout])
 
-  // İlk yüklemede otomatik layout çalıştır (sadece bir kez) - node'lar dağınıksa
+  // Açılır node'lar için MANUEL KONTROL - Kaydedilmiş pozisyonları kullan, otomatik layout YOK
+  // NOT: Kullanıcı node'ları manuel olarak sürükleyip yerleştirecek
+  useEffect(() => {
+    if (expandedCoordinatorData && flowNodes.length > 0) {
+      // Açılır node'ları bul (detail- ile başlayan)
+      const detailNodes = flowNodes.filter(node => node.id.startsWith(`detail-${expandedCoordinatorData.id}-`))
+      if (detailNodes.length > 0) {
+        // MANUEL KONTROL MODU: Otomatik layout YOK
+        // Node'lar kaydedilmiş pozisyonları kullanacak veya kullanıcı manuel olarak yerleştirecek
+        console.log('✅ MANUEL KONTROL: Açılan node\'lar kaydedilmiş pozisyonları kullanıyor, otomatik layout devre dışı')
+        
+        // Sadece fitView yap (pozisyonları değiştirmeden) - kullanıcı isterse zoom yapabilir
+        setTimeout(() => {
+          try {
+            // Sadece açılan node'ları görmek için fitView (opsiyonel)
+            // reactFlowInstance.fitView({ padding: 0.25, duration: 800, maxZoom: 0.8 })
+            console.log('✅ Açılan node\'lar kaydedilmiş pozisyonlarda gösteriliyor')
+          } catch (error) {
+            console.warn('fitView başarısız:', error)
+          }
+        }, 300)
+      }
+    }
+  }, [expandedCoordinatorData, flowNodes.length, reactFlowInstance])
+
+  // İlk yüklemede otomatik layout çalıştır (SADECE kaydedilmiş pozisyon yoksa) - MANUEL KONTROL MODU
   useEffect(() => {
     if (!isLoading && flowNodes.length > 0 && !hasAutoLayoutRunRef.current && applyAutoLayoutInternal) {
-      // Node'ların pozisyonlarını kontrol et - eğer çok dağınıksa otomatik layout çalıştır
-      const hasManualPositions = Object.keys(customPositions || {}).length > 0 || Object.keys(localPositions).length > 0
+      // MANUEL KONTROL: Sadece kaydedilmiş pozisyon yoksa otomatik layout çalıştır
+      const hasSavedPositions = (customPositions && Object.keys(customPositions).length > 0) || 
+                                 (localPositions && Object.keys(localPositions).length > 0)
       
-      // Eğer manuel pozisyonlar varsa ve node'lar çok dağınıksa otomatik layout çalıştır
-      if (hasManualPositions) {
-        // Node'lar arasındaki mesafeyi kontrol et
-        const positions = flowNodes.map(n => n.position)
-        if (positions.length > 1) {
-          const minX = Math.min(...positions.map(p => p.x))
-          const maxX = Math.max(...positions.map(p => p.x))
-          const minY = Math.min(...positions.map(p => p.y))
-          const maxY = Math.max(...positions.map(p => p.y))
-          const width = maxX - minX
-          const height = maxY - minY
-          
-          // Eğer node'lar çok geniş bir alana yayılmışsa (muhtemelen dağınık) otomatik layout çalıştır
-          // 5000px'den fazla genişlik veya yükseklik varsa dağınık kabul et
-          if (width > 5000 || height > 5000) {
-            hasAutoLayoutRunRef.current = true
-            setTimeout(() => {
-              applyAutoLayoutInternal('TB', undefined)
-              // Layout tamamlandıktan sonra fitView çağır
-              setTimeout(() => {
-                try {
-                  reactFlowInstance.fitView({ padding: 0.15, duration: 500, maxZoom: 0.9 })
-                } catch (error) {
-                  console.warn('fitView başarısız:', error)
-                }
-              }, 1000)
-            }, 800) // Biraz daha uzun bekle, tüm node'lar render olsun
-          }
-        }
-      } else {
-        // Manuel pozisyon yoksa, ilk yüklemede otomatik layout çalıştır
+      if (!hasSavedPositions) {
+        // İlk kez yükleniyor ve hiç pozisyon yok - basit bir layout yap
+        console.log('🔄 İlk yükleme: Kaydedilmiş pozisyon yok, basit layout uygulanıyor...')
         hasAutoLayoutRunRef.current = true
+        
         setTimeout(() => {
           applyAutoLayoutInternal('TB', undefined)
-          // Layout tamamlandıktan sonra fitView çağır
           setTimeout(() => {
             try {
-              reactFlowInstance.fitView({ padding: 0.15, duration: 500, maxZoom: 0.9 })
+              reactFlowInstance.fitView({ padding: 0.15, duration: 800, maxZoom: 0.9 })
+              console.log('✅ İlk layout ve fitView tamamlandı')
             } catch (error) {
               console.warn('fitView başarısız:', error)
             }
           }, 1000)
-        }, 800)
+        }, 500)
+      } else {
+        // Kaydedilmiş pozisyonlar var - manuel kontrol modu aktif
+        console.log('✅ MANUEL KONTROL MODU: Kaydedilmiş pozisyonlar yüklendi, otomatik layout devre dışı')
+        hasAutoLayoutRunRef.current = true
+        // Sadece fitView yap (pozisyonları değiştirmeden)
+        setTimeout(() => {
+          try {
+            reactFlowInstance.fitView({ padding: 0.15, duration: 800, maxZoom: 0.9 })
+            console.log('✅ Kaydedilmiş pozisyonlar yüklendi')
+          } catch (error) {
+            console.warn('fitView başarısız:', error)
+          }
+        }, 500)
       }
     }
   }, [isLoading, flowNodes.length, customPositions, localPositions, applyAutoLayoutInternal, flowNodes, reactFlowInstance])
@@ -1312,11 +1344,17 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     }
   }, [viewPersonCard, data.coordinators, updatePerson, updateCoordinator])
 
-  // Custom connection (bağlantı) oluşturma - önce yön seçimi modal açılır
+  // MANUEL BAĞLANTI OLUŞTURMA: Aktif
   const startConnection = useCallback((nodeId: string, nodeName: string, sourceHandle: 'top' | 'bottom') => {
-    setConnectionMode({ active: true, sourceId: nodeId, sourceName: nodeName, sourceHandle })
+    setConnectionMode({
+      active: true,
+      sourceId: nodeId,
+      sourceName: nodeName,
+      sourceHandle: sourceHandle
+    })
     setContextMenu(null)
     setConnectionHandleModal(null)
+    showToast('Bağlantı modu aktif. Hedef node\'a tıklayın.', 'info')
   }, [])
 
   // Hedef seçildiğinde targetHandle seçimi için modal aç
@@ -1617,8 +1655,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
 
         deleteNode(targetId, targetType)
         setContextMenu(null)
-        // Silme işleminden sonra otomatik layout uygula
-        setShouldAutoLayout(true)
+        // MANUEL KONTROL: Otomatik layout devre dışı
         showToast('Birim başarıyla silindi', 'success')
       }
     })
@@ -1766,7 +1803,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               // Koordinatörü tekrar expand et (güncellenmiş verilerin görünmesi için)
               setTimeout(() => {
                 setExpandedCoordinator(currentModal.nodeId)
-                setShouldAutoLayout(true)
+                // MANUEL KONTROL: Otomatik layout devre dışı
               }, 200)
             } else {
               // Yeni birim ekle - addSubUnit fonksiyonu zaten duplicate kontrolü yapıyor
@@ -1968,7 +2005,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             }
           }}
           nodeTypes={nodeTypes}
-          connectionMode={ConnectionMode.Loose}
+          connectionMode={ConnectionMode.Strict}
           onNodeContextMenu={handleNodeContextMenu}
           onPaneContextMenu={handlePaneContextMenu}
           onSelectionChange={handleSelectionChange}
@@ -1978,15 +2015,29 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               setTurkeyMapExpanded(prev => !prev)
               return
             }
-            // Bağlantı modundaysa hedef yönü seçimi için modal aç
-            if (connectionMode.active && node.id !== connectionMode.sourceId) {
-              setPendingTarget({ targetId: node.id })
+            // MANUEL BAĞLANTI MODU: Aktif
+            if (connectionMode.active && connectionMode.sourceId) {
+              // Hedef node seçildi - bağlantıyı tamamla
+              if (connectionMode.sourceId !== node.id) {
+                // Target handle seçimi için modal aç
+                setPendingTarget({ targetId: node.id })
+                setConnectionHandleModal({
+                  isOpen: true,
+                  nodeId: node.id,
+                  nodeName: (node.data?.label || node.id) as string
+                })
+              } else {
+                // Aynı node'a tıklandı - iptal et
+                setConnectionMode({ active: false, sourceId: null, sourceName: null, sourceHandle: 'bottom' })
+                showToast('Bağlantı modu iptal edildi.', 'info')
+              }
             }
           }}
           nodesDraggable={!isLocked}
           minZoom={0.2}
           maxZoom={1.5}
           defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
+          defaultEdgeOptions={{ type: 'step', style: { strokeWidth: 2 } }} // DRAW.IO STYLE ORTHOGONAL
           className="react-flow-custom"
           // Çoklu seçim özellikleri (masaüstü gibi)
           selectionOnDrag={true}
@@ -2539,13 +2590,13 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                           const deputyToDelete = coordinator?.deputies?.find(d => d.id === personContextMenu.deputyId)
                           if (deputyToDelete) {
                             deleteDeputy(personContextMenu.coordinatorId, personContextMenu.deputyId)
-                            setShouldAutoLayout(true)
+                            // MANUEL KONTROL: Otomatik layout devre dışı
                             showToast('Koordinatör yardımcısı başarıyla silindi', 'success')
                           }
                         } else if (personContextMenu.type !== 'deputy') {
                           // Person silme
                           deletePerson(personContextMenu.coordinatorId, personContextMenu.subUnitId, personContextMenu.person.id)
-                          setShouldAutoLayout(true)
+                          // MANUEL KONTROL: Otomatik layout devre dışı
                           showToast('Personel başarıyla silindi', 'success')
                         }
                       } finally {
@@ -2681,7 +2732,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
 
                       try {
                         deleteSubUnit(subUnitContextMenu.coordinatorId, subUnitContextMenu.subUnitId)
-                        setShouldAutoLayout(true)
+                        // MANUEL KONTROL: Otomatik layout devre dışı
                         showToast('Birim başarıyla silindi', 'success')
                       } finally {
                         setTimeout(() => {
@@ -3117,7 +3168,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                 // Koordinatörü tekrar expand et
                 setTimeout(() => {
                   setExpandedCoordinator(subUnitDeputyChangeModal.coordinatorId)
-                  setShouldAutoLayout(true)
+                  // MANUEL KONTROL: Otomatik layout devre dışı
                 }, 200)
               }
               setSubUnitDeputyChangeModal(null)
