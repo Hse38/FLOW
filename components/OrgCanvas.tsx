@@ -124,6 +124,13 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   const [historyIndex, setHistoryIndex] = useState<number>(-1)
   const [shouldAutoLayout, setShouldAutoLayout] = useState<boolean>(false)
   const hasAutoLayoutRunRef = useRef<boolean>(false)
+  
+  // Expansion info for node shifting
+  const expandedNodeInfoRef = useRef<{
+    coordId: string
+    parentBottomY: number
+    expandedContentHeight: number
+  } | null>(null)
 
   // History'ye snapshot ekle
   const addToHistory = useCallback((snapshot: OrgData) => {
@@ -219,7 +226,32 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   }, [data.coordinators.length, data.mainCoordinators.length, data.executives.length, data.management.length, isLoading, history.length])
 
 
-  const [expandedCoordinator, setExpandedCoordinator] = useState<string | null>(null)
+  // FIXED EXPANSION STATE: Save expanded coordinator to localStorage for persistence
+  // Load from localStorage on mount, save on change
+  const [expandedCoordinator, setExpandedCoordinatorState] = useState<string | null>(() => {
+    // Load from localStorage on initial mount
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('expandedCoordinator')
+      return saved || null
+    }
+    return null
+  })
+  
+  // Wrapper to save to localStorage when expanded coordinator changes
+  const setExpandedCoordinator = useCallback((value: string | null | ((prev: string | null) => string | null)) => {
+    setExpandedCoordinatorState((prev) => {
+      const newValue = typeof value === 'function' ? value(prev) : value
+      // Save to localStorage
+      if (typeof window !== 'undefined') {
+        if (newValue) {
+          localStorage.setItem('expandedCoordinator', newValue)
+        } else {
+          localStorage.removeItem('expandedCoordinator')
+        }
+      }
+      return newValue
+    })
+  }, [])
 
   // Sağ panel için seçili koordinatör
   const [rightPanelCoordinatorId, setRightPanelCoordinatorId] = useState<string | null>(null)
@@ -227,7 +259,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   // Türkiye Haritası Sol Panel (Toplumsal Çalışmalar için)
   const [turkeyMapOpen, setTurkeyMapOpen] = useState<boolean>(false)
   // Türkiye Haritası - Node altında gösterim (Toplumsal Çalışmalar için)
-  const [turkeyMapExpanded, setTurkeyMapExpanded] = useState<boolean>(false)
+  // FIXED STATE: Harita (Küre) her zaman görünür - Toplumsal Çalışmalar'ın yanında
+  const [turkeyMapExpanded, setTurkeyMapExpanded] = useState<boolean>(true)
   // İl personel modalı
   const [selectedCity, setSelectedCity] = useState<string | null>(null)
   const [cityPersonnelModalOpen, setCityPersonnelModalOpen] = useState<boolean>(false)
@@ -461,12 +494,24 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   const nodes: Node[] = useMemo(() => {
     const nodeList: Node[] = []
 
-    // Pozisyon al (Firebase öncelikli - kaydedilmiş pozisyonlar her zaman kullanılmalı)
+    // FIXED POSITION RESOLUTION: SADECE KAYDEDİLMİŞ POZİSYONLAR
+    // Priority: Firebase saved positions > Local positions > Default from data
+    // CRITICAL: Sadece Firebase'de kaydedilmiş pozisyonlar kullanılır
+    // Otomatik calculated position YOK - sadece manuel kaydedilmiş pozisyonlar
     const getPosition = (id: string, defaultPos: { x: number; y: number }) => {
-      // Önce Firebase'den gelen kaydedilmiş pozisyonları kullan (en önemli)
-      // Sonra lokal state (sürükleme sırasında)
-      // En son default pozisyon (InitialData)
-      return customPositions[id] || localPositions[id] || defaultPos
+      // 1. Firebase saved positions (highest priority - persistent across sessions)
+      // Bu pozisyonlar "Firebase'e Kaydet" butonu ile kaydedilmiş pozisyonlardır
+      if (customPositions[id]) {
+        return customPositions[id]
+      }
+      // 2. Local positions (during current session drag operations - geçici)
+      if (localPositions[id]) {
+        return localPositions[id]
+      }
+      // 3. Default position from org.json (only if no saved position exists)
+      // Eğer Firebase'de pozisyon yoksa, org.json'daki default pozisyonu kullan
+      // Calculated position YOK - sadece kaydedilmiş veya default pozisyon
+      return defaultPos
     }
     
     // Add chairman
@@ -551,11 +596,20 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       })
     })
 
-    // Add sub-coordinators (main coordinator ile çakışanları atla)
+    // Add sub-coordinators (main coordinator ve executive ile çakışanları atla)
+    // Create set of executive IDs to prevent duplicates
+    const executiveIds = new Set(data.executives.map(exec => exec.id))
+    
     data.coordinators.forEach((coord) => {
       // Main coordinator ile aynı ID'ye sahipse atla (duplicate önleme)
       if (mainCoordinatorIds.has(coord.id)) {
         console.warn(`⚠️ Coordinator ID "${coord.id}" already exists as main coordinator. Skipping duplicate.`)
+        return
+      }
+      
+      // Executive ile aynı ID'ye sahipse atla (duplicate önleme)
+      if (executiveIds.has(coord.id)) {
+        console.warn(`⚠️ Coordinator ID "${coord.id}" already exists as executive. Skipping duplicate.`)
         return
       }
 
@@ -577,28 +631,37 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       })
     })
 
-    // If a coordinator is expanded, add detail nodes
-    // If a coordinator is expanded, add detail nodes
+    // INLINE VERTICAL EXPANSION: Child nodes in single column directly below parent
+    // STRICT RULES: Parent stays FIXED, expansion is TOP → DOWN only, no horizontal movement
     if (expandedCoordinatorData) {
-      // Ana koordinatör node'unun gerçek pozisyonunu al (direkt altına açılsın)
       const coordId = expandedCoordinatorData.id
-      // nodeList'te koordinatör node'unu bul (yukarıda eklenmiş olmalı)
       const mainCoordNode = nodeList.find(n => n.id === coordId)
       const mainCoordPosition = mainCoordNode?.position || getPosition(coordId, expandedCoordinatorData.position)
       
-      // Node yüksekliğini al (NODE_SIZE'dan - subCoordinator için)
+      // Node yüksekliğini al
       const nodeHeight = NODE_SIZE['subCoordinator']?.height || 140
       
-      // Direkt altına açılsın - ana node'un alt kenarından başla
-      const defaultBaseX = mainCoordPosition.x
-      const defaultBaseY = mainCoordPosition.y + nodeHeight + 250 // Ana node'un altından 250px aşağıda başla (daha fazla mesafe)
+      // INLINE EXPANSION: Anchor to parent's bottom edge, same X position (NO horizontal offset)
+      // Parent node X position is LOCKED - expanded content aligns directly below
+      const defaultBaseX = mainCoordPosition.x // Same X as parent (strictly vertical)
+      const defaultBaseY = mainCoordPosition.y + nodeHeight + 80 // Parent'ın alt kenarından 80px mesafe
+      
+      // UNIFORM VERTICAL SPACING: Her child node arasında sabit mesafe
+      const verticalSpacing = 200 // Child node'lar arası dikey mesafe
+      let currentY = defaultBaseY // Mevcut Y pozisyonu (her child'tan sonra artacak)
 
-      // Koordinatör node - direkt ana node'un altında
+      // Koordinatör root node - direkt parent'ın altında, ortalanmış
+      // FIXED: Expanded node pozisyonları - kaydedilmiş pozisyon varsa onu kullan, yoksa hesaplanan
       const rootId = `detail-${coordId}-root`
+      const rootNodeHeight = NODE_SIZE['detail']?.height || 180
+      
+      // Expanded node pozisyonları: Önce kaydedilmiş pozisyon, yoksa hesaplanan pozisyon
+      const rootPosition = getPosition(rootId, { x: defaultBaseX, y: currentY })
+      
       nodeList.push({
         id: rootId,
         type: 'detail',
-        position: getPosition(rootId, { x: defaultBaseX, y: defaultBaseY }), // Direkt altında
+        position: rootPosition, // getPosition zaten öncelik sırasına göre pozisyon döndürüyor
         draggable: !isLocked,
         data: {
           label: expandedCoordinatorData.title,
@@ -627,26 +690,24 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           },
         },
       })
+      
+      // Root node'dan sonra Y pozisyonunu güncelle
+      currentY += rootNodeHeight + verticalSpacing
 
-      // Deputy nodes - duplicate deputy.id'leri filtrele
+      // Deputy nodes - SINGLE COLUMN VERTICAL STACK
       const uniqueDeputies = expandedCoordinatorData.deputies?.filter((deputy, idx, arr) => 
         arr.findIndex(d => d.id === deputy.id) === idx
       ) || []
       
-        uniqueDeputies.forEach((deputy, idx) => {
-        // Simetrik yerleşim - deputy'ler ortalanmış şekilde, görseldeki gibi
-        const deputyCount = uniqueDeputies.length
-        const nodeSpacing = 360 // Node genişliği + mesafe (daha geniş)
-        const totalWidth = deputyCount > 1 ? (deputyCount - 1) * nodeSpacing : 0
-        const startX = -totalWidth / 2
-        const xOffset = deputyCount === 1 ? 0 : startX + (idx * nodeSpacing)
-
-        // Node ID olarak deputy.id kullan (unique ID garantisi için)
+      uniqueDeputies.forEach((deputy) => {
         const deputyNodeId = `detail-${coordId}-deputy-${deputy.id}`
+        const deputyNodeHeight = NODE_SIZE['detail']?.height || 180
+        
+        // VERTICAL STACK: Her deputy bir öncekinin altında, ortalanmış
         nodeList.push({
           id: deputyNodeId,
           type: 'detail',
-          position: getPosition(deputyNodeId, { x: defaultBaseX + xOffset, y: defaultBaseY + 250 }), // Root node'un altında (daha fazla mesafe)
+          position: getPosition(deputyNodeId, { x: defaultBaseX, y: currentY }), // getPosition öncelik sırasına göre pozisyon döndürüyor
           draggable: !isLocked,
           data: {
             label: deputy.name,
@@ -702,31 +763,42 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             },
           },
         })
+        
+        // Y pozisyonunu güncelle (bir sonraki node için)
+        currentY += deputyNodeHeight + verticalSpacing
       })
 
-      // Sub-unit nodes - görseldeki gibi: 3 sütun, simetrik, düzenli, DİREKT ALTINA AÇILSIN
-      // ÖZEL: Yönetime Bağlı Birimler için daha fazla mesafe (6 birim var)
-      const isYonetimeBagli = coordId === 'yonetime-bagli-birimler'
-      expandedCoordinatorData.subUnits?.forEach((subUnit, idx) => {
-        const subUnitCount = expandedCoordinatorData.subUnits!.length
-        const cols = 3 // Görseldeki gibi her zaman 3 sütun
-        const col = idx % cols
-        const row = Math.floor(idx / cols)
-        // Yönetime Bağlı Birimler için daha geniş mesafe
-        const nodeWidth = isYonetimeBagli ? 520 : 480 // SubUnit node genişliği + mesafe (daha geniş, üst üste gelmesin)
-        const totalWidth = (cols - 1) * nodeWidth
-        const xOffset = (col * nodeWidth) - (totalWidth / 2)
-        // Yönetime Bağlı Birimler için çok daha fazla dikey mesafe
-        const yOffset = isYonetimeBagli ? (row * 650) : (row * 550) // Dikey mesafe (çok daha fazla, üst üste gelmesin)
-
-        // Unique ID için subUnit.id kullan (idx yerine)
-        const subUnitNodeId = `detail-${coordId}-subunit-${subUnit.id}`
-        // Yönetime Bağlı Birimler için daha aşağıda başla
-        const startYOffset = isYonetimeBagli ? 500 : 400
-        nodeList.push({
-          id: subUnitNodeId,
-          type: 'detail',
-          position: getPosition(subUnitNodeId, { x: defaultBaseX + xOffset, y: defaultBaseY + startYOffset + yOffset }), // Root/Deputy'lerin çok altında
+      // Sub-unit nodes - SPECIAL LAYOUT FOR "İdari İşler Koordinatörlüğü"
+      // For "idari-isler": HORIZONTAL ROW layout (5 units side by side)
+      // For others: VERTICAL STACK layout (default)
+      const isIdariIsler = coordId === 'idari-isler'
+      
+      if (isIdariIsler && expandedCoordinatorData.subUnits && expandedCoordinatorData.subUnits.length > 0) {
+        // HORIZONTAL ROW LAYOUT for İdari İşler
+        const subUnitCount = expandedCoordinatorData.subUnits.length
+        const subUnitNodeWidth = 500 // Her birim node genişliği
+        const horizontalSpacing = 100 // Birimler arası yatay boşluk
+        const totalWidth = (subUnitCount * subUnitNodeWidth) + ((subUnitCount - 1) * horizontalSpacing)
+        const startX = defaultBaseX - (totalWidth / 2) + (subUnitNodeWidth / 2) // Ortalanmış başlangıç
+        
+        // Calculate positions for all sub-units
+        const subUnitPositions: Record<string, { x: number; y: number }> = {}
+        
+        expandedCoordinatorData.subUnits.forEach((subUnit, index) => {
+          const subUnitNodeId = `detail-${coordId}-subunit-${subUnit.id}`
+          const subUnitX = startX + (index * (subUnitNodeWidth + horizontalSpacing))
+          
+          // HORIZONTAL ROW: Her subUnit yan yana, aynı Y seviyesinde
+          const calculatedPosition = { x: subUnitX, y: currentY }
+          const finalPosition = getPosition(subUnitNodeId, calculatedPosition)
+          
+          // Store calculated position for Firebase save
+          subUnitPositions[subUnitNodeId] = calculatedPosition
+          
+          nodeList.push({
+            id: subUnitNodeId,
+            type: 'detail',
+            position: finalPosition,
           draggable: !isLocked,
           data: {
             label: subUnit.title,
@@ -771,29 +843,102 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             },
           },
         })
-      })
+        })
+        
+        // Save calculated positions to Firebase if they don't exist
+        // This ensures the horizontal layout is persisted
+        const positionsToSave: Record<string, { x: number; y: number }> = {}
+        Object.keys(subUnitPositions).forEach(nodeId => {
+          // Only save if position doesn't exist in Firebase
+          if (!customPositions[nodeId] && !localPositions[nodeId]) {
+            positionsToSave[nodeId] = subUnitPositions[nodeId]
+          }
+        })
+        
+        // Save to Firebase if there are new positions
+        if (Object.keys(positionsToSave).length > 0) {
+          // Use setTimeout to avoid blocking render
+          setTimeout(() => {
+            const allPositions = { ...customPositions, ...positionsToSave }
+            updateFirebasePositions(allPositions)
+            console.log('💾 İdari İşler sub-unit pozisyonları Firebase\'e kaydedildi:', Object.keys(positionsToSave))
+          }, 1000)
+        }
+        
+        // Y pozisyonunu güncelle (bir sonraki node için - sadece en yüksek node için)
+        const maxSubUnitHeight = NODE_SIZE['detail']?.height || 180
+        currentY += maxSubUnitHeight + verticalSpacing
+      } else {
+        // DEFAULT VERTICAL STACK LAYOUT for other coordinators
+        expandedCoordinatorData.subUnits?.forEach((subUnit) => {
+          const subUnitNodeId = `detail-${coordId}-subunit-${subUnit.id}`
+          const subUnitNodeHeight = NODE_SIZE['detail']?.height || 180
+          
+          // VERTICAL STACK: Her subUnit bir öncekinin altında, ortalanmış
+          nodeList.push({
+            id: subUnitNodeId,
+            type: 'detail',
+            position: getPosition(subUnitNodeId, { x: defaultBaseX, y: currentY }), // getPosition öncelik sırasına göre pozisyon döndürüyor
+            draggable: !isLocked,
+            data: {
+              label: subUnit.title,
+              type: 'subunit',
+              people: subUnit.people || [],
+              responsibilities: Array.isArray(subUnit.responsibilities) ? subUnit.responsibilities.filter(r => r && r.trim()) : [],
+              coordinatorId: expandedCoordinatorData.id,
+              subUnitId: subUnit.id,
+              onPersonClick: (person: Person) => {
+                setViewPersonCard({
+                  person,
+                  coordinatorId: expandedCoordinatorData.id,
+                  subUnitId: subUnit.id,
+                  coordinatorTitle: expandedCoordinatorData.title,
+                  subUnitTitle: subUnit.title,
+                })
+              },
+              onPersonContextMenu: (e: React.MouseEvent, person: Person) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setPersonContextMenu({
+                  x: e.clientX,
+                  y: e.clientY,
+                  person,
+                  coordinatorId: expandedCoordinatorData.id,
+                  subUnitId: subUnit.id,
+                  coordinatorTitle: expandedCoordinatorData.title,
+                  subUnitTitle: subUnit.title,
+                })
+              },
+              onContextMenu: (e: React.MouseEvent) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setSubUnitContextMenu({
+                  x: e.clientX,
+                  y: e.clientY,
+                  coordinatorId: expandedCoordinatorData.id,
+                  subUnitId: subUnit.id,
+                  subUnitTitle: subUnit.title,
+                  people: subUnit.people || [],
+                })
+              },
+            },
+          })
+          
+          // Y pozisyonunu güncelle (bir sonraki node için)
+          currentY += subUnitNodeHeight + verticalSpacing
+        })
+      }
 
-
-      // People nodes (direct employees) - görseldeki gibi simetrik yerleşim, DİREKT ALTINA AÇILSIN
-      const subUnitCount = expandedCoordinatorData.subUnits?.length || 0
-      const subUnitRows = Math.ceil(subUnitCount / 3)
-      const peopleStartY = subUnitRows > 0 ? (subUnitRows * 550) : 0 // SubUnit'lerden sonra çok daha fazla mesafe
-
-      expandedCoordinatorData.people?.forEach((person, idx) => {
-        const cols = 3
-        const col = idx % cols
-        const row = Math.floor(idx / cols)
-        const nodeWidth = 320 // Person node genişliği + mesafe
-        const totalWidth = (cols - 1) * nodeWidth
-        const xOffset = (col * nodeWidth) - (totalWidth / 2)
-        const yOffset = row * 350
-
-        // Unique ID için person.id kullan (idx yerine)
-        const personNodeId = `detail-${coordId}-person-${person.id || idx}`
+      // People nodes (direct employees) - SINGLE COLUMN VERTICAL STACK
+      expandedCoordinatorData.people?.forEach((person) => {
+        const personNodeId = `detail-${coordId}-person-${person.id || `person-${Date.now()}`}`
+        const personNodeHeight = NODE_SIZE['detail']?.height || 180
+        
+        // VERTICAL STACK: Her person bir öncekinin altında, ortalanmış
         nodeList.push({
           id: personNodeId,
           type: 'detail',
-          position: getPosition(personNodeId, { x: defaultBaseX + xOffset, y: defaultBaseY + 400 + peopleStartY + yOffset }), // Root/Deputy'lerin çok altında
+          position: getPosition(personNodeId, { x: defaultBaseX, y: currentY }), // getPosition öncelik sırasına göre pozisyon döndürüyor
           draggable: !isLocked,
           data: {
             label: person.name,
@@ -825,6 +970,44 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             },
           },
         })
+        
+        // Y pozisyonunu güncelle (bir sonraki node için)
+        currentY += personNodeHeight + verticalSpacing
+      })
+      
+      // INLINE VERTICAL EXPANSION: Calculate total height of expanded content
+      // This height is used to shift other nodes DOWN (no horizontal movement)
+      const expandedContentHeight = currentY - defaultBaseY + 100 // Add padding at bottom
+      
+      // SHIFT OTHER NODES DOWN: All nodes below the expanded content must move down
+      // CRITICAL: Only shift nodes WITHOUT saved positions - preserve manual positions exactly
+      // Parent node's bottom edge is the reference point
+      const parentBottomY = mainCoordPosition.y + nodeHeight
+      
+      // Process all nodes to shift them down if they're below the expanded content
+      nodeList.forEach(node => {
+        // Skip expanded content nodes (they're already positioned)
+        if (node.id.startsWith(`detail-${coordId}-`)) return
+        // Skip parent node (it stays FIXED)
+        if (node.id === coordId) return
+        
+        // STRICT VERTICAL SHIFT: Only shift nodes that are below the parent
+        // NO horizontal movement - X position stays exactly the same
+        const nodeY = node.position.y
+        if (nodeY > parentBottomY) {
+          const savedPosition = getPosition(node.id, node.position)
+          // CRITICAL: Only shift if NO saved position exists (preserve ALL manual positions)
+          // Saved positions (Firebase or local) are NEVER modified - they are pixel-perfect
+          if (!customPositions[node.id] && !localPositions[node.id]) {
+            // VERTICAL SHIFT ONLY: Y increases, X stays the same
+            // This only applies to nodes without saved positions (default positions from org.json)
+            node.position = {
+              x: savedPosition.x, // X position LOCKED (no horizontal movement)
+              y: savedPosition.y + expandedContentHeight // Shift DOWN only
+            }
+          }
+          // If node has saved position, it stays EXACTLY where it was saved - no shifting
+        }
       })
     }
 
@@ -891,6 +1074,10 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     const edgeList: Edge[] = []
 
     // Chairman to executives
+    // Creates connections for ALL executives with a parent, including:
+    // - "Selçuk Bayraktar" → "Toplumsal Çalışmalar Koordinatörlüğü"
+    // - "Selçuk Bayraktar" → "Küre Koordinatörlüğü"
+    // Both connections use the same style: orthogonal (step) with white stroke
     data.executives.forEach((exec) => {
       if (exec.parent) {
         edgeList.push({
@@ -929,31 +1116,31 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       }
     })
 
-    // Detail edges if expanded
+    // EXPANDED PANEL EDGES: DRAW.IO STYLE ORTHOGONAL CONNECTORS
+    // All expanded panels are treated as CHILD NODES with clean, orthogonal connections
     if (expandedCoordinatorData) {
       const coordId = expandedCoordinatorData.id
       const rootId = `detail-${coordId}-root`
 
-      // Main to coordinator detail
+      // Main coordinator node to root detail node
+      // DRAW.IO STYLE: Orthogonal connector from parent bottom-center to child top-center
       edgeList.push({
         id: `detail-main-to-coord-${coordId}`,
         source: expandedCoordinator!,
         target: rootId,
-        type: 'straight',
+        type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
         style: { stroke: '#3b82a0', strokeWidth: 2 },
       })
 
-      // Coordinator to deputies - duplicate deputy.id'leri filtrele
+      // Root to deputies - VERTICAL STACK with ORTHOGONAL connectors
       const uniqueDeputiesForEdges = expandedCoordinatorData.deputies?.filter((deputy, idx, arr) => 
         arr.findIndex(d => d.id === deputy.id) === idx
       ) || []
       
-      uniqueDeputiesForEdges.forEach((deputy, idx) => {
-        // Deputy node ID'si deputy.id kullanıyor
+      uniqueDeputiesForEdges.forEach((deputy) => {
         const deputyNodeId = `detail-${coordId}-deputy-${deputy.id}`
-        // Edge ID'yi unique yapmak için hem deputy.id hem de idx kullanıyoruz
         edgeList.push({
-          id: `detail-coord-to-deputy-${coordId}-${deputy.id}-${idx}`,
+          id: `detail-coord-to-deputy-${coordId}-${deputy.id}`,
           source: rootId,
           target: deputyNodeId,
           type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
@@ -961,28 +1148,25 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         })
       })
 
-      // STRICT HIERARCHY: Sub-units connect ONLY to root coordinator
-      // Each sub-unit has exactly ONE parent (the coordinator root)
-      // NO deputy-to-subunit connections to maintain strict hierarchy
+      // Root to sub-units - VERTICAL STACK with ORTHOGONAL connectors
       expandedCoordinatorData.subUnits?.forEach((subUnit) => {
         const subUnitNodeId = `detail-${coordId}-subunit-${subUnit.id}`
         edgeList.push({
           id: `detail-to-subunit-${coordId}-${subUnit.id}`,
-          source: rootId, // Always connect to root coordinator
+          source: rootId,
           target: subUnitNodeId,
           type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
           style: { stroke: '#9ca3af', strokeWidth: 1.5 },
         })
       })
 
-      // STRICT HIERARCHY: People connect ONLY to root coordinator
-      // Each person has exactly ONE parent (the coordinator root)
-      // NO deputy-to-people connections to maintain strict hierarchy
-      expandedCoordinatorData.people?.forEach((_, idx) => {
+      // Root to people - VERTICAL STACK with ORTHOGONAL connectors
+      expandedCoordinatorData.people?.forEach((person) => {
+        const personNodeId = `detail-${coordId}-person-${person.id || `person-${Date.now()}`}`
         edgeList.push({
-          id: `detail-to-person-${coordId}-${idx}`,
-          source: rootId, // Always connect to root coordinator
-          target: `detail-${coordId}-person-${idx}`,
+          id: `detail-to-person-${coordId}-${person.id || `person-${Date.now()}`}`,
+          source: rootId,
+          target: personNodeId,
           type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
           style: { stroke: '#9ca3af', strokeWidth: 1.5 },
         })
@@ -1203,23 +1387,24 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     }
   }, [shouldAutoLayout, applyAutoLayout])
 
-  // Açılır node'lar için MANUEL KONTROL - Kaydedilmiş pozisyonları kullan, otomatik layout YOK
-  // NOT: Kullanıcı node'ları manuel olarak sürükleyip yerleştirecek
+  // INLINE VERTICAL EXPANSION: Expanded content appears directly below parent
+  // NO auto-layout, NO repositioning - expansion is calculated inline in the nodes useMemo
+  // This effect only ensures the view is adjusted (optional, doesn't change positions)
   useEffect(() => {
     if (expandedCoordinatorData && flowNodes.length > 0) {
       // Açılır node'ları bul (detail- ile başlayan)
       const detailNodes = flowNodes.filter(node => node.id.startsWith(`detail-${expandedCoordinatorData.id}-`))
       if (detailNodes.length > 0) {
-        // MANUEL KONTROL MODU: Otomatik layout YOK
-        // Node'lar kaydedilmiş pozisyonları kullanacak veya kullanıcı manuel olarak yerleştirecek
-        console.log('✅ MANUEL KONTROL: Açılan node\'lar kaydedilmiş pozisyonları kullanıyor, otomatik layout devre dışı')
+        // INLINE EXPANSION: Node'lar zaten doğru pozisyonda (nodes useMemo'da hesaplandı)
+        // Sadece görünümü ayarla (pozisyonları değiştirmeden)
+        console.log('✅ INLINE VERTICAL EXPANSION: Expanded content positioned directly below parent')
         
-        // Sadece fitView yap (pozisyonları değiştirmeden) - kullanıcı isterse zoom yapabilir
+        // Optional: Adjust view to see expanded content (does NOT change positions)
         setTimeout(() => {
           try {
-            // Sadece açılan node'ları görmek için fitView (opsiyonel)
+            // fitView is optional - expansion positions are already correct
             // reactFlowInstance.fitView({ padding: 0.25, duration: 800, maxZoom: 0.8 })
-            console.log('✅ Açılan node\'lar kaydedilmiş pozisyonlarda gösteriliyor')
+            console.log('✅ Expanded content displayed inline below parent')
           } catch (error) {
             console.warn('fitView başarısız:', error)
           }
@@ -1228,45 +1413,29 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     }
   }, [expandedCoordinatorData, flowNodes.length, reactFlowInstance])
 
-  // İlk yüklemede otomatik layout çalıştır (SADECE kaydedilmiş pozisyon yoksa) - MANUEL KONTROL MODU
+  // FIXED INITIAL STATE: Preserve diagram EXACTLY as saved - pixel-perfect restoration
+  // CRITICAL: NO auto-layout, NO repositioning, NO re-centering, NO optimization
   useEffect(() => {
-    if (!isLoading && flowNodes.length > 0 && !hasAutoLayoutRunRef.current && applyAutoLayoutInternal) {
-      // MANUEL KONTROL: Sadece kaydedilmiş pozisyon yoksa otomatik layout çalıştır
-      const hasSavedPositions = (customPositions && Object.keys(customPositions).length > 0) || 
-                                 (localPositions && Object.keys(localPositions).length > 0)
+    if (!isLoading && flowNodes.length > 0 && !hasAutoLayoutRunRef.current) {
+      // STRICT: Preserve existing diagram exactly as-is - positions are LOCKED
+      console.log('✅ FIXED INITIAL STATE: Diagram loaded pixel-perfectly from saved positions')
+      console.log(`   - Loaded ${flowNodes.length} nodes with saved positions`)
+      console.log(`   - NO auto-layout, NO repositioning, NO reflow`)
+      hasAutoLayoutRunRef.current = true
       
-      if (!hasSavedPositions) {
-        // İlk kez yükleniyor ve hiç pozisyon yok - basit bir layout yap
-        console.log('🔄 İlk yükleme: Kaydedilmiş pozisyon yok, basit layout uygulanıyor...')
-        hasAutoLayoutRunRef.current = true
-        
-        setTimeout(() => {
-          applyAutoLayoutInternal('TB', undefined)
-          setTimeout(() => {
-            try {
-              reactFlowInstance.fitView({ padding: 0.15, duration: 800, maxZoom: 0.9 })
-              console.log('✅ İlk layout ve fitView tamamlandı')
-            } catch (error) {
-              console.warn('fitView başarısız:', error)
-            }
-          }, 1000)
-        }, 500)
-      } else {
-        // Kaydedilmiş pozisyonlar var - manuel kontrol modu aktif
-        console.log('✅ MANUEL KONTROL MODU: Kaydedilmiş pozisyonlar yüklendi, otomatik layout devre dışı')
-        hasAutoLayoutRunRef.current = true
-        // Sadece fitView yap (pozisyonları değiştirmeden)
-        setTimeout(() => {
-          try {
-            reactFlowInstance.fitView({ padding: 0.15, duration: 800, maxZoom: 0.9 })
-            console.log('✅ Kaydedilmiş pozisyonlar yüklendi')
-          } catch (error) {
-            console.warn('fitView başarısız:', error)
-          }
-        }, 500)
-      }
+      // CRITICAL: fitView is DISABLED to preserve exact viewport state
+      // fitView would change the viewport, which could affect perceived positions
+      // If user wants to see the diagram, they can manually zoom/pan
+      // Positions are already correct from getPosition() function
+      // setTimeout(() => {
+      //   try {
+      //     reactFlowInstance.fitView({ padding: 0.15, duration: 800, maxZoom: 0.9 })
+      //   } catch (error) {
+      //     console.warn('fitView başarısız:', error)
+      //   }
+      // }, 500)
     }
-  }, [isLoading, flowNodes.length, customPositions, localPositions, applyAutoLayoutInternal, flowNodes, reactFlowInstance])
+  }, [isLoading, flowNodes.length, reactFlowInstance])
 
 
   // Pozisyon kaydetme için debounce timer
@@ -2116,26 +2285,51 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               </svg>
             </button>
 
-            {/* Pozisyonları Kaydet butonu */}
+            {/* Firebase'e Kaydet butonu - TÜM POZİSYONLARI KAYDET */}
             {!isLocked && (
               <button
                 onClick={() => {
-                  // Mevcut node pozisyonlarını al ve kaydet (detail dahil)
-                  const currentPositions: Record<string, { x: number; y: number }> = {}
+                  // Tüm mevcut node pozisyonlarını topla (tüm node'lar dahil)
+                  const allCurrentPositions: Record<string, { x: number; y: number }> = {}
+                  
+                  // Tüm flow node'larının pozisyonlarını al
                   flowNodes.forEach(node => {
-                    currentPositions[node.id] = { x: node.position.x, y: node.position.y }
+                    allCurrentPositions[node.id] = { 
+                      x: node.position.x, 
+                      y: node.position.y 
+                    }
                   })
-                  const merged = { ...customPositions, ...currentPositions }
-                  setLocalPositions(merged)
-                  updateFirebasePositions(merged)
-                              showToast('Pozisyonlar kaydedildi!', 'success')
+                  
+                  // Mevcut Firebase pozisyonları ile birleştir (yeni pozisyonlar öncelikli)
+                  const finalPositions = { 
+                    ...customPositions, 
+                    ...allCurrentPositions 
+                  }
+                  
+                  // Firebase'e kaydet
+                  updateFirebasePositions(finalPositions)
+                  
+                  // Lokal state'i de güncelle (hemen görünsün)
+                  setLocalPositions(finalPositions)
+                  
+                  // Başarı mesajı
+                  const nodeCount = Object.keys(allCurrentPositions).length
+                  showToast(`${nodeCount} node pozisyonu Firebase'e kaydedildi!`, 'success')
+                  
+                  console.log('💾 Firebase\'e kaydedilen pozisyonlar:', {
+                    toplamNode: nodeCount,
+                    nodeIds: Object.keys(allCurrentPositions)
+                  })
                 }}
-                className="backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform bg-blue-50 border-blue-200"
-                title="Pozisyonları Kaydet"
+                className="backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform bg-gradient-to-r from-blue-500 to-indigo-600 border-blue-400 hover:from-blue-600 hover:to-indigo-700"
+                title="Tüm Pozisyonları Firebase'e Kaydet"
               >
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                </svg>
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                  </svg>
+                  <span className="text-white font-semibold text-sm">Firebase'e Kaydet</span>
+                </div>
               </button>
             )}
 

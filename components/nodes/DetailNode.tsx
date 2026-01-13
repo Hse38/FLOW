@@ -105,12 +105,16 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
         onContextMenu={data.onContextMenu}
       >
         <Handle type="target" position={Position.Top} className="!bg-gray-400" />
-        <h4 className="font-bold text-[#3b82a0] text-2xl text-center mb-2">{data.label}</h4>
+        <h4 className="font-bold text-[#3b82a0] text-4xl text-center mb-4">{data.label}</h4>
 
-        {/* Çalışanlar - Üstte */}
+        {/* Çalışanlar - Üstte - AYRI BÖLÜM */}
         {data.people && data.people.length > 0 && (
-          <div className="mb-2.5 pb-2.5 border-b border-gray-300">
-            <ul className="text-4xl space-y-1.5">
+          <div className="mb-4 pb-4 border-b-2 border-gray-300">
+            {/* Personel Başlığı */}
+            <div className="mb-2">
+              <h5 className="text-3xl font-semibold text-gray-600 mb-2">Personel</h5>
+            </div>
+            <ul className="text-4xl space-y-2">
               {data.people.map((person, personIdx) => {
                 // Unique key oluştur - person.id + idx kombinasyonu
                 const personKey = person.id ? `${person.id}-${personIdx}` : `person-${data.subUnitId || 'subunit'}-${personIdx}`
@@ -118,7 +122,7 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
                 return (
                   <li
                     key={personKey}
-                    className={`flex items-center gap-1 nodrag nopan ${data.onPersonClick ? 'cursor-pointer hover:bg-blue-50 rounded px-1 py-0.5 transition-colors' : ''}`}
+                    className={`flex items-center gap-2 nodrag nopan ${data.onPersonClick ? 'cursor-pointer hover:bg-blue-50 rounded px-2 py-1 transition-colors' : ''}`}
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => handlePersonClick(e, person)}
                     onContextMenu={(e) => {
@@ -129,8 +133,8 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
                       }
                     }}
                   >
-                    <span className="text-gray-400">•</span>
-                    <span className="text-gray-800">{person.name}</span>
+                    <span className="text-blue-500 font-bold text-2xl">•</span>
+                    <span className="text-gray-800 font-medium">{person.name}</span>
                     {person.cvFileName && (
                       <span className="text-green-500 text-[10px]" title="CV yüklü">📄</span>
                     )}
@@ -141,7 +145,7 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
           </div>
         )}
 
-        {/* Görevler / Sorumluluklar - Altta */}
+        {/* Görevler / Sorumluluklar - Altta - AYRI BÖLÜM */}
         {(() => {
           const validResponsibilities = Array.isArray(data.responsibilities) 
             ? data.responsibilities.filter(r => r && String(r).trim()) 
@@ -149,6 +153,10 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
           
           return validResponsibilities.length > 0 ? (
             <div className="mt-2">
+              {/* Görevler Başlığı */}
+              <div className="mb-2">
+                <h5 className="text-3xl font-semibold text-gray-600 mb-2">Görevler</h5>
+              </div>
               <ul className="text-4xl text-gray-800 space-y-2.5">
                 {validResponsibilities.map((resp, idx) => {
                   // Unique key oluştur - resp içeriği + idx kombinasyonu
@@ -158,7 +166,7 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
                   
                   return (
                     <li key={respKey} className="flex items-start gap-2">
-                      <span className="text-[#3b82a0] mt-0.5 flex-shrink-0 font-bold">•</span>
+                      <span className="text-[#3b82a0] mt-0.5 flex-shrink-0 font-bold text-2xl">•</span>
                       <span className="leading-relaxed text-gray-700">{String(resp).trim()}</span>
                     </li>
                   )
