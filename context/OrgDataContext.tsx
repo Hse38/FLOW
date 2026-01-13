@@ -1650,9 +1650,19 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
     const unsubConn = onValue(connRef, (snapshot) => {
       const val = snapshot.val()
       if (val) {
-        console.log('📥 [PRODUCTION] Bağlantılar güncellendi (başka kullanıcıdan):', val.length || 0, 'bağlantı')
-        setCustomConnections(val)
+        // Firebase'de array veya object olarak saklanmış olabilir - normalize et
+        let connectionsArray = []
+        if (Array.isArray(val)) {
+          connectionsArray = val
+        } else if (typeof val === 'object') {
+          // Object ise array'e çevir
+          connectionsArray = Object.values(val)
+        }
+        console.log('📥 [PRODUCTION] Bağlantılar güncellendi:', connectionsArray.length, 'bağlantı')
+        console.log('  - Format:', Array.isArray(val) ? 'Array' : 'Object (normalized to array)')
+        setCustomConnections(connectionsArray)
       } else {
+        console.log('⚠️ [PRODUCTION] Firebase\'de bağlantı yok, boş array ayarlanıyor')
         setCustomConnections([])
       }
     })
