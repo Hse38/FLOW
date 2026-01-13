@@ -31,7 +31,7 @@ const ExecutiveNode = memo(({ data }: ExecutiveNodeProps) => {
         ? 'bg-gradient-to-br from-rose-500 to-rose-700 border-rose-400 rounded-xl' 
         : 'bg-gradient-to-r from-rose-500 to-rose-600 border-rose-400 rounded-lg'
       } text-white px-6 py-3 shadow-xl border-2 min-w-[180px] text-center transition-all duration-300 hover:shadow-2xl hover:scale-105`}>
-        <div className={`font-bold ${isSpecial || isBlue ? 'text-sm leading-tight' : 'text-base'}`}>
+        <div className={`font-bold ${isSpecial || isBlue ? 'text-base leading-tight' : 'text-lg'}`}>
           {data.label}
         </div>
       </div>

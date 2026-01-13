@@ -1046,9 +1046,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     const g = new dagre.graphlib.Graph()
     g.setGraph({
       rankdir: direction,
-      // Çakışmayı engellemek için aralıkları artır
-      nodesep: 240,
-      ranksep: 260,
+      // Node'lar arası mesafe - daha yakın ve okunabilir
+      nodesep: 120,
+      ranksep: 140,
       ranker: 'tight-tree',
       marginx: 80,
       marginy: 80

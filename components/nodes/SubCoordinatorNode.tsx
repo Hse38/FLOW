@@ -39,11 +39,11 @@ const SubCoordinatorNode = memo(({ data }: SubCoordinatorNodeProps) => {
             : 'border-gray-200 hover:border-gray-300'
         }`}
       >
-        <div className="text-xs font-semibold leading-tight flex items-center justify-center gap-1">
+        <div className="text-sm font-semibold leading-tight flex items-center justify-center gap-1">
           {data.hasDetails && (
             data.isExpanded 
-              ? <ChevronDown className="w-3 h-3 text-blue-500" />
-              : <ChevronRight className="w-3 h-3 text-gray-400" />
+              ? <ChevronDown className="w-4 h-4 text-blue-500" />
+              : <ChevronRight className="w-4 h-4 text-gray-400" />
           )}
           {data.label}
         </div>
