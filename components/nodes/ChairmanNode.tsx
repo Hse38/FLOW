@@ -13,10 +13,53 @@ interface ChairmanNodeProps {
 const ChairmanNode = memo(({ data }: ChairmanNodeProps) => {
   return (
     <div className="relative">
+      {/* 4-directional handles for full manual edge control */}
       <Handle
         type="target"
         position={Position.Top}
         id="top"
+        className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
+      />
+      <Handle
+        type="target"
+        position={Position.Right}
+        id="right"
+        className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
+      />
+      <Handle
+        type="target"
+        position={Position.Bottom}
+        id="bottom"
+        className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
+      />
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="left"
+        className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
+      />
+      <Handle
+        type="source"
+        position={Position.Top}
+        id="top-source"
+        className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="right-source"
+        className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="bottom-source"
+        className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
+      />
+      <Handle
+        type="source"
+        position={Position.Left}
+        id="left-source"
         className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
       />
       <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 px-12 py-5 rounded-lg shadow-xl border-2 border-yellow-300 min-w-[400px] max-w-[500px] text-center transition-all duration-300 hover:shadow-2xl hover:scale-105">
@@ -25,12 +68,6 @@ const ChairmanNode = memo(({ data }: ChairmanNodeProps) => {
           <div className="text-3xl text-yellow-800 mt-1 font-semibold leading-relaxed break-words">{data.title}</div>
         )}
       </div>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="bottom"
-        className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
-      />
     </div>
   )
 })

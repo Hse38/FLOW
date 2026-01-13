@@ -33,10 +33,53 @@ const MainCoordinatorNode = memo(({ data }: MainCoordinatorNodeProps) => {
 
   return (
     <div className="relative group">
+      {/* 4-directional handles for full manual edge control */}
       <Handle
         type="target"
         position={Position.Top}
         id="top"
+        className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
+      />
+      <Handle
+        type="target"
+        position={Position.Right}
+        id="right"
+        className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
+      />
+      <Handle
+        type="target"
+        position={Position.Bottom}
+        id="bottom"
+        className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
+      />
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="left"
+        className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
+      />
+      <Handle
+        type="source"
+        position={Position.Top}
+        id="top-source"
+        className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="right-source"
+        className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="bottom-source"
+        className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
+      />
+      <Handle
+        type="source"
+        position={Position.Left}
+        id="left-source"
         className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
       />
       <div
@@ -49,12 +92,6 @@ const MainCoordinatorNode = memo(({ data }: MainCoordinatorNodeProps) => {
           {data.label}
         </div>
       </div>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="bottom"
-        className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
-      />
     </div>
   )
 })

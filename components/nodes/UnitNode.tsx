@@ -14,9 +14,53 @@ interface UnitNodeProps {
 const UnitNode = memo(({ data }: UnitNodeProps) => {
   return (
     <div className="relative group">
+      {/* 4-directional handles for full manual edge control */}
       <Handle
         type="target"
         position={Position.Top}
+        id="top"
+        className="!bg-gray-300 !w-2 !h-2 !border-2 !border-white"
+      />
+      <Handle
+        type="target"
+        position={Position.Right}
+        id="right"
+        className="!bg-gray-300 !w-2 !h-2 !border-2 !border-white"
+      />
+      <Handle
+        type="target"
+        position={Position.Bottom}
+        id="bottom"
+        className="!bg-gray-300 !w-2 !h-2 !border-2 !border-white"
+      />
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="left"
+        className="!bg-gray-300 !w-2 !h-2 !border-2 !border-white"
+      />
+      <Handle
+        type="source"
+        position={Position.Top}
+        id="top-source"
+        className="!bg-gray-300 !w-2 !h-2 !border-2 !border-white"
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="right-source"
+        className="!bg-gray-300 !w-2 !h-2 !border-2 !border-white"
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="bottom-source"
+        className="!bg-gray-300 !w-2 !h-2 !border-2 !border-white"
+      />
+      <Handle
+        type="source"
+        position={Position.Left}
+        id="left-source"
         className="!bg-gray-300 !w-2 !h-2 !border-2 !border-white"
       />
       <div
@@ -27,11 +71,6 @@ const UnitNode = memo(({ data }: UnitNodeProps) => {
           {data.label}
         </div>
       </div>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="!bg-gray-300 !w-2 !h-2 !border-2 !border-white"
-      />
     </div>
   )
 })

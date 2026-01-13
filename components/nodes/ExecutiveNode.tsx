@@ -19,10 +19,53 @@ const ExecutiveNode = memo(({ data }: ExecutiveNodeProps) => {
   
   return (
     <div className="relative">
+      {/* 4-directional handles for full manual edge control */}
       <Handle
         type="target"
         position={Position.Top}
         id="top"
+        className={`!w-3 !h-3 !border-2 !border-white ${isBlue ? '!bg-blue-500' : '!bg-rose-500'}`}
+      />
+      <Handle
+        type="target"
+        position={Position.Right}
+        id="right"
+        className={`!w-3 !h-3 !border-2 !border-white ${isBlue ? '!bg-blue-500' : '!bg-rose-500'}`}
+      />
+      <Handle
+        type="target"
+        position={Position.Bottom}
+        id="bottom"
+        className={`!w-3 !h-3 !border-2 !border-white ${isBlue ? '!bg-blue-500' : '!bg-rose-500'}`}
+      />
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="left"
+        className={`!w-3 !h-3 !border-2 !border-white ${isBlue ? '!bg-blue-500' : '!bg-rose-500'}`}
+      />
+      <Handle
+        type="source"
+        position={Position.Top}
+        id="top-source"
+        className={`!w-3 !h-3 !border-2 !border-white ${isBlue ? '!bg-blue-500' : '!bg-rose-500'}`}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="right-source"
+        className={`!w-3 !h-3 !border-2 !border-white ${isBlue ? '!bg-blue-500' : '!bg-rose-500'}`}
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="bottom-source"
+        className={`!w-3 !h-3 !border-2 !border-white ${isBlue ? '!bg-blue-500' : '!bg-rose-500'}`}
+      />
+      <Handle
+        type="source"
+        position={Position.Left}
+        id="left-source"
         className={`!w-3 !h-3 !border-2 !border-white ${isBlue ? '!bg-blue-500' : '!bg-rose-500'}`}
       />
       <div className={`${isBlue
@@ -35,12 +78,6 @@ const ExecutiveNode = memo(({ data }: ExecutiveNodeProps) => {
           {data.label}
         </div>
       </div>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="bottom"
-        className={`!w-3 !h-3 !border-2 !border-white ${isBlue ? '!bg-blue-500' : '!bg-rose-500'}`}
-      />
     </div>
   )
 })

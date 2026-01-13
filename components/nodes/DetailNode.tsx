@@ -44,12 +44,19 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
           }
         }}
       >
-        <Handle type="target" position={Position.Top} className="!bg-[#3b82a0]" />
+        {/* 4-directional handles for full manual edge control */}
+        <Handle type="target" position={Position.Top} id="top" className="!bg-[#3b82a0]" />
+        <Handle type="target" position={Position.Right} id="right" className="!bg-[#3b82a0]" />
+        <Handle type="target" position={Position.Bottom} id="bottom" className="!bg-[#3b82a0]" />
+        <Handle type="target" position={Position.Left} id="left" className="!bg-[#3b82a0]" />
+        <Handle type="source" position={Position.Top} id="top-source" className="!bg-[#3b82a0]" />
+        <Handle type="source" position={Position.Right} id="right-source" className="!bg-[#3b82a0]" />
+        <Handle type="source" position={Position.Bottom} id="bottom-source" className="!bg-[#3b82a0]" />
+        <Handle type="source" position={Position.Left} id="left-source" className="!bg-[#3b82a0]" />
         <h3 className="text-4xl font-bold text-[#3b82a0]">{data.label}</h3>
         {data.subtitle && (
           <p className="text-3xl text-[#3b82a0] mt-1 font-semibold">{data.subtitle}</p>
         )}
-        <Handle type="source" position={Position.Bottom} className="!bg-[#3b82a0]" />
       </div>
     )
   }
@@ -78,14 +85,21 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
           }
         }}
       >
-        <Handle type="target" position={Position.Top} className="!bg-[#3b82a0]" />
+        {/* 4-directional handles for full manual edge control */}
+        <Handle type="target" position={Position.Top} id="top" className="!bg-[#3b82a0]" />
+        <Handle type="target" position={Position.Right} id="right" className="!bg-[#3b82a0]" />
+        <Handle type="target" position={Position.Bottom} id="bottom" className="!bg-[#3b82a0]" />
+        <Handle type="target" position={Position.Left} id="left" className="!bg-[#3b82a0]" />
+        <Handle type="source" position={Position.Top} id="top-source" className="!bg-gray-400" />
+        <Handle type="source" position={Position.Right} id="right-source" className="!bg-gray-400" />
+        <Handle type="source" position={Position.Bottom} id="bottom-source" className="!bg-gray-400" />
+        <Handle type="source" position={Position.Left} id="left-source" className="!bg-gray-400" />
         {data.subtitle && data.subtitle.trim() ? (
           <p className="text-xl text-blue-600 font-medium opacity-80">{data.subtitle}</p>
         ) : (
           <p className="text-xl text-blue-600 font-medium opacity-80">Koordinatör Yardımcısı</p>
         )}
         <p className="text-3xl text-[#3b82a0] font-bold">{data.label}</p>
-        <Handle type="source" position={Position.Bottom} className="!bg-gray-400" />
       </div>
     )
   }
@@ -104,7 +118,15 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
         className="bg-white border-l-4 border-[#3b82a0] rounded-lg px-8 py-4 shadow-md min-w-[400px] max-w-[600px] relative"
         onContextMenu={data.onContextMenu}
       >
-        <Handle type="target" position={Position.Top} className="!bg-gray-400" />
+        {/* 4-directional handles for full manual edge control */}
+        <Handle type="target" position={Position.Top} id="top" className="!bg-gray-400" />
+        <Handle type="target" position={Position.Right} id="right" className="!bg-gray-400" />
+        <Handle type="target" position={Position.Bottom} id="bottom" className="!bg-gray-400" />
+        <Handle type="target" position={Position.Left} id="left" className="!bg-gray-400" />
+        <Handle type="source" position={Position.Top} id="top-source" className="!bg-gray-400" />
+        <Handle type="source" position={Position.Right} id="right-source" className="!bg-gray-400" />
+        <Handle type="source" position={Position.Bottom} id="bottom-source" className="!bg-gray-400" />
+        <Handle type="source" position={Position.Left} id="left-source" className="!bg-gray-400" />
         <h4 className="font-bold text-[#3b82a0] text-4xl text-center mb-4">{data.label}</h4>
 
         {/* Çalışanlar - Üstte - AYRI BÖLÜM */}
@@ -182,7 +204,15 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
   if (data.type === 'responsibility') {
     return (
       <div className="bg-white border border-gray-300 rounded-lg p-3 shadow-sm max-w-[280px]">
-        <Handle type="target" position={Position.Top} className="!bg-[#3b82a0]" />
+        {/* 4-directional handles for full manual edge control */}
+        <Handle type="target" position={Position.Top} id="top" className="!bg-[#3b82a0]" />
+        <Handle type="target" position={Position.Right} id="right" className="!bg-[#3b82a0]" />
+        <Handle type="target" position={Position.Bottom} id="bottom" className="!bg-[#3b82a0]" />
+        <Handle type="target" position={Position.Left} id="left" className="!bg-[#3b82a0]" />
+        <Handle type="source" position={Position.Top} id="top-source" className="!bg-gray-400" />
+        <Handle type="source" position={Position.Right} id="right-source" className="!bg-gray-400" />
+        <Handle type="source" position={Position.Bottom} id="bottom-source" className="!bg-gray-400" />
+        <Handle type="source" position={Position.Left} id="left-source" className="!bg-gray-400" />
         <ul className="text-base text-gray-700 space-y-1">
           {data.responsibilities?.map((resp, idx) => {
             // Unique key oluştur - resp içeriği + idx kombinasyonu
@@ -196,7 +226,6 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
             )
           })}
         </ul>
-        <Handle type="source" position={Position.Bottom} className="!bg-gray-400" />
       </div>
     )
   }
@@ -219,7 +248,15 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
           }
         }}
       >
-        <Handle type="target" position={Position.Top} className="!bg-gray-400 !w-2.5 !h-2.5 !border-2 !border-white" />
+        {/* 4-directional handles for full manual edge control */}
+        <Handle type="target" position={Position.Top} id="top" className="!bg-gray-400 !w-2.5 !h-2.5 !border-2 !border-white" />
+        <Handle type="target" position={Position.Right} id="right" className="!bg-gray-400 !w-2.5 !h-2.5 !border-2 !border-white" />
+        <Handle type="target" position={Position.Bottom} id="bottom" className="!bg-gray-400 !w-2.5 !h-2.5 !border-2 !border-white" />
+        <Handle type="target" position={Position.Left} id="left" className="!bg-gray-400 !w-2.5 !h-2.5 !border-2 !border-white" />
+        <Handle type="source" position={Position.Top} id="top-source" className="!bg-gray-400 !w-2.5 !h-2.5 !border-2 !border-white" />
+        <Handle type="source" position={Position.Right} id="right-source" className="!bg-gray-400 !w-2.5 !h-2.5 !border-2 !border-white" />
+        <Handle type="source" position={Position.Bottom} id="bottom-source" className="!bg-gray-400 !w-2.5 !h-2.5 !border-2 !border-white" />
+        <Handle type="source" position={Position.Left} id="left-source" className="!bg-gray-400 !w-2.5 !h-2.5 !border-2 !border-white" />
         <div className="flex flex-col items-center gap-2">
           <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg mb-1">
             {data.label.charAt(0)}
@@ -227,7 +264,6 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
           <div className="text-3xl font-semibold leading-tight">{data.label}</div>
           {data.subtitle && <div className="text-2xl text-gray-500 mt-2">{data.subtitle}</div>}
         </div>
-        <Handle type="source" position={Position.Bottom} className="!bg-gray-400 !w-2.5 !h-2.5 !border-2 !border-white" />
       </div>
     )
   }

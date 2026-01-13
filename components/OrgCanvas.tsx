@@ -23,6 +23,7 @@ import SubCoordinatorNode from './nodes/SubCoordinatorNode'
 import UnitNode from './nodes/UnitNode'
 import DetailNode from './nodes/DetailNode'
 import TurkeyMapNode from './nodes/TurkeyMapNode'
+import ManualEdge from './edges/ManualEdge'
 import ContextMenu from './ContextMenu'
 import FormModal from './FormModal'
 import PersonDetailModal from './PersonDetailModal'
@@ -59,6 +60,11 @@ const nodeTypes = {
   unit: UnitNode,
   detail: DetailNode,
   turkeyMap: TurkeyMapNode,
+}
+
+const edgeTypes = {
+  manual: ManualEdge,
+  default: ManualEdge, // Use manual edge as default
 }
 
 // Basit node boyutları - dagre yerleşimi için (güncellenmiş boyutlar)
@@ -1076,20 +1082,33 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   // Convert data to React Flow edges
   const edges: Edge[] = useMemo(() => {
     const edgeList: Edge[] = []
+    
+    // Get custom connections for handle lookup
+    const customConnMap = new Map<string, { sourceHandle: string; targetHandle: string }>()
+    ;(firebaseConnections || []).forEach(conn => {
+      const key = `${conn.source}-${conn.target}`
+      customConnMap.set(key, {
+        sourceHandle: conn.sourceHandle || 'bottom',
+        targetHandle: conn.targetHandle || 'top'
+      })
+    })
 
     // Chairman to executives
-    // Creates connections for ALL executives with a parent, including:
-    // - "Selçuk Bayraktar" → "Toplumsal Çalışmalar Koordinatörlüğü"
-    // - "Selçuk Bayraktar" → "Küre Koordinatörlüğü"
-    // Both connections use the same style: orthogonal (step) with white stroke
+    // FULL MANUAL CONTROL: User-defined handles and waypoints
     data.executives.forEach((exec) => {
       if (exec.parent) {
+        // Check if there's a custom connection with specific handles
+        const connKey = `${exec.parent}-${exec.id}`
+        const customConn = customConnMap.get(connKey)
         edgeList.push({
           id: `${exec.parent}-${exec.id}`,
           source: exec.parent,
           target: exec.id,
-          type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
+          type: 'manual', // FULL MANUAL CONTROL: User-defined path
+          sourceHandle: customConn?.sourceHandle || 'bottom',
+          targetHandle: customConn?.targetHandle || 'top',
           style: { stroke: '#ffffff', strokeWidth: 2.5 },
+          data: { waypoints: [] }, // User can add bend points
         })
       }
     })
@@ -1097,12 +1116,17 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     // Executives to main coordinators
     data.mainCoordinators.forEach((coord) => {
       if (coord.parent) {
+        const connKey = `${coord.parent}-${coord.id}`
+        const customConn = customConnMap.get(connKey)
         edgeList.push({
           id: `${coord.parent}-${coord.id}`,
           source: coord.parent,
           target: coord.id,
-          type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
+          type: 'manual', // FULL MANUAL CONTROL
+          sourceHandle: customConn?.sourceHandle || 'bottom',
+          targetHandle: customConn?.targetHandle || 'top',
           style: { stroke: '#ffffff', strokeWidth: 2.5 },
+          data: { waypoints: [] },
         })
       }
     })
@@ -1110,12 +1134,17 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     // Main coordinators to sub-coordinators
     data.coordinators.forEach((coord) => {
       if (coord.parent) {
+        const connKey = `${coord.parent}-${coord.id}`
+        const customConn = customConnMap.get(connKey)
         edgeList.push({
           id: `${coord.parent}-${coord.id}`,
           source: coord.parent,
           target: coord.id,
-          type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
+          type: 'manual', // FULL MANUAL CONTROL
+          sourceHandle: customConn?.sourceHandle || 'bottom',
+          targetHandle: customConn?.targetHandle || 'top',
           style: { stroke: '#ffffff', strokeWidth: 2 },
+          data: { waypoints: [] },
         })
       }
     })
@@ -1127,13 +1156,18 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       const rootId = `detail-${coordId}-root`
 
       // Main coordinator node to root detail node
-      // DRAW.IO STYLE: Orthogonal connector from parent bottom-center to child top-center
+      // FULL MANUAL CONTROL: User-defined handles and waypoints
+        const connKey = `${expandedCoordinator}-${rootId}`
+        const mainToRootConn = customConnMap.get(connKey)
       edgeList.push({
         id: `detail-main-to-coord-${coordId}`,
         source: expandedCoordinator!,
         target: rootId,
-        type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
+        type: 'manual', // FULL MANUAL CONTROL
+        sourceHandle: mainToRootConn?.sourceHandle || 'bottom',
+        targetHandle: mainToRootConn?.targetHandle || 'top',
         style: { stroke: '#3b82a0', strokeWidth: 2 },
+        data: { waypoints: [] },
       })
 
       // Root to deputies - VERTICAL STACK with ORTHOGONAL connectors
@@ -1155,24 +1189,34 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       // Root to sub-units - VERTICAL STACK with ORTHOGONAL connectors
       expandedCoordinatorData.subUnits?.forEach((subUnit) => {
         const subUnitNodeId = `detail-${coordId}-subunit-${subUnit.id}`
+        const connKey = `${rootId}-${subUnitNodeId}`
+        const subUnitConn = customConnMap.get(connKey)
         edgeList.push({
           id: `detail-to-subunit-${coordId}-${subUnit.id}`,
           source: rootId,
           target: subUnitNodeId,
-          type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
+          type: 'manual', // FULL MANUAL CONTROL
+          sourceHandle: subUnitConn?.sourceHandle || 'bottom',
+          targetHandle: subUnitConn?.targetHandle || 'top',
           style: { stroke: '#9ca3af', strokeWidth: 1.5 },
+          data: { waypoints: [] },
         })
       })
 
       // Root to people - VERTICAL STACK with ORTHOGONAL connectors
       expandedCoordinatorData.people?.forEach((person) => {
         const personNodeId = `detail-${coordId}-person-${person.id || `person-${Date.now()}`}`
+        const personConnKey = `${rootId}-${personNodeId}`
+        const personConn = customConnMap.get(personConnKey)
         edgeList.push({
           id: `detail-to-person-${coordId}-${person.id || `person-${Date.now()}`}`,
           source: rootId,
           target: personNodeId,
-          type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
+          type: 'manual', // FULL MANUAL CONTROL
+          sourceHandle: personConn?.sourceHandle || 'bottom',
+          targetHandle: personConn?.targetHandle || 'top',
           style: { stroke: '#9ca3af', strokeWidth: 1.5 },
+          data: { waypoints: [] },
         })
       })
     }
@@ -1183,8 +1227,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         id: 'toplumsal-calismalar-to-map',
         source: 'toplumsal-calismalar',
         target: 'turkey-map-node',
-        type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
+        type: 'manual', // FULL MANUAL CONTROL
         style: { stroke: '#10b981', strokeWidth: 3 },
+        data: { waypoints: [] },
       })
     }
 
@@ -1192,20 +1237,30 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     const t3TeknofestCoord = data.mainCoordinators.find(c => c.id === 't3-teknofest-koordinatorlukleri')
     if (t3TeknofestCoord) {
       // Elvan'a bağlantı
+      const elvanConnKey = 'elvan-kuzucu-t3-teknofest-koordinatorlukleri'
+      const elvanConn = customConnMap.get(elvanConnKey)
       edgeList.push({
         id: 'elvan-kuzucu-to-t3-teknofest',
         source: 'elvan-kuzucu',
         target: 't3-teknofest-koordinatorlukleri',
-        type: 'step',
+        type: 'manual', // FULL MANUAL CONTROL
+        sourceHandle: elvanConn?.sourceHandle || 'bottom',
+        targetHandle: elvanConn?.targetHandle || 'top',
         style: { stroke: '#ffffff', strokeWidth: 2.5 },
+        data: { waypoints: [] },
       })
       // Muhammet'e bağlantı
+      const muhammetConnKey = 'muhammet-saymaz-t3-teknofest-koordinatorlukleri'
+      const muhammetConn = customConnMap.get(muhammetConnKey)
       edgeList.push({
         id: 'muhammet-saymaz-to-t3-teknofest',
         source: 'muhammet-saymaz',
         target: 't3-teknofest-koordinatorlukleri',
-        type: 'step',
+        type: 'manual', // FULL MANUAL CONTROL
+        sourceHandle: muhammetConn?.sourceHandle || 'bottom',
+        targetHandle: muhammetConn?.targetHandle || 'top',
         style: { stroke: '#ffffff', strokeWidth: 2.5 },
+        data: { waypoints: [] },
       })
     }
 
@@ -1242,7 +1297,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     })
 
     return uniqueEdges
-  }, [data, expandedCoordinator, expandedCoordinatorData, customConnections, turkeyMapExpanded])
+  }, [data, expandedCoordinator, expandedCoordinatorData, firebaseConnections, turkeyMapExpanded])
 
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState(nodes)
   const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState(edges)
@@ -2181,11 +2236,22 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           onEdgesChange={onEdgesChange}
           onConnect={(connection) => {
             // React Flow'un Handle'lardan sürükleyerek bağlantı oluşturma
+            // FULL MANUAL CONTROL: Support all 4 directions (top, bottom, left, right)
             if (connection.source && connection.target && connection.source !== connection.target) {
-              const sourceHandle = (connection.sourceHandle as 'top' | 'bottom') || 'bottom'
-              const targetHandle = (connection.targetHandle as 'top' | 'bottom') || 'top'
+              // Extract handle direction from handle ID (e.g., "top", "right-source", etc.)
+              const getHandleDirection = (handleId: string | null | undefined): 'top' | 'bottom' | 'left' | 'right' => {
+                if (!handleId) return 'bottom'
+                if (handleId.includes('top')) return 'top'
+                if (handleId.includes('right')) return 'right'
+                if (handleId.includes('bottom')) return 'bottom'
+                if (handleId.includes('left')) return 'left'
+                return 'bottom'
+              }
               
-              console.log('🔗 React Flow onConnect:', {
+              const sourceHandle = getHandleDirection(connection.sourceHandle)
+              const targetHandle = getHandleDirection(connection.targetHandle)
+              
+              console.log('🔗 React Flow onConnect (FULL MANUAL CONTROL):', {
                 source: connection.source,
                 target: connection.target,
                 sourceHandle,
@@ -2199,10 +2265,11 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                 targetHandle
               })
               
-              showToast('Bağlantı oluşturuldu!', 'success')
+              showToast('Bağlantı oluşturuldu! (Manuel kontrol aktif)', 'success')
             }
           }}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           connectionMode={ConnectionMode.Strict}
           onNodeContextMenu={handleNodeContextMenu}
           onPaneContextMenu={handlePaneContextMenu}
@@ -2236,11 +2303,15 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           maxZoom={1.5}
           defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
           defaultEdgeOptions={{ 
-            type: 'step', 
+            type: 'manual', // Use manual edge type for full user control
             style: { strokeWidth: 2 },
-            // Düz çizgiler için - grid'e hizalanmış
-            animated: false
-          }} // DRAW.IO STYLE ORTHOGONAL - Klavuz çizgileri ile düz çizgiler
+            // FULL MANUAL CONTROL: No auto-routing, no auto-bending
+            animated: false,
+            // Preserve edge geometry when nodes move
+            updatable: true,
+            // User-defined waypoints (bend points) stored in edge data
+            data: { waypoints: [] }
+          }} // FULL MANUAL EDGE CONTROL - Orthogonal segments, user-defined bend points
           className="react-flow-custom"
           // Çoklu seçim özellikleri (masaüstü gibi)
           selectionOnDrag={true}
@@ -2250,6 +2321,13 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           // Klavuz çizgileri (Snap to Grid) - Node'ları grid'e hizalar
           snapToGrid={snapToGrid}
           snapGrid={[20, 20]} // 20px grid boyutu (x, y)
+          // FULL MANUAL EDGE CONTROL: Edges are editable
+          edgesUpdatable={!isLocked}
+          edgesFocusable={true}
+          // Preserve edge paths when nodes move
+          nodesConnectable={!isLocked}
+          // Allow edge selection and editing
+          selectEdgesOnDrag={true}
         >
           <Background
             variant={BackgroundVariant.Dots}
