@@ -1361,11 +1361,39 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         return
       }
 
-      // Edge data güncellemesi (waypoints, handles)
-      if (change.type === 'change' && 'item' in change && change.item) {
-        const edge = change.item as Edge
-        if (edge.source && edge.target) {
-          // Edge data'sını güncelle (waypoints, sourceHandle, targetHandle)
+      // Edge data güncellemeleri için flowEdges state'ini takip ediyoruz
+      // (useEffect ile ayrı bir handler'da işlenecek)
+    })
+  }, [onEdgesChangeBase, flowEdges, removeFirebaseConnection])
+
+  const onEdgesChange = handleEdgesChange
+
+  // nodes veya edges değiştiğinde flowNodes ve flowEdges'i güncelle
+  useEffect(() => {
+    setFlowNodes(nodes)
+  }, [nodes, setFlowNodes])
+
+  useEffect(() => {
+    setFlowEdges(edges)
+  }, [edges, setFlowEdges])
+
+  // Edge data değişikliklerini Firebase'e kaydet (PERSISTENT STATE)
+  // flowEdges değiştiğinde edge data'sını kontrol et ve güncelle
+  const prevEdgesRef = useRef<Edge[]>([])
+  useEffect(() => {
+    // Edge data değişikliklerini tespit et ve Firebase'e kaydet
+    flowEdges.forEach((edge) => {
+      const prevEdge = prevEdgesRef.current.find(e => e.id === edge.id)
+      
+      if (prevEdge) {
+        // Edge mevcut - data değişikliklerini kontrol et
+        const dataChanged = 
+          JSON.stringify(prevEdge.data?.waypoints) !== JSON.stringify(edge.data?.waypoints) ||
+          prevEdge.sourceHandle !== edge.sourceHandle ||
+          prevEdge.targetHandle !== edge.targetHandle ||
+          JSON.stringify(prevEdge.data) !== JSON.stringify(edge.data)
+
+        if (dataChanged && edge.source && edge.target) {
           const updates: any = {}
           
           if (edge.data?.waypoints) {
@@ -1390,18 +1418,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         }
       }
     })
-  }, [onEdgesChangeBase, flowEdges, removeFirebaseConnection, updateFirebaseConnection])
-
-  const onEdgesChange = handleEdgesChange
-
-  // nodes veya edges değiştiğinde flowNodes ve flowEdges'i güncelle
-  useEffect(() => {
-    setFlowNodes(nodes)
-  }, [nodes, setFlowNodes])
-
-  useEffect(() => {
-    setFlowEdges(edges)
-  }, [edges, setFlowEdges])
+    
+    prevEdgesRef.current = flowEdges
+  }, [flowEdges, updateFirebaseConnection])
 
   // Firebase pozisyonu değişince yereli senkronize et
   useEffect(() => {
