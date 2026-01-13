@@ -307,21 +307,21 @@ export default function PersonnelPanel({ isOpen, onClose, personnel, onPersonCli
                     )}
 
                     {/* Bilgiler */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
+                          <h3 className={`font-bold group-hover:text-indigo-600 transition-colors break-words ${item.person.name.includes('VEKALETEN') || item.person.name.includes('(VEKALETEN)') ? 'text-gray-900 relative inline-block px-2 py-1 rounded' : 'text-gray-900'}`} style={item.person.name.includes('VEKALETEN') || item.person.name.includes('(VEKALETEN)') ? { background: 'linear-gradient(90deg, #fef3c7, #fed7aa, #fef3c7)', border: '1px solid #f59e0b' } : {}}>
                             {item.person.name}
                           </h3>
-                          {item.person.title && (
-                            <p className="text-sm text-gray-600 mt-2">{item.person.title}</p>
-                          )}
-                        </div>
-                        <span className={`px-2 py-1 rounded-lg text-xs font-medium border ${getTypeColor(item.type)} whitespace-nowrap`}>
-                          {item.person.title && (item.type === 'coordinator' || item.type === 'deputy' || item.type === 'subunit-person' || item.type === 'city-person')
-                            ? item.person.title 
-                            : getTypeLabel(item.type)}
-                        </span>
+                        {item.person.title && (
+                          <div className="mt-2 flex items-center gap-2 flex-wrap">
+                            <p className="text-sm text-gray-600">{item.person.title}</p>
+                            <span className={`px-2 py-1 rounded-lg text-xs font-medium border ${getTypeColor(item.type)} whitespace-nowrap`}>
+                              {item.person.title && (item.type === 'coordinator' || item.type === 'deputy' || item.type === 'subunit-person' || item.type === 'city-person')
+                                ? item.person.title 
+                                : getTypeLabel(item.type)}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Lokasyon Bilgisi */}

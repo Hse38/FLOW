@@ -43,6 +43,44 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
 
     if (!svgElement || !infoDiv) return
 
+    // İlk yüklemede şehir personel bilgilerine göre renklendirme yap
+    const cityPersonnel = data.cityPersonnel
+    if (cityPersonnel && cityPersonnel.length > 0) {
+      svgElement.querySelectorAll('path').forEach(path => {
+        const parent = path.parentNode as SVGElement
+        const ilAdi = parent.getAttribute('data-iladi')
+        
+        if (ilAdi) {
+          const cityName = ilAdi.replace(' (Asya)', '').replace(' (Avrupa)', '')
+          const cityData = cityPersonnel.find(cp => cp.city === cityName)
+          
+          // Boş iller (hem İl Sorumlusu hem de Deneyap Sorumlusu yok) -> beyaz
+          if (!cityData || (!cityData.ilSorumlusu && !cityData.deneyapSorumlusu)) {
+            path.setAttribute('fill', '#ffffff')
+            path.setAttribute('stroke', '#e5e7eb')
+            path.setAttribute('stroke-width', '1')
+          } else {
+            // Personel olan iller -> bölge renkleri
+            const bolge = (path.parentNode as SVGElement)?.parentNode as SVGElement
+            const bolgeNum = bolge?.getAttribute('id')?.replace('bolge-', '')
+            const bolgeRenkleri: Record<string, string> = {
+              '1': '#87cdde',
+              '2': '#ac93a7',
+              '3': '#ffb380',
+              '4': '#cccccc',
+              '5': '#decd87',
+              '6': '#de8787',
+              '7': '#aade87'
+            }
+            if (bolgeNum && bolgeRenkleri[bolgeNum]) {
+              path.setAttribute('fill', bolgeRenkleri[bolgeNum])
+              path.removeAttribute('stroke')
+            }
+          }
+        }
+      })
+    }
+
     const handleMouseOver = (event: MouseEvent) => {
       const target = event.target as SVGPathElement
       if (target.tagName === 'path') {
@@ -85,19 +123,36 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
           }
           
           svgElement.querySelectorAll('path').forEach(path => {
-            const bolge = (path.parentNode as SVGElement)?.parentNode as SVGElement
-            const bolgeNum = bolge?.getAttribute('id')?.replace('bolge-', '')
-            const bolgeRenkleri: Record<string, string> = {
-              '1': '#87cdde',
-              '2': '#ac93a7',
-              '3': '#ffb380',
-              '4': '#cccccc',
-              '5': '#decd87',
-              '6': '#de8787',
-              '7': '#aade87'
-            }
-            if (bolgeNum && bolgeRenkleri[bolgeNum]) {
-              path.setAttribute('fill', bolgeRenkleri[bolgeNum])
+            const parent = path.parentNode as SVGElement
+            const ilAdi = parent.getAttribute('data-iladi')
+            
+            if (ilAdi) {
+              const cityName = ilAdi.replace(' (Asya)', '').replace(' (Avrupa)', '')
+              const cityData = data.cityPersonnel?.find(cp => cp.city === cityName)
+              
+              // Boş iller -> beyaz
+              if (!cityData || (!cityData.ilSorumlusu && !cityData.deneyapSorumlusu)) {
+                path.setAttribute('fill', '#ffffff')
+                path.setAttribute('stroke', '#e5e7eb')
+                path.setAttribute('stroke-width', '1')
+              } else {
+                // Personel olan iller -> bölge renkleri
+                const bolge = (path.parentNode as SVGElement)?.parentNode as SVGElement
+                const bolgeNum = bolge?.getAttribute('id')?.replace('bolge-', '')
+                const bolgeRenkleri: Record<string, string> = {
+                  '1': '#87cdde',
+                  '2': '#ac93a7',
+                  '3': '#ffb380',
+                  '4': '#cccccc',
+                  '5': '#decd87',
+                  '6': '#de8787',
+                  '7': '#aade87'
+                }
+                if (bolgeNum && bolgeRenkleri[bolgeNum]) {
+                  path.setAttribute('fill', bolgeRenkleri[bolgeNum])
+                  path.removeAttribute('stroke')
+                }
+              }
             }
           })
           target.setAttribute('fill', '#3b82f6')
@@ -116,7 +171,7 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
       svgElement.removeEventListener('mouseout', handleMouseOut)
       svgElement.removeEventListener('click', handleClick)
     }
-  }, [])
+  }, [data.cityPersonnel])
 
   return (
     <div className="relative bg-transparent flex gap-4">
@@ -716,7 +771,9 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-gray-800 text-sm">{ilSorumlusu.name}</h4>
+                          <h4 className={`font-semibold text-sm ${ilSorumlusu.name.includes('VEKALETEN') || ilSorumlusu.name.includes('(VEKALETEN)') ? 'text-gray-800 relative inline-block px-2 py-1 rounded' : 'text-gray-800'}`} style={ilSorumlusu.name.includes('VEKALETEN') || ilSorumlusu.name.includes('(VEKALETEN)') ? { background: 'linear-gradient(90deg, #fef3c7, #fed7aa, #fef3c7)', border: '1px solid #f59e0b' } : {}}>
+                            {ilSorumlusu.name}
+                          </h4>
                           {ilSorumlusu.title && (
                             <p className="text-xs text-gray-600 mt-1">{ilSorumlusu.title}</p>
                           )}
@@ -801,7 +858,9 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-gray-800 text-sm">{deneyapSorumlusu.name}</h4>
+                          <h4 className={`font-semibold text-sm ${deneyapSorumlusu.name.includes('VEKALETEN') || deneyapSorumlusu.name.includes('(VEKALETEN)') ? 'text-gray-800 relative inline-block px-2 py-1 rounded' : 'text-gray-800'}`} style={deneyapSorumlusu.name.includes('VEKALETEN') || deneyapSorumlusu.name.includes('(VEKALETEN)') ? { background: 'linear-gradient(90deg, #fef3c7, #fed7aa, #fef3c7)', border: '1px solid #f59e0b' } : {}}>
+                            {deneyapSorumlusu.name}
+                          </h4>
                           {deneyapSorumlusu.title && (
                             <p className="text-xs text-gray-600 mt-1">{deneyapSorumlusu.title}</p>
                           )}
