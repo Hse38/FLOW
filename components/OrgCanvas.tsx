@@ -1046,9 +1046,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     const g = new dagre.graphlib.Graph()
     g.setGraph({
       rankdir: direction,
-      // Node'lar arası mesafe - daha yakın ve okunabilir
-      nodesep: 120,
-      ranksep: 140,
+      // Node'lar arası mesafe - optimize edilmiş (okunabilir ama kompakt)
+      nodesep: 100,
+      ranksep: 120,
       ranker: 'tight-tree',
       marginx: 80,
       marginy: 80
@@ -1108,10 +1108,11 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           
           if (selectedNodeElements.length > 0) {
             // React Flow fitView sadece tümüne uygulanır, node seçimi için getNodes kullan
-            reactFlowInstance.fitView({ padding: 0.2, duration: 300 })
+            reactFlowInstance.fitView({ padding: 0.15, duration: 500, maxZoom: 0.9 })
           }
         } else {
-          reactFlowInstance.fitView({ padding: 0.2 })
+          // Tüm şemayı görünür yap - ilk yüklemede önemli
+          reactFlowInstance.fitView({ padding: 0.15, duration: 500, maxZoom: 0.9 })
         }
       } catch (error) {
         console.warn('fitView başarısız:', error)
@@ -1181,6 +1182,14 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             hasAutoLayoutRunRef.current = true
             setTimeout(() => {
               applyAutoLayoutInternal('TB', undefined)
+              // Layout tamamlandıktan sonra fitView çağır
+              setTimeout(() => {
+                try {
+                  reactFlowInstance.fitView({ padding: 0.15, duration: 500, maxZoom: 0.9 })
+                } catch (error) {
+                  console.warn('fitView başarısız:', error)
+                }
+              }, 1000)
             }, 800) // Biraz daha uzun bekle, tüm node'lar render olsun
           }
         }
@@ -1189,10 +1198,18 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         hasAutoLayoutRunRef.current = true
         setTimeout(() => {
           applyAutoLayoutInternal('TB', undefined)
+          // Layout tamamlandıktan sonra fitView çağır
+          setTimeout(() => {
+            try {
+              reactFlowInstance.fitView({ padding: 0.15, duration: 500, maxZoom: 0.9 })
+            } catch (error) {
+              console.warn('fitView başarısız:', error)
+            }
+          }, 1000)
         }, 800)
       }
     }
-  }, [isLoading, flowNodes.length, customPositions, localPositions, applyAutoLayoutInternal, flowNodes])
+  }, [isLoading, flowNodes.length, customPositions, localPositions, applyAutoLayoutInternal, flowNodes, reactFlowInstance])
 
 
   // Pozisyon kaydetme için debounce timer
@@ -1967,10 +1984,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             }
           }}
           nodesDraggable={!isLocked}
-          fitView
           minZoom={0.2}
           maxZoom={1.5}
-          defaultViewport={{ x: 0, y: 0, zoom: 0.7 }}
+          defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
           className="react-flow-custom"
           // Çoklu seçim özellikleri (masaüstü gibi)
           selectionOnDrag={true}

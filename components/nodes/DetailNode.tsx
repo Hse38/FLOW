@@ -101,16 +101,16 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
 
     return (
       <div
-        className="bg-white border-l-4 border-[#3b82a0] rounded-lg px-4 py-3 shadow-md min-w-[160px] max-w-[220px] relative"
+        className="bg-white border-l-4 border-[#3b82a0] rounded-lg px-4 py-3 shadow-md min-w-[180px] max-w-[240px] relative"
         onContextMenu={data.onContextMenu}
       >
         <Handle type="target" position={Position.Top} className="!bg-gray-400" />
-        <h4 className="font-bold text-[#3b82a0] text-base text-center mb-2">{data.label}</h4>
+        <h4 className="font-bold text-[#3b82a0] text-lg text-center mb-2">{data.label}</h4>
 
         {/* Çalışanlar - Üstte */}
         {data.people && data.people.length > 0 && (
           <div className="mb-2.5 pb-2.5 border-b border-gray-300">
-            <ul className="text-sm space-y-0.5">
+            <ul className="text-base space-y-0.5">
               {data.people.map((person, personIdx) => {
                 // Unique key oluştur - person.id + idx kombinasyonu
                 const personKey = person.id ? `${person.id}-${personIdx}` : `person-${data.subUnitId || 'subunit'}-${personIdx}`
@@ -149,7 +149,7 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
           
           return validResponsibilities.length > 0 ? (
             <div className="mt-2">
-              <ul className="text-sm text-gray-800 space-y-1.5">
+              <ul className="text-base text-gray-800 space-y-1.5">
                 {validResponsibilities.map((resp, idx) => {
                   // Unique key oluştur - resp içeriği + idx kombinasyonu
                   const respKey = data.subUnitId 
