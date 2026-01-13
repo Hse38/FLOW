@@ -1694,6 +1694,13 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     const shouldAutoLayoutAfter = ['coordinator', 'subunit', 'deputy', 'person'].includes(currentModal.type)
 
     try {
+      if (!currentModal.nodeId) {
+        console.error('❌ handleFormSave: nodeId bulunamadı', currentModal)
+        showToast('Koordinatör ID bulunamadı', 'error')
+        formSaveInProgressRef.current = false
+        return
+      }
+      
       switch (currentModal.type) {
         case 'edit':
           updateCoordinator(currentModal.nodeId, {
@@ -1713,43 +1720,65 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           if (shouldAutoLayoutAfter) setShouldAutoLayout(true)
           break
         case 'subunit':
-          // Eğer initialData.id veya formData.id varsa, bu bir güncelleme işlemi
-          const subUnitIdToUpdate = currentModal.initialData?.id || formData.id
-          if (subUnitIdToUpdate) {
-            // Mevcut birimi güncelle
-            const responsibilitiesArray = Array.isArray(formData.responsibilities)
-              ? formData.responsibilities.filter((r: string) => r && String(r).trim())
-              : []
+          try {
+            // Eğer initialData.id veya formData.id varsa, bu bir güncelleme işlemi
+            const subUnitIdToUpdate = currentModal.initialData?.id || formData.id
+            if (!formData.title || !formData.title.trim()) {
+              showToast('Birim adı boş olamaz', 'error')
+              return
+            }
             
-            updateSubUnit(currentModal.nodeId, subUnitIdToUpdate, {
-              title: formData.title,
-              description: formData.description || '',
-              responsibilities: responsibilitiesArray,
-              deputyId: formData.deputyId || undefined,
-            })
-            // Koordinatörü tekrar expand et (güncellenmiş verilerin görünmesi için)
-            setTimeout(() => {
-              setExpandedCoordinator(currentModal.nodeId)
-              setShouldAutoLayout(true)
-            }, 200)
-          } else {
-            // Yeni birim ekle - addSubUnit fonksiyonu zaten duplicate kontrolü yapıyor
-            const responsibilitiesArrayNew = Array.isArray(formData.responsibilities)
-              ? formData.responsibilities.filter((r: string) => r && String(r).trim())
-              : []
-            
-            addSubUnit(currentModal.nodeId, {
-              title: formData.title,
-              people: [],
-              responsibilities: responsibilitiesArrayNew,
-              description: formData.description || '',
-              deputyId: formData.deputyId || undefined,
-            })
-            // Koordinatörü expand et (yeni birimin görünmesi için)
-            setTimeout(() => {
-              setExpandedCoordinator(currentModal.nodeId)
-              setShouldAutoLayout(true)
-            }, 100)
+            if (subUnitIdToUpdate) {
+              // Mevcut birimi güncelle
+              const responsibilitiesArray = Array.isArray(formData.responsibilities)
+                ? formData.responsibilities.filter((r: string) => r && String(r).trim())
+                : []
+              
+              if (!currentModal.nodeId) {
+                showToast('Koordinatör ID bulunamadı', 'error')
+                return
+              }
+              
+              updateSubUnit(currentModal.nodeId, subUnitIdToUpdate, {
+                title: formData.title.trim(),
+                description: (formData.description || '').trim(),
+                responsibilities: responsibilitiesArray,
+                deputyId: formData.deputyId || undefined,
+              })
+              showToast('Birim güncellendi', 'success')
+              // Koordinatörü tekrar expand et (güncellenmiş verilerin görünmesi için)
+              setTimeout(() => {
+                setExpandedCoordinator(currentModal.nodeId)
+                setShouldAutoLayout(true)
+              }, 200)
+            } else {
+              // Yeni birim ekle - addSubUnit fonksiyonu zaten duplicate kontrolü yapıyor
+              const responsibilitiesArrayNew = Array.isArray(formData.responsibilities)
+                ? formData.responsibilities.filter((r: string) => r && String(r).trim())
+                : []
+              
+              if (!currentModal.nodeId) {
+                showToast('Koordinatör ID bulunamadı', 'error')
+                return
+              }
+              
+              addSubUnit(currentModal.nodeId, {
+                title: formData.title.trim(),
+                people: [],
+                responsibilities: responsibilitiesArrayNew,
+                description: (formData.description || '').trim(),
+                deputyId: formData.deputyId || undefined,
+              })
+              showToast('Birim eklendi', 'success')
+              // Koordinatörü expand et (yeni birimin görünmesi için)
+              setTimeout(() => {
+                setExpandedCoordinator(currentModal.nodeId)
+                setShouldAutoLayout(true)
+              }, 100)
+            }
+          } catch (error) {
+            console.error('❌ SubUnit işlemi hatası:', error)
+            showToast('Bir hata oluştu: ' + (error instanceof Error ? error.message : 'Bilinmeyen hata'), 'error')
           }
           break
         case 'deputy':
@@ -1778,21 +1807,39 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           })
           break
         case 'person':
-          if (formData.subUnitId && formData.name) {
+          try {
+            if (!formData.subUnitId || !formData.name || !formData.name.trim()) {
+              showToast('İsim ve birim seçimi zorunludur', 'error')
+              return
+            }
+            
+            if (!currentModal.nodeId) {
+              showToast('Koordinatör ID bulunamadı', 'error')
+              return
+            }
+            
             // addPerson fonksiyonu zaten duplicate kontrolü yapıyor
             addPerson(currentModal.nodeId, formData.subUnitId, {
-              name: formData.name,
-              title: formData.title || '',
-              email: formData.email || undefined,
-              phone: formData.phone || undefined,
-              university: formData.university || undefined,
-              department: formData.department || undefined,
-              jobDescription: formData.jobDescription || undefined,
+              name: formData.name.trim(),
+              title: (formData.title || '').trim() || undefined,
+              email: formData.email?.trim() || undefined,
+              phone: formData.phone?.trim() || undefined,
+              university: formData.university?.trim() || undefined,
+              department: formData.department?.trim() || undefined,
+              jobDescription: formData.jobDescription?.trim() || undefined,
               cvFileName: formData.cvFileName || undefined,
               cvData: formData.cvData || undefined,
-              notes: formData.notes || undefined,
+              notes: formData.notes?.trim() || undefined,
             })
+            showToast(`${formData.name.trim()} birime eklendi`, 'success')
             if (shouldAutoLayoutAfter) setShouldAutoLayout(true)
+            // Koordinatörü expand et (yeni personelin görünmesi için)
+            setTimeout(() => {
+              setExpandedCoordinator(currentModal.nodeId)
+            }, 200)
+          } catch (error) {
+            console.error('❌ Person ekleme hatası:', error)
+            showToast('Bir hata oluştu: ' + (error instanceof Error ? error.message : 'Bilinmeyen hata'), 'error')
           }
           break
         case 'edit-person':
@@ -1848,7 +1895,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         formSaveInProgressRef.current = false
       }, 1000)
     }
-  }, [formModal, expandedCoordinator, addDeputy, addSubUnit, addPerson, addResponsibility, updateCoordinator, updatePerson, addCityPerson, setShouldAutoLayout, setExpandedCoordinator, showToast])
+  }, [formModal, expandedCoordinator, addDeputy, addSubUnit, addPerson, addResponsibility, updateCoordinator, updatePerson, updateSubUnit, addCityPerson, setShouldAutoLayout, setExpandedCoordinator, showToast])
 
   return (
     <div className="w-full h-screen flex" style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 50%, #93c5fd 100%)' }}>

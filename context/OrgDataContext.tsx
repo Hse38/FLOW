@@ -237,7 +237,7 @@ const initialDataLegacy: OrgData = {
     {
       id: "selcuk-bayraktar",
       name: "Selçuk Bayraktar",
-      title: "Yönetim Kurulu Başkanı",
+      title: "Mütevelli Heyeti Başkanı",
       type: "chairman",
       position: { x: 700, y: 50 }
     }
@@ -517,6 +517,7 @@ const initialDataLegacy: OrgData = {
       responsibilities: ["Kart üretimi koordinasyonu", "Dağıtım planlaması", "Stok yönetimi", "Kalite kontrol"],
       position: { x: 300, y: 760 },
       parent: "t3-vakfi-koordinatorlukleri",
+      hasDetailPage: true,
       deputies: [],
       subUnits: [
         {
@@ -651,6 +652,7 @@ const initialDataLegacy: OrgData = {
       responsibilities: ["Genel idari işler", "Ofis yönetimi", "Tedarik süreçleri", "Tesis yönetimi"],
       position: { x: 500, y: 1050 },
       parent: "t3-teknofest-koordinatorlukleri",
+      hasDetailPage: true,
       deputies: [],
       subUnits: [
         {
@@ -2690,17 +2692,24 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
           coordinators: prev.coordinators.map(c =>
             c.id === coordinatorId
               ? {
-                ...c,
-                subUnits: (c.subUnits || []).map(su =>
-                  su.id === subUnitId
-                    ? { ...su, people: [...(su.people || []), newPerson] }
-                    : su
-                )
-              }
+                  ...c,
+                  subUnits: (c.subUnits || []).map(su =>
+                    su.id === subUnitId
+                      ? { ...su, people: [...(su.people || []), newPerson] }
+                      : su
+                  )
+                }
               : c
           )
         }
-        saveToFirebase(newData)
+        
+        try {
+          saveToFirebase(newData)
+        } catch (firebaseError) {
+          console.error('❌ addPerson: Firebase kaydetme hatası:', firebaseError)
+          // Firebase hatası olsa bile state'i güncelle
+        }
+        
         return newData
       } catch (error) {
         console.error('❌ addPerson hatası:', error)
@@ -2837,22 +2846,53 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
 
   // Update sub unit (normKadro, responsibilities vb.)
   const updateSubUnit = useCallback((coordinatorId: string, subUnitId: string, updates: Partial<SubUnit>) => {
+    if (!coordinatorId || !subUnitId || !updates) {
+      console.error('❌ updateSubUnit: Geçersiz parametreler', { coordinatorId, subUnitId, updates })
+      return
+    }
+    
     setData(prev => {
-      const newData = {
-        ...prev,
-        coordinators: prev.coordinators.map(c =>
-          c.id === coordinatorId
-            ? {
-              ...c,
-              subUnits: (c.subUnits || []).map(su =>
-                su.id === subUnitId ? { ...su, ...updates } : su
-              )
-            }
-            : c
-        )
+      try {
+        // Koordinatör kontrolü
+        const coordinator = prev.coordinators.find(c => c.id === coordinatorId)
+        if (!coordinator) {
+          console.error('❌ updateSubUnit: Koordinatör bulunamadı', { coordinatorId })
+          return prev
+        }
+        
+        // SubUnit kontrolü
+        const subUnit = coordinator.subUnits?.find(su => su.id === subUnitId)
+        if (!subUnit) {
+          console.error('❌ updateSubUnit: Alt birim bulunamadı', { coordinatorId, subUnitId })
+          return prev
+        }
+        
+        const newData = {
+          ...prev,
+          coordinators: prev.coordinators.map(c =>
+            c.id === coordinatorId
+              ? {
+                  ...c,
+                  subUnits: (c.subUnits || []).map(su =>
+                    su.id === subUnitId ? { ...su, ...updates } : su
+                  )
+                }
+              : c
+          )
+        }
+        
+        try {
+          saveToFirebase(newData)
+        } catch (firebaseError) {
+          console.error('❌ updateSubUnit: Firebase kaydetme hatası:', firebaseError)
+          // Firebase hatası olsa bile state'i güncelle
+        }
+        
+        return newData
+      } catch (error) {
+        console.error('❌ updateSubUnit hatası:', error)
+        return prev
       }
-      saveToFirebase(newData)
-      return newData
     })
   }, [saveToFirebase])
 
