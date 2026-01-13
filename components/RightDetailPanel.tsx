@@ -782,7 +782,7 @@ function PersonMiniCard({ person, type, onClose, onUpdate }: PersonMiniCardProps
           </div>
           <div>
             <h4 className="font-bold">{person.name}</h4>
-            <p className="text-sm text-white/80">{person.title || 'Ünvan belirtilmedi'}</p>
+            <p className="text-sm text-white/80 mt-2">{person.title || 'Ünvan belirtilmedi'}</p>
           </div>
         </div>
       </div>

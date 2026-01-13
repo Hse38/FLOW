@@ -314,7 +314,7 @@ export default function PersonnelPanel({ isOpen, onClose, personnel, onPersonCli
                             {item.person.name}
                           </h3>
                           {item.person.title && (
-                            <p className="text-sm text-gray-600 mt-0.5">{item.person.title}</p>
+                            <p className="text-sm text-gray-600 mt-2">{item.person.title}</p>
                           )}
                         </div>
                         <span className={`px-2 py-1 rounded-lg text-xs font-medium border ${getTypeColor(item.type)} whitespace-nowrap`}>

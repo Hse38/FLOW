@@ -217,7 +217,7 @@ const DetailNode = memo(({ data }: DetailNodeProps) => {
             {data.label.charAt(0)}
           </div>
           <div className="text-sm font-semibold leading-tight">{data.label}</div>
-          {data.subtitle && <div className="text-xs text-gray-500">{data.subtitle}</div>}
+          {data.subtitle && <div className="text-xs text-gray-500 mt-2">{data.subtitle}</div>}
         </div>
         <Handle type="source" position={Position.Bottom} className="!bg-gray-400 !w-2.5 !h-2.5 !border-2 !border-white" />
       </div>

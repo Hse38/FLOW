@@ -2219,7 +2219,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                 )}
                 <div>
                   <h3 className="text-base font-bold text-gray-800">{viewPersonCard.person.name}</h3>
-                  <p className="text-xs text-gray-500">{viewPersonCard.person.title || 'Personel'}</p>
+                  <p className="text-xs text-gray-500 mt-2">{viewPersonCard.person.title || 'Personel'}</p>
                 </div>
               </div>
 
@@ -3163,7 +3163,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                               )}
                               <div className="flex-1 min-w-0">
                                 <h3 className="font-semibold text-gray-800 truncate">{person.name}</h3>
-                                <p className="text-sm text-gray-500 truncate">{person.title || 'Personel'}</p>
+                                <p className="text-sm text-gray-500 truncate mt-2">{person.title || 'Personel'}</p>
                                 {person.email && (
                                   <p className="text-xs text-gray-400 truncate mt-1">{person.email}</p>
                                 )}

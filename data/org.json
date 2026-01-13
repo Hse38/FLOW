@@ -2746,12 +2746,12 @@
     },
     {
       "id": "city-1768166410694-44-muq6492vq",
-      "city": "Kayserý",
+      "city": "Kayseri",
       "people": [],
       "ilSorumlusu": {
         "id": "person-1768166410694-60-6i2pqqlmj",
-        "name": "ALÝ OSMAN BAGIRGAN",
-        "title": "İl Sorumlusu"
+        "name": "Ali Osman Bağırgan",
+        "title": "Kayseri İl Sorumlusu"
       },
       "deneyapSorumlusu": {
         "id": "person-1768166410694-61-56z6fw0es",
@@ -2911,12 +2911,12 @@
     },
     {
       "id": "city-1768166410694-50-pt1l9ace4",
-      "city": "Kocaelý (ÝZMÝT)",
+      "city": "Kocaeli (İzmit)",
       "people": [],
       "deneyapSorumlusu": {
         "id": "person-1768166410694-68-vw650jnxr",
-        "name": "AHMET BERK BAKAN",
-        "title": "Deneyap Sorumlusu",
+        "name": "Ahmet Berk Bakan",
+        "title": "Kocaeli (İzmit) Deneyap Sorumlusu",
         "university": "ANKARA ÜNİVERSİTESİ",
         "department": "TARIM MAKİNELERİ VE TEKNOLOJİLERİ MÜHENDİSLİĞİ"
       }
@@ -3313,7 +3313,7 @@
     },
     {
       "id": "city-1768249006812-2wfpigfjk",
-      "city": "Rıze",
+      "city": "Rize",
       "people": [],
       "ilSorumlusu": {
         "id": "person-1768249006812-ccjzfmvg5",
@@ -3322,15 +3322,15 @@
       },
       "deneyapSorumlusu": {
         "id": "person-1768249006812-l86azedc9",
-        "name": "AYSEL TOPÇU",
-        "title": "Deneyap Sorumlusu",
+        "name": "Aysel Topçu",
+        "title": "Rize Deneyap Sorumlusu",
         "university": "GÜMÜŞHANE ÜNİVERSİTESİ",
         "department": "HALKLA İLİŞKİLER VE TANITIM"
       }
     },
     {
       "id": "city-1768166410694-64-8sxj3dk85",
-      "city": "Rýze",
+      "city": "Rize",
       "people": [],
       "ilSorumlusu": {
         "id": "person-1768166410694-84-zfcjpqstu",
@@ -3339,10 +3339,10 @@
       },
       "deneyapSorumlusu": {
         "id": "person-1768166410694-85-4grpkm04k",
-        "name": "AYSEL TOPÇU",
-        "title": "Deneyap Sorumlusu",
-        "university": "GÜMÜÞHANE ÜNÝVERSÝTESÝ",
-        "department": "HALKLA ÝLÝÞKÝLER VE TANITIM"
+        "name": "Aysel Topçu",
+        "title": "Rize Deneyap Sorumlusu",
+        "university": "GÜMÜŞHANE ÜNİVERSİTESİ",
+        "department": "HALKLA İLİŞKİLER VE TANITIM"
       }
     },
     {
@@ -3451,14 +3451,14 @@
     },
     {
       "id": "city-1768166410694-68-j6wzhj9z5",
-      "city": "Sývas",
+      "city": "Sivas",
       "people": [],
       "ilSorumlusu": {
         "id": "person-1768166410694-90-0ib2f07qy",
-        "name": "ABDULKADÝR BAYGÜL",
+        "name": "Abdülkadir Baygül",
         "title": "İl Sorumlusu",
-        "university": "SÝVAS CUMHURÝYET ÜNÝVERSÝTESÝ",
-        "department": "FEN BÝLGÝSÝ"
+        "university": "SİVAS CUMHURİYET ÜNİVERSİTESİ",
+        "department": "FEN BİLGİSİ"
       }
     },
     {
@@ -3557,30 +3557,17 @@
     },
     {
       "id": "city-1768249006813-3d2crludo",
-      "city": "Usak",
+      "city": "Uşak",
       "people": [],
       "ilSorumlusu": {
         "id": "person-1768249006813-4feg7g6il",
-        "name": "ALPEREN REFÝK BÝLAL ÖZSARI",
-        "title": "İl Sorumlusu",
-        "university": "UÞAK ÜNÝVERSÝTESÝ",
-        "department": "METALURJÝ VE MALZEME MÜHENDÝSLÝİÝ, ÝÞLETME"
+        "name": "Alperen Refik Bilal Özsarı",
+        "title": "Uşak İl Sorumlusu",
+        "university": "UŞAK ÜNİVERSİTESİ",
+        "department": "METALURJİ VE MALZEME MÜHENDİSLİĞİ, İŞLETME"
       }
     },
     {
-      "id": "city-1768166410694-74-aisi7lxau",
-      "city": "Uþak",
-      "people": [],
-      "ilSorumlusu": {
-        "id": "person-1768166410694-96-pmhx2m53b",
-        "name": "ALPEREN REFÝK BÝLAL ÖZSARI",
-        "title": "İl Sorumlusu",
-        "university": "UÞAK ÜNÝVERSÝTESÝ",
-        "department": "METALURJÝ VE MALZEME MÜHENDÝSLÝİÝ, ÝÞLETME"
-      }
-    },
-    {
-      "id": "city-1768248761713-h9xnyit7q",
       "city": "U�AK",
       "people": [],
       "ilSorumlusu": {

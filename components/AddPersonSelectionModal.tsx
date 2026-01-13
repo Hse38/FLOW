@@ -174,7 +174,7 @@ export default function AddPersonSelectionModal({
                               {item.person.name}
                             </div>
                             {item.person.title && (
-                              <div className="text-sm text-gray-600 mt-0.5">{item.person.title}</div>
+                              <div className="text-sm text-gray-600 mt-2">{item.person.title}</div>
                             )}
                             <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
                               <span className="px-2 py-1 bg-gray-100 rounded-md">
