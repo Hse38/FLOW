@@ -1221,12 +1221,17 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         // Check if there's a custom connection with specific handles
         const connKey = `${exec.parent}-${exec.id}`
         const customConn = customConnMap.get(connKey)
+        
+        // Özel durum: Selçuk Bayraktar'dan YÖNETİM KURULU BAŞKANI'na bağlantı sol kenardan çıksın
+        const isSelcukToYonetim = exec.parent === 'selcuk-bayraktar' && exec.id === 'elvan-kuzucu'
+        const defaultSourceHandle = isSelcukToYonetim ? 'left-source' : 'bottom-source'
+        
         edgeList.push({
           id: `${exec.parent}-${exec.id}`,
           source: exec.parent,
           target: exec.id,
           type: 'manual', // FULL MANUAL CONTROL: User-defined path
-          sourceHandle: customConn?.sourceHandle || 'bottom-source',
+          sourceHandle: customConn?.sourceHandle || defaultSourceHandle,
           targetHandle: customConn?.targetHandle || 'top',
           style: { stroke: '#3b82f6', strokeWidth: 2.5 },
           data: { 
