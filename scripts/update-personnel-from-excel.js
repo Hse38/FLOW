@@ -152,6 +152,8 @@ function updatePersonInfo(orgData, excelRow) {
   const department = excelRow['Bölüm'] || excelRow['BÖLÜM'] || excelRow['bölüm'] || excelRow['Department'] || excelRow['department'] || excelRow['Departman'] || excelRow['departman'] || ''
   const yearsOfService = excelRow['Çalışma Süresi'] || excelRow['ÇALIŞMA SÜRESİ'] || excelRow['çalışma süresi'] || excelRow['Years of Service'] || excelRow['yearsOfService'] || excelRow['Süre'] || excelRow['süre'] || ''
   const personalLink = excelRow['Link'] || excelRow['LİNK'] || excelRow['link'] || excelRow['Kişisel Link'] || excelRow['Personal Link'] || excelRow['personalLink'] || excelRow['URL'] || excelRow['url'] || ''
+  const startDate = excelRow['İşe Giriş Tarihi'] || excelRow['İŞE GİRİŞ TARİHİ'] || excelRow['işe giriş tarihi'] || excelRow['Start Date'] || excelRow['startDate'] || excelRow['Giriş Tarihi'] || excelRow['giriş tarihi'] || excelRow['Başlangıç Tarihi'] || excelRow['başlangıç tarihi'] || ''
+  const jobDescriptionLinks = excelRow['Görev Tanımı Linkleri'] || excelRow['GÖREV TANIMI LİNKLERİ'] || excelRow['görev tanımı linkleri'] || excelRow['Job Description Links'] || excelRow['jobDescriptionLinks'] || excelRow['Görev Linkleri'] || excelRow['görev linkleri'] || excelRow['Görev Tanım Linki'] || excelRow['görev tanım linki'] || ''
   const jobDescription = excelRow['Görev Tanımı'] || excelRow['GÖREV TANIMI'] || excelRow['görev tanımı'] || excelRow['Job Description'] || excelRow['jobDescription'] || excelRow['Görevler'] || excelRow['görevler'] || excelRow['İş Tanımı'] || excelRow['iş tanımı'] || ''
   const notes = excelRow['Notlar'] || excelRow['NOTLAR'] || excelRow['notlar'] || excelRow['Notes'] || excelRow['notes'] || excelRow['Not'] || excelRow['not'] || ''
   
@@ -207,6 +209,18 @@ function updatePersonInfo(orgData, excelRow) {
   if (personalLink && personalLink.trim()) {
     found.person.personalLink = personalLink.trim()
     updates.push('link')
+  }
+  
+  if (startDate && startDate.trim()) {
+    found.person.startDate = startDate.trim()
+    updates.push('işe giriş tarihi')
+  }
+  
+  if (jobDescriptionLinks && jobDescriptionLinks.trim()) {
+    // Eğer virgülle ayrılmış linkler varsa array'e çevir
+    const links = jobDescriptionLinks.trim().split(',').map(link => link.trim()).filter(link => link)
+    found.person.jobDescriptionLinks = links.length > 1 ? links : links[0] || jobDescriptionLinks.trim()
+    updates.push('görev tanımı linkleri')
   }
   
   if (jobDescription && jobDescription.trim()) {
