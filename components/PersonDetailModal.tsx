@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { X, Upload, FileText, Save, User, Mail, Phone, StickyNote, GraduationCap, Building2, Briefcase, Image } from 'lucide-react'
+import { X, Upload, FileText, Save, User, Mail, Phone, StickyNote, GraduationCap, Building2, Briefcase, Image, Calendar, Link } from 'lucide-react'
 import { Person } from '@/context/OrgDataContext'
 import { showToast } from './Toast'
 
@@ -278,48 +278,6 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
               placeholder="Örn: Bilgisayar Mühendisliği"
             />
-          </div>
-
-          {/* Çalışma Süresi */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              <Calendar className="w-4 h-4 inline mr-1" /> Çalışma Süresi
-            </label>
-            <input
-              type="text"
-              value={yearsOfService}
-              onChange={(e) => setYearsOfService(e.target.value)}
-              disabled={readOnly}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
-              placeholder="Örn: 5 yıl, 2 yıl 3 ay"
-            />
-          </div>
-
-          {/* Kişisel Link */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              <Link className="w-4 h-4 inline mr-1" /> Kişisel Link
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={personalLink}
-                onChange={(e) => setPersonalLink(e.target.value)}
-                disabled={readOnly}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
-                placeholder="ornek-link"
-              />
-              {personalLink && (
-                <a
-                  href={personalLink.startsWith('http') ? personalLink : `https://${personalLink}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm whitespace-nowrap"
-                >
-                  Linki Aç
-                </a>
-              )}
-            </div>
           </div>
 
           {/* İş Tanımı / Görevler */}
