@@ -3130,7 +3130,6 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                             <span className="truncate max-w-[130px] font-medium">{viewPersonCard.coordinatorTitle}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <a href="#" className="text-blue-600 hover:underline text-xs">Web Siteleri</a>
                           </div>
                         </div>
                       ) : null
@@ -3148,7 +3147,6 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                                     </svg>
                                     <span className="font-medium">{coordTitle}</span>
                                   </div>
-                                  <a href="#" className="text-blue-600 hover:underline text-xs">Web Siteleri</a>
                                 </div>
                                 {unitTitles.length > 0 && (
                                   <div className="ml-5 mt-1 space-y-1">
@@ -3171,7 +3169,6 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                               </svg>
                               <span className="truncate max-w-[130px] font-medium">{viewPersonCard.coordinatorTitle}</span>
                             </div>
-                            <a href="#" className="text-blue-600 hover:underline text-xs">Web Siteleri</a>
                           </div>
                         ) : null}
                         {/* Eski format - sadece bir birim varsa */}

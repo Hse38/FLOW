@@ -334,19 +334,6 @@ export default function PersonnelPanel({ isOpen, onClose, personnel, onPersonCli
                             ⏱️ {item.person.yearsOfService}
                           </div>
                         )}
-                        {item.person.personalLink && (
-                          <div className="mt-1">
-                            <a
-                              href={item.person.personalLink.startsWith('http') ? item.person.personalLink : `https://${item.person.personalLink}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-indigo-600 hover:text-indigo-800 hover:underline"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              🔗 Profil Linki
-                            </a>
-                          </div>
-                        )}
                       </div>
 
                       {/* Lokasyon Bilgisi */}

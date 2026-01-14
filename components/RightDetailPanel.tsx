@@ -827,21 +827,6 @@ function PersonMiniCard({ person, type, onClose, onUpdate }: PersonMiniCardProps
                 <span className="text-gray-700">Çalışma Süresi: {person.yearsOfService}</span>
               </div>
             )}
-            {person.personalLink && (
-              <div className="flex items-center gap-2 text-sm">
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                </svg>
-                <a
-                  href={person.personalLink.startsWith('http') ? person.personalLink : `https://${person.personalLink}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-indigo-600 hover:text-indigo-800 hover:underline"
-                >
-                  Kişisel Profil
-                </a>
-              </div>
-            )}
             {person.jobDescription && (
               <div className="bg-gray-50 rounded-lg p-3">
                 <p className="text-xs text-gray-500 mb-1">Görev Tanımı</p>
