@@ -1221,19 +1221,27 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         },
       })
 
-      // Root to deputies - VERTICAL STACK with ORTHOGONAL connectors
+      // Root to deputies - KOORDİNATÖRÜN ALTINDAN BAĞLANACAK
       const uniqueDeputiesForEdges = expandedCoordinatorData.deputies?.filter((deputy, idx, arr) => 
         arr.findIndex(d => d.id === deputy.id) === idx
       ) || []
       
       uniqueDeputiesForEdges.forEach((deputy) => {
         const deputyNodeId = `detail-${coordId}-deputy-${deputy.id}`
+        const connKey = `${rootId}-${deputyNodeId}`
+        const deputyConn = customConnMap.get(connKey)
         edgeList.push({
           id: `detail-coord-to-deputy-${coordId}-${deputy.id}`,
           source: rootId,
           target: deputyNodeId,
-          type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
+          type: 'manual', // FULL MANUAL CONTROL
+          sourceHandle: deputyConn?.sourceHandle || 'bottom-source', // Koordinatörün ALTINDAN
+          targetHandle: deputyConn?.targetHandle || 'top', // Deputy'nin üstüne
           style: { stroke: '#9ca3af', strokeWidth: 1.5 },
+          data: { 
+            waypoints: deputyConn?.waypoints || [], // PERSISTENT: Load from Firebase
+            ...deputyConn?.data 
+          },
         })
       })
 
