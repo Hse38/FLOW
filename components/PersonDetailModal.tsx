@@ -25,8 +25,34 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
   const [cvFileName, setCvFileName] = useState(person.cvFileName || '')
   const [cvData, setCvData] = useState(person.cvData || '')
   const [photoData, setPhotoData] = useState(person.photoData || '')
+  const [yearsOfService, setYearsOfService] = useState(person.yearsOfService || '')
+  const [personalLink, setPersonalLink] = useState(person.personalLink || '')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)
+
+  // Kişinin adından otomatik link oluştur
+  const generatePersonalLink = (personName: string): string => {
+    if (!personName) return ''
+    // Türkçe karakterleri düzelt
+    const turkishToEnglish: Record<string, string> = {
+      'ç': 'c', 'Ç': 'C',
+      'ğ': 'g', 'Ğ': 'G',
+      'ı': 'i', 'İ': 'I',
+      'ö': 'o', 'Ö': 'O',
+      'ş': 's', 'Ş': 'S',
+      'ü': 'u', 'Ü': 'U'
+    }
+    let normalized = personName
+    for (const [tr, en] of Object.entries(turkishToEnglish)) {
+      normalized = normalized.replace(new RegExp(tr, 'g'), en)
+    }
+    // Küçük harfe çevir, boşlukları tire ile değiştir, özel karakterleri temizle
+    return normalized
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+  }
 
   // person prop'u değiştiğinde state'leri güncelle
   useEffect(() => {
