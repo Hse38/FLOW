@@ -74,6 +74,9 @@ export interface Person {
   personalLink?: string // Kişisel link (LinkedIn, website, vb.)
   startDate?: string // İşe giriş tarihi
   jobDescriptionLinks?: string | string[] // Görev tanımı linkleri (URL veya URL array)
+  hireDate?: string // İşe giriş tarihi (alternatif isim)
+  seniority?: string // Kıdem / Çalışma süresi (alternatif isim)
+  jobDescriptionLink?: string // Görev tanımı linki (tekil, alternatif isim)
 }
 
 export interface SubUnit {
