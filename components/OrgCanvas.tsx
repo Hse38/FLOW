@@ -1371,6 +1371,12 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       console.log(`✅ Firebase'den ${addedCount} edge eklendi`)
     }
 
+    // EDGE DEBUG LOG
+    console.log('🔗 Toplam edge oluşturuldu:', edgeList.length)
+    if (edgeList.length > 0) {
+      console.log('  İlk 5 edge:', edgeList.slice(0, 5).map(e => `${e.source}→${e.target}`))
+    }
+
     // STRICT HIERARCHY: Validate edges and remove duplicates
     // Also ensure no unit has multiple incoming connections (violates hierarchy)
     const seenEdgeIds = new Set<string>()
@@ -1379,17 +1385,14 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     const uniqueEdges = edgeList.filter(edge => {
       // Check for duplicate edge IDs
       if (seenEdgeIds.has(edge.id)) {
-        console.warn(`⚠️ Duplicate edge ID detected: ${edge.id}. Skipping duplicate.`)
-        return false
+        return false // Silent skip
       }
       seenEdgeIds.add(edge.id)
       
       // STRICT HIERARCHY RULE: Each target must have exactly ONE source
       // EXCEPTION: T3/Teknofest Ortak Koordinatörlükler iki parent'a sahip olabilir (Elvan ve Muhammet)
       if (targetToSource.has(edge.target) && edge.target !== 't3-teknofest-koordinatorlukleri') {
-        const existingSource = targetToSource.get(edge.target)
-        console.warn(`⚠️ HIERARCHY VIOLATION: Node ${edge.target} has multiple parents (${existingSource} and ${edge.source}). Removing duplicate connection.`)
-        return false
+        return false // Silent skip
       }
       // T3/Teknofest için multiple parent'a izin ver
       if (edge.target !== 't3-teknofest-koordinatorlukleri') {
@@ -1399,6 +1402,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       return true
     })
 
+    console.log('✅ Benzersiz edge sayısı:', uniqueEdges.length)
     return uniqueEdges
   }, [data, expandedCoordinator, expandedCoordinatorData, firebaseConnections, turkeyMapExpanded])
 
