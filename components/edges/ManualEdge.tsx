@@ -90,14 +90,14 @@ const ManualEdge = ({
         markerEnd={markerEnd}
         style={{
           ...style,
-          // "İp" gibi net görünmesi için daha kalın ve koyu
-          stroke: selected ? '#1d4ed8' : (style as any)?.stroke || '#1d4ed8',
-          strokeWidth: Math.max(((style as any)?.strokeWidth as number) || 0, selected ? 7 : 5),
-          opacity: 0.95,
+          // "İp" gibi görünür ama yol gibi kalın değil
+          stroke: selected ? '#1d4ed8' : (style as any)?.stroke || '#2563eb',
+          strokeWidth: Math.max(((style as any)?.strokeWidth as number) || 0, selected ? 4 : 3),
+          opacity: 0.9,
           strokeLinecap: 'round',
           strokeLinejoin: 'round',
-          // İnce çizgiler fonda kaybolmasın diye hafif gölge
-          filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.35))',
+          // Çok hafif gölge (yol efekti yapmasın)
+          filter: 'drop-shadow(0 0.5px 0.5px rgba(0,0,0,0.25))',
         }}
       />
       {selected && waypoints.length > 0 && (
