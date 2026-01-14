@@ -1453,8 +1453,13 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   }, [nodes, setFlowNodes])
 
   useEffect(() => {
+    console.log('🔄 useEffect: edges değişti, flowEdges güncelleniyor:', edges.length)
     setFlowEdges(edges)
   }, [edges, setFlowEdges])
+
+  // KRITIK: flowEdges boşsa, hesaplanan edges'i kullan (ilk render sorunu için)
+  const edgesToRender = (flowEdges.length === 0 && edges.length > 0) ? edges : flowEdges
+  console.log('🎯 ReactFlow edges:', { flowEdges: flowEdges.length, computed: edges.length, rendering: edgesToRender.length })
 
   // Edge data değişikliklerini Firebase'e kaydet (PERSISTENT STATE)
   // flowEdges değiştiğinde edge data'sını kontrol et ve güncelle
@@ -2422,7 +2427,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       <div className="flex-1 h-full relative">
         <ReactFlow
           nodes={flowNodes}
-          edges={flowEdges}
+          edges={edgesToRender}
           onNodesChange={handleNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={(connection) => {
