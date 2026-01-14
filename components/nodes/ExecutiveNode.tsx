@@ -9,6 +9,7 @@ interface ExecutiveNodeProps {
     title?: string
     type?: string
     id?: string // ID'yi de al (renk kontrolü için)
+    onClick?: () => void // Tıklama handler'ı
   }
 }
 
@@ -70,12 +71,20 @@ const ExecutiveNode = memo(({ data }: ExecutiveNodeProps) => {
         id="left-source"
         className={`!w-3 !h-3 !border-2 !border-white ${isBlue ? '!bg-blue-500' : '!bg-rose-500'}`}
       />
-      <div className={`${isBlue
-        ? 'bg-gradient-to-br from-blue-500 to-blue-700 border-blue-400 rounded-xl'
-        : isSpecial 
-        ? 'bg-gradient-to-br from-rose-500 to-rose-700 border-rose-400 rounded-xl' 
-        : 'bg-gradient-to-r from-rose-500 to-rose-600 border-rose-400 rounded-lg'
-      } text-white px-8 py-6 shadow-xl border-2 w-[600px] h-[300px] text-center transition-all duration-300 hover:shadow-2xl hover:scale-105 flex items-center justify-center`}>
+      <div 
+        className={`${isBlue
+          ? 'bg-gradient-to-br from-blue-500 to-blue-700 border-blue-400 rounded-xl'
+          : isSpecial 
+          ? 'bg-gradient-to-br from-rose-500 to-rose-700 border-rose-400 rounded-xl' 
+          : 'bg-gradient-to-r from-rose-500 to-rose-600 border-rose-400 rounded-lg'
+        } text-white px-8 py-6 shadow-xl border-2 w-[600px] h-[300px] text-center transition-all duration-300 hover:shadow-2xl hover:scale-105 flex items-center justify-center ${data.onClick ? 'cursor-pointer' : ''}`}
+        onClick={(e) => {
+          e.stopPropagation()
+          if (data.onClick) {
+            data.onClick()
+          }
+        }}
+      >
         <div className="font-bold text-5xl leading-relaxed break-words flex items-center justify-center">
           {data.label}
         </div>
