@@ -95,6 +95,17 @@ export interface Deputy {
   title: string
   responsibilities: string[]
   color?: string
+  university?: string
+  department?: string
+  hireDate?: string
+  seniority?: string
+  jobDescriptionLink?: string
+  email?: string
+  phone?: string
+  notes?: string
+  cvFileName?: string
+  cvData?: string
+  photoData?: string
 }
 
 export interface Coordinator {
@@ -105,7 +116,22 @@ export interface Coordinator {
   position: { x: number; y: number }
   parent: string
   hasDetailPage?: boolean
-  coordinator?: { name: string; title: string; color?: string }
+  coordinator?: {
+    name: string
+    title: string
+    color?: string
+    university?: string
+    department?: string
+    hireDate?: string
+    seniority?: string
+    jobDescriptionLink?: string
+    email?: string
+    phone?: string
+    notes?: string
+    cvFileName?: string
+    cvData?: string
+    photoData?: string
+  }
   deputies: Deputy[]
   subUnits: SubUnit[]
   people?: Person[]
