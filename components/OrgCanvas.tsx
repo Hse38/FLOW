@@ -1466,7 +1466,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
 
     console.log('✅ Benzersiz edge sayısı:', uniqueEdges.length)
     return uniqueEdges
-  }, [data, expandedCoordinator, expandedCoordinatorData, firebaseConnections, turkeyMapExpanded])
+  }, [data, expandedCoordinator, expandedCoordinatorData, firebaseConnections, turkeyMapExpanded, customPositions, localPositions])
 
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState(nodes)
   const [flowEdges, setFlowEdges, onEdgesChangeBase] = useEdgesState(edges)
