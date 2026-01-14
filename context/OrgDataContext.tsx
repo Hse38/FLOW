@@ -1254,7 +1254,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
           if (savedData) {
             const parsedData = JSON.parse(savedData)
             const cleanedData = cleanDuplicateIds(parsedData)
-            setData(cleanedData)
+            setData(hydrateMissingParents(cleanedData))
             console.log('✅ localStorage\'dan veri yüklendi (timeout)')
           } else {
             setData(cleanDuplicateIds(initialData))
@@ -1291,7 +1291,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
           if (cleanedData !== parsedData) {
             localStorage.setItem(`orgData_${projectId}`, JSON.stringify(cleanedData))
           }
-          setData(cleanedData)
+          setData(hydrateMissingParents(cleanedData))
           } else {
             // İlk yüklemede veya yeni projede initialData'yı kullan
             if (projectId === 'main') {
@@ -1564,7 +1564,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
           if (savedData) {
             const parsedData = JSON.parse(savedData)
             const cleanedData = cleanDuplicateIds(parsedData)
-            setData(cleanedData)
+            setData(hydrateMissingParents(cleanedData))
           } else {
             setData(cleanDuplicateIds(initialData))
           }
@@ -2279,7 +2279,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
         console.log('  - Coordinators:', firebaseData.coordinators?.length || 0)
         
         const cleanedData = cleanDuplicateIds(firebaseData)
-        setData(cleanedData)
+        setData(hydrateMissingParents(cleanedData))
         
         // localStorage'a da kaydet (yedekleme için)
         try {
