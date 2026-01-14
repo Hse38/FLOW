@@ -47,14 +47,15 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
     }
   }, [isOpen, person])
 
-  // İsim değiştiğinde otomatik link oluştur (eğer link boşsa veya otomatik oluşturulmuşsa)
+  // İsim değiştiğinde otomatik link oluştur (eğer link boşsa veya orijinal person'dakiyle aynıysa)
   useEffect(() => {
     if (name && (!personalLink || personalLink === person.personalLink)) {
       const autoLink = generatePersonalLink(name)
-      if (autoLink) {
+      if (autoLink && autoLink !== personalLink) {
         setPersonalLink(autoLink)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name])
 
   if (!isOpen) return null
