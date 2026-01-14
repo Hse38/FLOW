@@ -561,6 +561,10 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             if (exec.id === 'kure-koordinatorlugu') {
               setExpandedKure(prev => !prev)
             }
+            // Toplumsal Çalışmalar koordinatörlüğüne tıklandığında harita aç/kapa
+            if (exec.id === 'toplumsal-calismalar') {
+              setTurkeyMapExpanded(prev => !prev)
+            }
           },
         },
       })
@@ -2601,6 +2605,11 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             // Toplumsal Çalışmalar Koordinatörlüğü'ne tıklandığında haritayı node altında göster
             if (node.id === 'toplumsal-calismalar') {
               setTurkeyMapExpanded(prev => !prev)
+              return
+            }
+            // Küre Koordinatörlüğü'ne tıklandığında expand/collapse
+            if (node.id === 'kure-koordinatorlugu') {
+              setExpandedKure(prev => !prev)
               return
             }
             // MANUEL BAĞLANTI MODU: Aktif
