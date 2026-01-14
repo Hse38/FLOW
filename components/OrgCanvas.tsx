@@ -272,8 +272,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   // Türkiye Haritası Sol Panel (Toplumsal Çalışmalar için)
   const [turkeyMapOpen, setTurkeyMapOpen] = useState<boolean>(false)
   // Türkiye Haritası - Node altında gösterim (Toplumsal Çalışmalar için)
-  // FIXED STATE: Harita (Küre) her zaman görünür - Toplumsal Çalışmalar'ın yanında
-  const [turkeyMapExpanded, setTurkeyMapExpanded] = useState<boolean>(true)
+  // Toplumsal Çalışmalar'a tıklanınca açılır/kapanır
+  const [turkeyMapExpanded, setTurkeyMapExpanded] = useState<boolean>(false)
   // İl personel modalı
   const [selectedCity, setSelectedCity] = useState<string | null>(null)
   const [cityPersonnelModalOpen, setCityPersonnelModalOpen] = useState<boolean>(false)
