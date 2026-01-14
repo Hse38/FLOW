@@ -807,6 +807,47 @@ function PersonMiniCard({ person, type, onClose, onUpdate }: PersonMiniCardProps
                 <span className="text-gray-700">{person.phone}</span>
               </div>
             )}
+            {(person.university || person.department) && (
+              <div className="flex items-start gap-2 text-sm">
+                <svg className="w-4 h-4 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                </svg>
+                <div className="text-gray-700">
+                  {person.university && <div>{person.university}</div>}
+                  {person.department && <div className="text-gray-500 text-xs">{person.department}</div>}
+                </div>
+              </div>
+            )}
+            {person.yearsOfService && (
+              <div className="flex items-center gap-2 text-sm">
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-gray-700">Çalışma Süresi: {person.yearsOfService}</span>
+              </div>
+            )}
+            {person.personalLink && (
+              <div className="flex items-center gap-2 text-sm">
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+                <a
+                  href={person.personalLink.startsWith('http') ? person.personalLink : `https://${person.personalLink}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-indigo-600 hover:text-indigo-800 hover:underline"
+                >
+                  Kişisel Profil
+                </a>
+              </div>
+            )}
+            {person.jobDescription && (
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-xs text-gray-500 mb-1">Görev Tanımı</p>
+                <p className="text-sm text-gray-700 whitespace-pre-line">{person.jobDescription}</p>
+              </div>
+            )}
             {person.notes && (
               <div className="bg-gray-50 rounded-lg p-3">
                 <p className="text-xs text-gray-500 mb-1">Notlar / Görevler</p>

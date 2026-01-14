@@ -1109,20 +1109,6 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     // Track executive IDs to prevent duplicate edges from coordinators array
     const executiveIds = new Set(data.executives.map(e => e.id))
 
-    // Helper: Get node position (from saved positions or default)
-    const getNodePosition = (nodeId: string, defaultPos?: { x: number; y: number }): { x: number; y: number } => {
-      if (customPositions[nodeId]) return customPositions[nodeId]
-      if (localPositions[nodeId]) return localPositions[nodeId]
-      if (defaultPos) return defaultPos
-      
-      // Fallback: Try to find in data
-      const exec = data.executives.find(e => e.id === nodeId)
-      if (exec) return exec.position
-      const mgmt = data.management.find(m => m.id === nodeId)
-      if (mgmt) return mgmt.position
-      return { x: 0, y: 0 }
-    }
-
     // Chairman to executives
     // FULL MANUAL CONTROL: User-defined handles and waypoints
     data.executives.forEach((exec) => {
@@ -1130,56 +1116,16 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         // Check if there's a custom connection with specific handles
         const connKey = `${exec.parent}-${exec.id}`
         const customConn = customConnMap.get(connKey)
-        
-        // ÖZEL: Küre ve Toplumsal Çalışmalar - Selçuk'un SOL kenarından çıkacak, aşağı inecek, T şeklinde
-        const isKureOrToplumsal = exec.id === 'kure-koordinatorlugu' || exec.id === 'toplumsal-calismalar'
-        const specialSourceHandle = isKureOrToplumsal ? 'left-source' : (customConn?.sourceHandle || 'bottom-source')
-        const specialTargetHandle = isKureOrToplumsal ? 'top' : (customConn?.targetHandle || 'top')
-        
-        // Küre/Toplumsal için T şeklinde waypoints hesapla (Firebase'de yoksa)
-        let waypointsForEdge = customConn?.waypoints || []
-        
-        if (isKureOrToplumsal && waypointsForEdge.length === 0) {
-          // T şekli için waypoints oluştur
-          const selcukPos = getNodePosition(exec.parent, data.management[0]?.position)
-          const kurePos = getNodePosition('kure-koordinatorlugu', data.executives.find(e => e.id === 'kure-koordinatorlugu')?.position)
-          const toplumsalPos = getNodePosition('toplumsal-calismalar', data.executives.find(e => e.id === 'toplumsal-calismalar')?.position)
-          
-          // T junction noktası: Küre ve Toplumsal'ın ortasında, biraz yukarıda
-          const tJunctionX = (kurePos.x + toplumsalPos.x) / 2
-          const tJunctionY = Math.min(kurePos.y, toplumsalPos.y) - 80
-          
-          // Selçuk'tan sola giden yatay çizgi için waypoint
-          const horizontalWaypointX = selcukPos.x - 300
-          
-          // Bu edge için waypoints: Selçuk'tan sola, sonra T junction'a in, sonra target'a
-          if (exec.id === 'kure-koordinatorlugu') {
-            waypointsForEdge = [
-              { x: horizontalWaypointX, y: selcukPos.y },  // Sola git
-              { x: tJunctionX, y: selcukPos.y },           // Yatay devam et
-              { x: tJunctionX, y: tJunctionY },            // Aşağı in (T junction)
-              { x: kurePos.x, y: tJunctionY },             // Küre'ye doğru yatay
-            ]
-          } else if (exec.id === 'toplumsal-calismalar') {
-            waypointsForEdge = [
-              { x: horizontalWaypointX, y: selcukPos.y },  // Sola git
-              { x: tJunctionX, y: selcukPos.y },           // Yatay devam et
-              { x: tJunctionX, y: tJunctionY },            // Aşağı in (T junction)
-              { x: toplumsalPos.x, y: tJunctionY },        // Toplumsal'a doğru yatay
-            ]
-          }
-        }
-        
         edgeList.push({
           id: `${exec.parent}-${exec.id}`,
           source: exec.parent,
           target: exec.id,
           type: 'manual', // FULL MANUAL CONTROL: User-defined path
-          sourceHandle: specialSourceHandle,
-          targetHandle: specialTargetHandle,
+          sourceHandle: customConn?.sourceHandle || 'bottom-source',
+          targetHandle: customConn?.targetHandle || 'top',
           style: { stroke: '#3b82f6', strokeWidth: 2.5 },
           data: { 
-            waypoints: waypointsForEdge,
+            waypoints: customConn?.waypoints || [], // PERSISTENT: Load from Firebase
             ...customConn?.data 
           },
         })
@@ -1269,27 +1215,19 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         },
       })
 
-      // Root to deputies - KOORDİNATÖRÜN ALTINDAN BAĞLANACAK
+      // Root to deputies - VERTICAL STACK with ORTHOGONAL connectors
       const uniqueDeputiesForEdges = expandedCoordinatorData.deputies?.filter((deputy, idx, arr) => 
         arr.findIndex(d => d.id === deputy.id) === idx
       ) || []
       
       uniqueDeputiesForEdges.forEach((deputy) => {
         const deputyNodeId = `detail-${coordId}-deputy-${deputy.id}`
-        const connKey = `${rootId}-${deputyNodeId}`
-        const deputyConn = customConnMap.get(connKey)
         edgeList.push({
           id: `detail-coord-to-deputy-${coordId}-${deputy.id}`,
           source: rootId,
           target: deputyNodeId,
-          type: 'manual', // FULL MANUAL CONTROL
-          sourceHandle: deputyConn?.sourceHandle || 'bottom-source', // Koordinatörün ALTINDAN
-          targetHandle: deputyConn?.targetHandle || 'top', // Deputy'nin üstüne
+          type: 'step', // DRAW.IO STYLE ORTHOGONAL: 90-degree angles only
           style: { stroke: '#9ca3af', strokeWidth: 1.5 },
-          data: { 
-            waypoints: deputyConn?.waypoints || [], // PERSISTENT: Load from Firebase
-            ...deputyConn?.data 
-          },
         })
       })
 
@@ -1466,7 +1404,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
 
     console.log('✅ Benzersiz edge sayısı:', uniqueEdges.length)
     return uniqueEdges
-  }, [data, expandedCoordinator, expandedCoordinatorData, firebaseConnections, turkeyMapExpanded, customPositions, localPositions])
+  }, [data, expandedCoordinator, expandedCoordinatorData, firebaseConnections, turkeyMapExpanded])
 
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState(nodes)
   const [flowEdges, setFlowEdges, onEdgesChangeBase] = useEdgesState(edges)
@@ -1515,13 +1453,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   }, [nodes, setFlowNodes])
 
   useEffect(() => {
-    console.log('🔄 useEffect: edges değişti, flowEdges güncelleniyor:', edges.length)
     setFlowEdges(edges)
   }, [edges, setFlowEdges])
-
-  // KRITIK: flowEdges boşsa, hesaplanan edges'i kullan (ilk render sorunu için)
-  const edgesToRender = (flowEdges.length === 0 && edges.length > 0) ? edges : flowEdges
-  console.log('🎯 ReactFlow edges:', { flowEdges: flowEdges.length, computed: edges.length, rendering: edgesToRender.length })
 
   // Edge data değişikliklerini Firebase'e kaydet (PERSISTENT STATE)
   // flowEdges değiştiğinde edge data'sını kontrol et ve güncelle
@@ -2489,7 +2422,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       <div className="flex-1 h-full relative">
         <ReactFlow
           nodes={flowNodes}
-          edges={edgesToRender}
+          edges={flowEdges}
           onNodesChange={handleNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={(connection) => {
@@ -3076,6 +3009,38 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                   <p className="text-xs text-gray-400 italic">Belirtilmemiş</p>
                 )}
               </div>
+
+              {/* Çalışma Süresi ve Kişisel Link */}
+              {(viewPersonCard.person.yearsOfService || viewPersonCard.person.personalLink) && (
+                <div className="bg-blue-50 rounded-lg px-3 py-2.5 mb-3">
+                  {viewPersonCard.person.yearsOfService && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <div className="text-xs">
+                        <span className="font-semibold text-blue-600">Çalışma Süresi:</span>
+                        <span className="text-gray-700 ml-1">{viewPersonCard.person.yearsOfService}</span>
+                      </div>
+                    </div>
+                  )}
+                  {viewPersonCard.person.personalLink && (
+                    <div className="flex items-center gap-2">
+                      <svg className="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                      <a
+                        href={viewPersonCard.person.personalLink.startsWith('http') ? viewPersonCard.person.personalLink : `https://${viewPersonCard.person.personalLink}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                      >
+                        Kişisel Profil Linki
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* İş Kalemleri / Görev Tanımı */}
               <div className="mb-3">

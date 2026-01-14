@@ -322,6 +322,31 @@ export default function PersonnelPanel({ isOpen, onClose, personnel, onPersonCli
                             </span>
                           </div>
                         )}
+                        {(item.person.university || item.person.department) && (
+                          <div className="mt-1 text-xs text-gray-500">
+                            {item.person.university && <span>{item.person.university}</span>}
+                            {item.person.university && item.person.department && <span> - </span>}
+                            {item.person.department && <span>{item.person.department}</span>}
+                          </div>
+                        )}
+                        {item.person.yearsOfService && (
+                          <div className="mt-1 text-xs text-gray-500">
+                            ⏱️ {item.person.yearsOfService}
+                          </div>
+                        )}
+                        {item.person.personalLink && (
+                          <div className="mt-1">
+                            <a
+                              href={item.person.personalLink.startsWith('http') ? item.person.personalLink : `https://${item.person.personalLink}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-indigo-600 hover:text-indigo-800 hover:underline"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              🔗 Profil Linki
+                            </a>
+                          </div>
+                        )}
                       </div>
 
                       {/* Lokasyon Bilgisi */}
