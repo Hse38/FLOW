@@ -37,7 +37,7 @@ import PersonnelPanel from './PersonnelPanel'
 import SubUnitDeputyChangeModal from './SubUnitDeputyChangeModal'
 import SubUnitSelectionModal from './SubUnitSelectionModal'
 import AddPersonSelectionModal from './AddPersonSelectionModal'
-import KureDetailModal from './KureDetailModal'
+import KureRightPanel from './KureRightPanel'
 import { showToast } from './Toast'
 import { useOrgData, Person, OrgData } from '@/context/OrgDataContext'
 import { toPng, toSvg } from 'html-to-image'
@@ -282,8 +282,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   // Personel Paneli (yan menü)
   const [personnelPanelOpen, setPersonnelPanelOpen] = useState<boolean>(false)
 
-  // Küre Detay Modal
-  const [kureModalOpen, setKureModalOpen] = useState<boolean>(false)
+  // Küre Sağ Panel
+  const [kurePanelOpen, setKurePanelOpen] = useState<boolean>(false)
 
   // Kilitleme durumu - Firebase'den geliyor
   const isLocked = firebaseLocked
@@ -3446,10 +3446,10 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           />
         )}
 
-        {/* Küre Detay Modal */}
-        <KureDetailModal
-          isOpen={kureModalOpen}
-          onClose={() => setKureModalOpen(false)}
+        {/* Küre Sağ Panel */}
+        <KureRightPanel
+          isOpen={kurePanelOpen}
+          onClose={() => setKurePanelOpen(false)}
         />
 
         {/* Connection List Modal - Bağlantıları göster/kaldır */}
