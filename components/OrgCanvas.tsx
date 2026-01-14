@@ -326,7 +326,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     isOpen: boolean
     person: Person
     coordinatorId: string
-    subUnitId: string
+    subUnitId?: string
+    type?: 'coordinator' | 'deputy' | 'subunit-person'
+    deputyId?: string
   } | null>(null)
 
   // Sağ tarafta kişi görüntüleme kartı (şema üzerinden tıklayınca)
@@ -2981,8 +2983,64 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             person={personDetailModal.person}
             onClose={() => setPersonDetailModal(null)}
             onSave={(updates) => {
-              updatePerson(personDetailModal.coordinatorId, personDetailModal.subUnitId, personDetailModal.person.id, updates)
-              showToast('Personel bilgileri güncellendi', 'success')
+              if (personDetailModal.type === 'coordinator') {
+                // Koordinatör güncelleme
+                const coordinator = data.coordinators.find(c => c.id === personDetailModal.coordinatorId)
+                if (coordinator) {
+                  updateCoordinator(personDetailModal.coordinatorId, {
+                    coordinator: {
+                      ...coordinator.coordinator,
+                      name: updates.name || coordinator.coordinator?.name || '',
+                      title: updates.title || coordinator.coordinator?.title || '',
+                      university: updates.university || coordinator.coordinator?.university || '',
+                      department: updates.department || coordinator.coordinator?.department || '',
+                      hireDate: updates.hireDate || coordinator.coordinator?.hireDate || '',
+                      seniority: updates.seniority || coordinator.coordinator?.seniority || '',
+                      jobDescriptionLink: updates.jobDescriptionLink || coordinator.coordinator?.jobDescriptionLink || '',
+                      email: updates.email || coordinator.coordinator?.email || '',
+                      phone: updates.phone || coordinator.coordinator?.phone || '',
+                      notes: updates.notes || coordinator.coordinator?.notes || '',
+                      cvFileName: updates.cvFileName || coordinator.coordinator?.cvFileName || '',
+                      cvData: updates.cvData || coordinator.coordinator?.cvData || '',
+                      photoData: updates.photoData || coordinator.coordinator?.photoData || '',
+                    }
+                  })
+                  showToast('Koordinatör bilgileri güncellendi', 'success')
+                }
+              } else if (personDetailModal.type === 'deputy' && personDetailModal.deputyId) {
+                // Deputy güncelleme
+                const coordinator = data.coordinators.find(c => c.id === personDetailModal.coordinatorId)
+                if (coordinator) {
+                  const updatedDeputies = coordinator.deputies?.map(d =>
+                    d.id === personDetailModal.deputyId
+                      ? {
+                          ...d,
+                          name: updates.name || d.name,
+                          title: updates.title || d.title || '',
+                          university: updates.university || d.university || '',
+                          department: updates.department || d.department || '',
+                          hireDate: updates.hireDate || d.hireDate || '',
+                          seniority: updates.seniority || d.seniority || '',
+                          jobDescriptionLink: updates.jobDescriptionLink || d.jobDescriptionLink || '',
+                          email: updates.email || d.email || '',
+                          phone: updates.phone || d.phone || '',
+                          notes: updates.notes || d.notes || '',
+                          cvFileName: updates.cvFileName || d.cvFileName || '',
+                          cvData: updates.cvData || d.cvData || '',
+                          photoData: updates.photoData || d.photoData || '',
+                        }
+                      : d
+                  )
+                  updateCoordinator(personDetailModal.coordinatorId, {
+                    deputies: updatedDeputies || []
+                  })
+                  showToast('Koordinatör yardımcısı bilgileri güncellendi', 'success')
+                }
+              } else if (personDetailModal.subUnitId) {
+                // SubUnit personel güncelleme
+                updatePerson(personDetailModal.coordinatorId, personDetailModal.subUnitId, personDetailModal.person.id, updates)
+                showToast('Personel bilgileri güncellendi', 'success')
+              }
               setPersonDetailModal(null)
               // Koordinatörü tekrar expand et (güncellenmiş verilerin görünmesi için)
               setTimeout(() => {
@@ -3222,25 +3280,25 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               </p>
               <p className="text-sm font-semibold text-gray-800 truncate">{personContextMenu.person.name}</p>
             </div>
-            {personContextMenu.type !== 'deputy' && personContextMenu.type !== 'coordinator' && (
-              <button
-                onClick={() => {
-                  setPersonDetailModal({
-                    isOpen: true,
-                    person: personContextMenu.person,
-                    coordinatorId: personContextMenu.coordinatorId,
-                    subUnitId: personContextMenu.subUnitId,
-                  })
-                  setPersonContextMenu(null)
-                }}
-                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 flex items-center gap-2 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                Düzenle
-              </button>
-            )}
+            <button
+              onClick={() => {
+                setPersonDetailModal({
+                  isOpen: true,
+                  person: personContextMenu.person,
+                  coordinatorId: personContextMenu.coordinatorId,
+                  subUnitId: personContextMenu.subUnitId,
+                  type: personContextMenu.type === 'coordinator' ? 'coordinator' : personContextMenu.type === 'deputy' ? 'deputy' : 'subunit-person',
+                  deputyId: personContextMenu.deputyId,
+                })
+                setPersonContextMenu(null)
+              }}
+              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 flex items-center gap-2 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Düzenle
+            </button>
             <button
               onClick={() => {
                 setViewPersonCard({

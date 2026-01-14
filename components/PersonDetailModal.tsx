@@ -11,9 +11,10 @@ interface PersonDetailModalProps {
   person: Person
   onSave: (updates: Partial<Person>) => void
   readOnly?: boolean
+  role?: 'ilSorumlusu' | 'deneyapSorumlusu' // Şehir personeli için role
 }
 
-export default function PersonDetailModal({ isOpen, onClose, person, onSave, readOnly = false }: PersonDetailModalProps) {
+export default function PersonDetailModal({ isOpen, onClose, person, onSave, readOnly = false, role }: PersonDetailModalProps) {
   const [name, setName] = useState(person.name || '')
   const [title, setTitle] = useState(person.title || '')
   const [email, setEmail] = useState(person.email || '')
@@ -45,6 +46,9 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
       setCvFileName(person.cvFileName || '')
       setCvData(person.cvData || '')
       setPhotoData(person.photoData || '')
+      setHireDate(person.hireDate || '')
+      setSeniority(person.seniority || '')
+      setJobDescriptionLink(person.jobDescriptionLink || '')
     }
   }, [isOpen, person])
 
@@ -350,6 +354,25 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
               </div>
             )}
           </div>
+
+          {/* İl Sorumlusu Ortak Görev Tanımı Linki */}
+          {role === 'ilSorumlusu' && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <label className="block text-sm font-medium text-blue-700 mb-2">
+                <Briefcase className="w-4 h-4 inline mr-1" /> İl Sorumlusu Görev Tanımı
+              </label>
+              <a
+                href="https://docs.google.com/spreadsheets/d/1ltpimz6yASPxifSGWB-swH2osdbymkDp/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium"
+              >
+                <LinkIcon className="w-4 h-4" />
+                <span>Ortak Görev Tanımı Belgesi</span>
+                <span className="text-xs">↗</span>
+              </a>
+            </div>
+          )}
 
           {/* İş Tanımı / Görevler */}
           <div>
