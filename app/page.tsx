@@ -387,65 +387,8 @@ export default function Home() {
       {/* Main Content */}
       <div className="flex-1 relative">
         {/* Header Overlay */}
-        <motion.div
-          initial={{ y: -100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="absolute top-0 left-0 right-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm"
-        >
-          <div className="container mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {/* Menu Button */}
-                <button
-                  onClick={() => setIsSidebarOpen(true)}
-                  className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors"
-                  title="Menü"
-                >
-                  <Menu className="w-6 h-6 text-gray-700" />
-                </button>
-
-                <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 p-2.5 rounded-xl shadow-lg">
-                  <Network className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
-                    {currentProject?.name || 'T3 Vakfı Organizasyonu'}
-                  </h1>
-                  <p className="text-sm text-gray-600">İnteraktif Kurumsal Yapı Haritası</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                {/* Mode Toggle Buttons */}
-                <div className="flex items-center bg-gray-100 rounded-xl p-1 gap-1">
-                  <button
-                    onClick={() => setIsPresentationMode(false)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium text-sm ${!isPresentationMode
-                      ? 'bg-white text-indigo-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                  >
-                    <Edit2 className="w-4 h-4" />
-                    <span className="hidden lg:inline">Düzenle</span>
-                  </button>
-                  <button
-                    onClick={() => setIsPresentationMode(true)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium text-sm ${isPresentationMode
-                      ? 'bg-white text-indigo-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                  >
-                    <Eye className="w-4 h-4" />
-                    <span className="hidden lg:inline">Sunum</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Canvas with top padding for header */}
-        <div className="w-full h-screen pt-20">
+        {/* Canvas - Full Screen */}
+        <div className="w-full h-screen">
           <OrgCanvas
             currentProjectId={currentProject?.id || null}
             currentProjectName={currentProject?.name}

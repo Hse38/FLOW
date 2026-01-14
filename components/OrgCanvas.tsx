@@ -2625,8 +2625,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             }
           }}
           nodesDraggable={!isLocked}
-          minZoom={0.05}
-          maxZoom={1.5}
+          minZoom={0.01}
+          maxZoom={2}
           defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
           defaultEdgeOptions={{ 
             type: 'manual', // Use manual edge type for full user control
