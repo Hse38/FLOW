@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { X, Upload, FileText, Save, User, Mail, Phone, StickyNote, GraduationCap, Building2, Briefcase, Image, Calendar, Link } from 'lucide-react'
+import { X, Upload, FileText, Save, User, Mail, Phone, StickyNote, GraduationCap, Building2, Briefcase, Image, Calendar, Link as LinkIcon } from 'lucide-react'
 import { Person } from '@/context/OrgDataContext'
 import { showToast } from './Toast'
 
@@ -25,6 +25,9 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
   const [cvFileName, setCvFileName] = useState(person.cvFileName || '')
   const [cvData, setCvData] = useState(person.cvData || '')
   const [photoData, setPhotoData] = useState(person.photoData || '')
+  const [hireDate, setHireDate] = useState(person.hireDate || '')
+  const [seniority, setSeniority] = useState(person.seniority || '')
+  const [jobDescriptionLink, setJobDescriptionLink] = useState(person.jobDescriptionLink || '')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)
 
@@ -111,6 +114,9 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
       cvFileName,
       cvData,
       photoData,
+      hireDate,
+      seniority,
+      jobDescriptionLink,
     })
     onClose()
   }
@@ -278,6 +284,71 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
               placeholder="Örn: Bilgisayar Mühendisliği"
             />
+          </div>
+
+          {/* İşe Giriş ve Çalışma Süresi */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              <Calendar className="w-4 h-4 inline mr-1" /> İşe Giriş ve Çalışma Süresi
+            </label>
+            <div className="space-y-2">
+              <input
+                type="text"
+                value={hireDate}
+                onChange={(e) => setHireDate(e.target.value)}
+                disabled={readOnly}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+                placeholder="İşe giriş tarihi (örn: 2/26/24)"
+              />
+              <input
+                type="text"
+                value={seniority}
+                onChange={(e) => setSeniority(e.target.value)}
+                disabled={readOnly}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+                placeholder="Çalışma süresi (örn: 1 yıl 10 ay)"
+              />
+            </div>
+          </div>
+
+          {/* Görev Tanımı Linkleri */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              <LinkIcon className="w-4 h-4 inline mr-1" /> Görev Tanımı Linkleri
+            </label>
+            {jobDescriptionLink ? (
+              <div className="flex items-center gap-2">
+                <a
+                  href={jobDescriptionLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 hover:bg-blue-100 transition-colors flex items-center gap-2"
+                >
+                  <LinkIcon className="w-4 h-4" />
+                  <span className="truncate">Görev Tanımı Linki</span>
+                  <span className="ml-auto text-xs">↗</span>
+                </a>
+                {!readOnly && (
+                  <button
+                    onClick={() => setJobDescriptionLink('')}
+                    className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
+                  >
+                    Sil
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div>
+                <input
+                  type="url"
+                  value={jobDescriptionLink}
+                  onChange={(e) => setJobDescriptionLink(e.target.value)}
+                  disabled={readOnly}
+                  className="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+                  placeholder="Görev tanımı linki eklenmemiş"
+                />
+              </div>
+            )}
           </div>
 
           {/* İş Tanımı / Görevler */}

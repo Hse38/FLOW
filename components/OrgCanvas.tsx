@@ -3010,73 +3010,54 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                 )}
               </div>
 
-              {/* İşe Giriş Tarihi ve Çalışma Süresi */}
+              {/* İşe Giriş ve Çalışma Süresi */}
               <div className="mb-3">
-                <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1.5 flex items-center gap-1.5">
+                <h4 className="text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  İşe Giriş ve Çalışma Süresi
+                  İŞE GİRİŞ VE ÇALIŞMA SÜRESİ
                 </h4>
-                <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-                  {viewPersonCard.person.startDate || viewPersonCard.person.yearsOfService ? (
-                    <div className="space-y-1.5 text-xs text-gray-700">
-                      {viewPersonCard.person.startDate && (
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-blue-600">İşe Giriş:</span>
-                          <span>{viewPersonCard.person.startDate}</span>
-                        </div>
-                      )}
-                      {viewPersonCard.person.yearsOfService && (
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-blue-600">Çalışma Süresi:</span>
-                          <span>{viewPersonCard.person.yearsOfService}</span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-gray-400 italic text-center">Bilgi belirtilmemiş</p>
-                  )}
-                </div>
+                {(viewPersonCard.person.hireDate || viewPersonCard.person.seniority) ? (
+                  <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
+                    <p className="text-xs text-gray-700">
+                      {viewPersonCard.person.hireDate || ''} {viewPersonCard.person.seniority ? `- ${viewPersonCard.person.seniority}` : ''}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+                    <p className="text-xs text-gray-400 text-center">Bilgi belirtilmemiş</p>
+                  </div>
+                )}
               </div>
 
               {/* Görev Tanımı Linkleri */}
-              <div>
-                <h4 className="text-xs font-semibold text-gray-500 uppercase mb-1.5 flex items-center gap-1.5">
+              <div className="mb-3">
+                <h4 className="text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                   </svg>
-                  Görev Tanımı Linkleri
+                  GÖREV TANIMI LİNKLERİ
                 </h4>
-                {viewPersonCard.person.jobDescriptionLinks ? (
-                  <div className="border-2 border-indigo-200 bg-indigo-50 rounded-lg p-3">
-                    {Array.isArray(viewPersonCard.person.jobDescriptionLinks) ? (
-                      <div className="space-y-2">
-                        {viewPersonCard.person.jobDescriptionLinks.map((link, idx) => (
-                          <a
-                            key={idx}
-                            href={link.startsWith('http') ? link : `https://${link}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block text-xs text-indigo-600 hover:text-indigo-800 hover:underline break-all"
-                          >
-                            🔗 {link}
-                          </a>
-                        ))}
-                      </div>
-                    ) : (
-                      <a
-                        href={viewPersonCard.person.jobDescriptionLinks.startsWith('http') ? viewPersonCard.person.jobDescriptionLinks : `https://${viewPersonCard.person.jobDescriptionLinks}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block text-xs text-indigo-600 hover:text-indigo-800 hover:underline break-all"
-                      >
-                        🔗 {viewPersonCard.person.jobDescriptionLinks}
-                      </a>
-                    )}
+                {viewPersonCard.person.jobDescriptionLink ? (
+                  <div className="bg-purple-50 border border-purple-100 rounded-lg px-3 py-2.5">
+                    <a
+                      href={viewPersonCard.person.jobDescriptionLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-purple-700 hover:text-purple-900 flex items-center gap-1.5"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                      <span className="truncate">Görev Tanımı Linki</span>
+                      <svg className="w-3 h-3 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
                   </div>
                 ) : (
-                  <div className="border-2 border-dashed border-gray-200 rounded-lg p-3 text-center">
+                  <div className="border-2 border-dashed border-gray-200 rounded-lg px-3 py-4 text-center">
                     <svg className="w-6 h-6 mx-auto text-gray-300 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                     </svg>
