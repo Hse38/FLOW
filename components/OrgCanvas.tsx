@@ -557,14 +557,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           type: exec.type,
           id: exec.id, // ID'yi de geç (renk kontrolü için)
           onClick: () => {
-            // Küre koordinatörlüğüne tıklandığında expand/collapse
-            if (exec.id === 'kure-koordinatorlugu') {
-              setExpandedKure(prev => !prev)
-            }
-            // Toplumsal Çalışmalar koordinatörlüğüne tıklandığında harita aç/kapa
-            if (exec.id === 'toplumsal-calismalar') {
-              setTurkeyMapExpanded(prev => !prev)
-            }
+            // onClick burada boş - toggle işlemi onNodeClick'te yapılıyor
+            // Çift toggle sorununu önlemek için burası devre dışı
           },
         },
       })
