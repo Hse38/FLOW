@@ -1109,6 +1109,20 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
     // Track executive IDs to prevent duplicate edges from coordinators array
     const executiveIds = new Set(data.executives.map(e => e.id))
 
+    // Helper: Get node position (from saved positions or default)
+    const getNodePosition = (nodeId: string, defaultPos?: { x: number; y: number }): { x: number; y: number } => {
+      if (customPositions[nodeId]) return customPositions[nodeId]
+      if (localPositions[nodeId]) return localPositions[nodeId]
+      if (defaultPos) return defaultPos
+      
+      // Fallback: Try to find in data
+      const exec = data.executives.find(e => e.id === nodeId)
+      if (exec) return exec.position
+      const mgmt = data.management.find(m => m.id === nodeId)
+      if (mgmt) return mgmt.position
+      return { x: 0, y: 0 }
+    }
+
     // Chairman to executives
     // FULL MANUAL CONTROL: User-defined handles and waypoints
     data.executives.forEach((exec) => {
@@ -1117,10 +1131,44 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         const connKey = `${exec.parent}-${exec.id}`
         const customConn = customConnMap.get(connKey)
         
-        // ÖZEL: Küre ve Toplumsal Çalışmalar - Selçuk'un SOL tarafından çıkacak, aşağı inecek
+        // ÖZEL: Küre ve Toplumsal Çalışmalar - Selçuk'un SOL kenarından çıkacak, aşağı inecek, T şeklinde
         const isKureOrToplumsal = exec.id === 'kure-koordinatorlugu' || exec.id === 'toplumsal-calismalar'
         const specialSourceHandle = isKureOrToplumsal ? 'left-source' : (customConn?.sourceHandle || 'bottom-source')
-        const specialTargetHandle = isKureOrToplumsal ? 'right' : (customConn?.targetHandle || 'top')
+        const specialTargetHandle = isKureOrToplumsal ? 'top' : (customConn?.targetHandle || 'top')
+        
+        // Küre/Toplumsal için T şeklinde waypoints hesapla (Firebase'de yoksa)
+        let waypointsForEdge = customConn?.waypoints || []
+        
+        if (isKureOrToplumsal && waypointsForEdge.length === 0) {
+          // T şekli için waypoints oluştur
+          const selcukPos = getNodePosition(exec.parent, data.management[0]?.position)
+          const kurePos = getNodePosition('kure-koordinatorlugu', data.executives.find(e => e.id === 'kure-koordinatorlugu')?.position)
+          const toplumsalPos = getNodePosition('toplumsal-calismalar', data.executives.find(e => e.id === 'toplumsal-calismalar')?.position)
+          
+          // T junction noktası: Küre ve Toplumsal'ın ortasında, biraz yukarıda
+          const tJunctionX = (kurePos.x + toplumsalPos.x) / 2
+          const tJunctionY = Math.min(kurePos.y, toplumsalPos.y) - 80
+          
+          // Selçuk'tan sola giden yatay çizgi için waypoint
+          const horizontalWaypointX = selcukPos.x - 300
+          
+          // Bu edge için waypoints: Selçuk'tan sola, sonra T junction'a in, sonra target'a
+          if (exec.id === 'kure-koordinatorlugu') {
+            waypointsForEdge = [
+              { x: horizontalWaypointX, y: selcukPos.y },  // Sola git
+              { x: tJunctionX, y: selcukPos.y },           // Yatay devam et
+              { x: tJunctionX, y: tJunctionY },            // Aşağı in (T junction)
+              { x: kurePos.x, y: tJunctionY },             // Küre'ye doğru yatay
+            ]
+          } else if (exec.id === 'toplumsal-calismalar') {
+            waypointsForEdge = [
+              { x: horizontalWaypointX, y: selcukPos.y },  // Sola git
+              { x: tJunctionX, y: selcukPos.y },           // Yatay devam et
+              { x: tJunctionX, y: tJunctionY },            // Aşağı in (T junction)
+              { x: toplumsalPos.x, y: tJunctionY },        // Toplumsal'a doğru yatay
+            ]
+          }
+        }
         
         edgeList.push({
           id: `${exec.parent}-${exec.id}`,
@@ -1131,7 +1179,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           targetHandle: specialTargetHandle,
           style: { stroke: '#3b82f6', strokeWidth: 2.5 },
           data: { 
-            waypoints: customConn?.waypoints || [], // PERSISTENT: Load from Firebase
+            waypoints: waypointsForEdge,
             ...customConn?.data 
           },
         })
