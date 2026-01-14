@@ -20,7 +20,12 @@
             {
               "id": "ismail-ulucam",
               "name": "İSMAİL ULUÇAM",
-              "title": "SATIN ALMA SORUMLUSU"
+              "title": "SATIN ALMA SORUMLUSU",
+              "university": "İSTANBUL ÜNİVERSİTESİ",
+              "department": "ULUSLARARASI İLİŞKİLER",
+              "hireDate": "2/26/24",
+              "seniority": "1 yıl 10 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1w1PLyGfT_kY0KCXFbg4Ac88HRMBILEHj/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -38,7 +43,12 @@
             {
               "id": "haluk-sakir-ekinci",
               "name": "HALUK ŞAKİR EKİNCİ",
-              "title": "ERP SISTEM SORUMLUSU"
+              "title": "UZMAN YARDIMCISI/ERP SİSTEM SORUMLUSU",
+              "university": "15 TEMMUZ ŞEHİTLERİ ANADOLU İMAMHATİP LİSESİ",
+              "department": "BİLGİSAYAR MÜHENDİSLİĞİ",
+              "hireDate": "12/20/24",
+              "seniority": "1 yıl 0 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1nD7PSA1LFqT6_SjjpFugJJTMJZdG2PUp/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -56,7 +66,12 @@
             {
               "id": "mustafa-kara",
               "name": "MUSTAFA KARA",
-              "title": "PROJE MENTÖRÜ"
+              "title": "KIDEMLİ UZMAN/ PROJE MENTÖRÜ",
+              "university": "ANADOLU ÜNİVERSİTESİ",
+              "department": "SINIF ÖĞRETMENLİĞİ- EDEBİYAT BÖLÜMÜ",
+              "hireDate": "9/25/25",
+              "seniority": "0 yıl 3 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1kzXKSrvDHhEctZF6TZuKxN9LJOgHiV40/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -74,7 +89,12 @@
             {
               "id": "abdullah-emre-can-seckin",
               "name": "ABDULLAH EMRE CAN SEÇKİN",
-              "title": "TOPLAM KALITE YÖNETIMI SORUMLUSU"
+              "title": "UZMAN (U2)/TOPLAM KALİTE YÖNETİMİ",
+              "university": "SAKARYA ÜNİVERSİTESİ",
+              "department": "MAKİNE MÜHENDİSLİĞİ",
+              "hireDate": "10/10/22",
+              "seniority": "3 yıl 3 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1y-UY4QwoY_QHWsO_bH4ClD6Lz7YLsChF/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -92,7 +112,12 @@
             {
               "id": "aysegul-sahin",
               "name": "AYŞEGÜL ŞAHİN",
-              "title": "YÖNETICI ASISTANI"
+              "title": "YÖNETİCİ ASİSTANI",
+              "university": "KARADENİZ TEKNİK ÜNİVERSİTESİ",
+              "department": "MALİYE",
+              "hireDate": "9/19/23",
+              "seniority": "2 yıl 3 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1w_AOGuIs1qqMiijhFtBLYlmJfHsLU0rH/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -110,7 +135,12 @@
             {
               "id": "rumeysa-ay",
               "name": "RUMEYSA AY",
-              "title": "İLETIŞIM UZMANI"
+              "title": "UZMAN (U2)/İLETİŞİM UZMANI",
+              "university": "BOĞAZİÇİ ÜNİVERSİTESİ",
+              "department": "SOSYOLOJİ",
+              "hireDate": "11/4/24",
+              "seniority": "1 yıl 2 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1kmChaVEyhvH230tgLrUQ5pwTUc8iSmlE/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -128,8 +158,11 @@
       "coordinator": {
         "department": "ULUSLARARASI FİNANS VE KATILIM BANKACILIĞI",
         "name": "Erkut Kalkavan",
-        "title": "BURSIYER KOORDINATÖRÜ",
-        "university": "İSTANBUL SABAHATTİN ZAİM ÜNİVERSİTESİ"
+        "title": "KOORDİNATÖR/İL SORUMLUSU",
+        "university": "İSTANBUL SABAHATTİN ZAİM ÜNİVERSİTESİ",
+        "hireDate": "6/12/23",
+        "seniority": "2 yıl 7 ay",
+        "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1g0oS9sK7uJL4JlABaFprFTz1zmpuiYx6/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
       },
       "description": "Burs programları yönetimi",
       "hasDetailPage": true,
@@ -151,18 +184,24 @@
           "id": "bursiyer-birimi",
           "people": [
             {
-              "department": "YOK",
+              "department": "METALURJİ VE MALZEME MÜHENDİSLİĞİ",
               "id": "muhammet-ali-demir",
               "name": "Muhammet Ali Demir",
-              "title": "BURSIYER SORUMLUSU",
-              "university": "ERVAĞ MERKEZ ANADOLU LİSESİ"
+              "title": "UZMAN YARDIMCISI",
+              "university": "ERVAĞ MERKEZ ANADOLU LİSESİ",
+              "hireDate": "1/13/25",
+              "seniority": "1 yıl 0 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1MD_rt4CJ82lgoCZ054BwHaO3eWloCpgD/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "department": "ARAP DİLİ VE EDEBİYATI",
               "id": "nur-turhal",
               "name": "Nur Turhal",
-              "title": "BURSIYER SORUMLUSU",
-              "university": "KAHİRE ÜNİVERSİTESİ"
+              "title": "KIDEMLİ UZMAN",
+              "university": "KAHİRE ÜNİVERSİTESİ",
+              "hireDate": "8/9/21",
+              "seniority": "4 yıl 5 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1AqRw_JwmOKlyv-lotVFh8qtz-dwgT0dm/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -180,8 +219,11 @@
       "coordinator": {
         "department": "MİMARLIK",
         "name": "Esra Özkafa",
-        "title": "MIMARI TASARIM VE PLANLAMA KOORDINATÖRÜ",
-        "university": "SELÇUK ÜNİVERSİTESİ"
+        "title": "KOORDİNATÖR",
+        "university": "SELÇUK ÜNİVERSİTESİ",
+        "hireDate": "7/4/22",
+        "seniority": "3 yıl 6 ay",
+        "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1QPaewB7aV-ZmlMOZ-B2AD47cUluotUBg/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
       },
       "description": "Mekan tasarımı ve planlama",
       "hasDetailPage": true,
@@ -206,8 +248,11 @@
               "department": "İÇMİMARLIK",
               "id": "ebrar-ozata",
               "name": "Ebrar Özata",
-              "title": "MIMARI TASARIM VE PLANLAMA SORUMLUSU",
-              "university": "MARMARA ÜNİVERSİTESİ"
+              "title": "UZMAN (U1)",
+              "university": "MARMARA ÜNİVERSİTESİ",
+              "hireDate": "11/15/23",
+              "seniority": "2 yıl 1 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/19MI4TQ0_0vHW4m6wiGs_YBZ1qg8Fcdm6/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -225,8 +270,11 @@
       "coordinator": {
         "department": "HALKLA İLİŞKİLER",
         "name": "Gülsüm Çoban",
-        "title": "İNSAN KAYNAKLARI KOORDINATÖRÜ",
-        "university": "BİLGİ ÜNİVERSİTESİ"
+        "title": "KOORDİNATÖR",
+        "university": "BİLGİ ÜNİVERSİTESİ",
+        "hireDate": "8/24/20",
+        "seniority": "5 yıl 4 ay",
+        "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1lAEmfyYPt-KPlCG59RhRgDwSa8whVV4f/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
       },
       "description": "İnsan kaynakları yönetimi",
       "hasDetailPage": true,
@@ -251,15 +299,21 @@
               "department": "ÇEVRE MÜHENDİSLİĞİ",
               "id": "esma-aslan",
               "name": "Esma Aslan",
-              "title": "İNSAN KAYNAKLARI SORUMLUSU",
-              "university": "İSTANBUL ÜNİVERSİTESİ"
+              "title": "UZMAN (U2)",
+              "university": "İSTANBUL ÜNİVERSİTESİ",
+              "hireDate": "12/26/23",
+              "seniority": "2 yıl 0 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1Q_rotDktGK-hS7N0awb13J7KfpKcwzoY/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "department": "PSİKOLOJİK DANIŞMANLIK VE REHBERLİK",
               "id": "ali-ilker-altmis",
               "name": "Ali İlker Altmış",
-              "title": "İNSAN KAYNAKLARI SORUMLUSU",
-              "university": "YILDIZ TEKNİK ÜNİVERSİTESİ"
+              "title": "UZMAN (U2)",
+              "university": "YILDIZ TEKNİK ÜNİVERSİTESİ",
+              "hireDate": "2/1/22",
+              "seniority": "3 yıl 11 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/19hcqFlN9EhubRkKoQdUciJLUoRlMIERa/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -276,7 +330,11 @@
     {
       "coordinator": {
         "name": "İrem Bayraktar Aksakal",
-        "title": "Girişim Merkezi Koordinatörü"
+        "title": "KOORDİNATÖR",
+        "university": "GALATASARAY ÜNİVERSİTESİ",
+        "department": "PAZARLAMA İLETİŞİMİ YÖNETİMİ",
+        "hireDate": "7/5/19",
+        "seniority": "6 yıl 6 ay"
       },
       "description": "Girişimcilik ve inovasyon merkezi yönetimi",
       "hasDetailPage": true,
@@ -300,7 +358,12 @@
             {
               "id": "ali-gozukara",
               "name": "Ali Gözükara",
-              "title": "Girişimcilik Ekosistemi"
+              "title": "UZMAN (U2)",
+              "university": "İSLAHİYE ANADOLU LİSESİ",
+              "department": "ELEKTRİK-ELEKTRONİK MÜHENDİSLİĞİ",
+              "hireDate": "4/12/21",
+              "seniority": "4 yıl 9 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1G72fQDeo792W49gRmjHIPVKCJY9vviGH/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "mustafa-karamustafa",
@@ -323,7 +386,12 @@
             {
               "id": "necmettin-gurses",
               "name": "Necmettin Gürses",
-              "title": "Stratejik İş Geliştirme ve Ortaklıklar"
+              "title": "UZMAN (U2)",
+              "university": "İSTANBUL BİLGİ ÜNİVERSİTESİ",
+              "department": "ULUSLARARASI İLİŞKİLER",
+              "hireDate": "7/1/24",
+              "seniority": "1 yıl 6 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1FKwzifIrny5Wq1UrwuYKKQn01ZJjw5bZ/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "nazli-ozbagli",
@@ -346,12 +414,22 @@
             {
               "id": "seda-sertturk",
               "name": "Seda Serttürk",
-              "title": "İletişim ve Dijital"
+              "title": "UZMAN (U2)",
+              "university": "BOĞAZİÇİ ÜNİVERSİTESİ",
+              "department": "BİYOMEDİKAL MÜHENDİSLİĞİ VE MEDİKAL ELEKTRONİK",
+              "hireDate": "5/2/24",
+              "seniority": "1 yıl 8 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1nYqnQpOZlqpQYJrPiv0UgI8p26yGWShG/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "esra-postaci",
               "name": "Esra Postacı",
-              "title": "İletişim ve Dijital"
+              "title": "UZMAN (U1)",
+              "university": "NİŞANTAŞI ÜNİVERSİTESİ",
+              "department": "YENİ MEDYA VE İLETİŞİM",
+              "hireDate": "2/6/23",
+              "seniority": "2 yıl 11 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1QRF92Mz3F6Rmx_6SNmTqcSRDNYZzo-tS/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -369,8 +447,11 @@
       "coordinator": {
         "department": "FEN VE MATEMATİK ALANLARI EĞİTİMİ",
         "name": "Merve Koçoğlu",
-        "title": "EĞITIM VE AR-GE KOORDINATÖRÜ",
-        "university": "BOĞAZİÇİ ÜNİVERSİTESİ"
+        "title": "KOORDİNATÖR",
+        "university": "BOĞAZİÇİ ÜNİVERSİTESİ",
+        "hireDate": "11/27/17",
+        "seniority": "8 yıl 1 ay",
+        "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/14XIrvSv4uZ8kY8sq1KMv0kmynr0pz4bV/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
       },
       "deputies": [
         {
@@ -383,8 +464,11 @@
             "Paydaş ve proje takibi",
             "Raporlama ve süreç iyileştirme"
           ],
-          "title": "KOORDINATÖR YARDIMCISI",
-          "university": "ULUDAĞ ÜNİVERSİTESİ"
+          "title": "KOORDİNATÖR YARDIMCISI",
+          "university": "ULUDAĞ ÜNİVERSİTESİ",
+          "hireDate": "11/11/22",
+          "seniority": "3 yıl 2 ay",
+          "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1iOTukZSbHE7Dx-qKF7ypdiSR9aHYNlvE/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
         },
         {
           "id": "esra-ocakverdi",
@@ -421,8 +505,11 @@
               "department": "EĞİTİM YÖNETİMİ (EĞİTİM BİLİMLERİ)",
               "id": "fatma-reyhan-celik",
               "name": "Fatma Reyhan Çelik",
-              "title": "TEKNOLOJI EĞITIMLERI SORUMLUSU",
-              "university": "YILDIZ TEKNİK ÜNİVERSİTESİ"
+              "title": "KIDEMLİ UZMAN",
+              "university": "YILDIZ TEKNİK ÜNİVERSİTESİ",
+              "hireDate": "9/27/23",
+              "seniority": "2 yıl 3 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/12oMlknAs2lli0EpXGKKpT1xLVfjtuoB0/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -441,8 +528,11 @@
               "department": "Fen Bilgisi Öğretmenliği",
               "id": "gokcenur-usta-yazici",
               "name": "Gökçenur Usta Yazıcı",
-              "title": "T3 AKADEMI SORUMLUSU",
-              "university": "MARMARA ÜNİVERSİTESİ"
+              "title": "UZMAN (U2)",
+              "university": "MARMARA ÜNİVERSİTESİ",
+              "hireDate": "12/7/22",
+              "seniority": "3 yıl 1 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1zc8mu8sWHWrugpCLXrUDGyKbBEddBhHM/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -466,8 +556,11 @@
               "department": "FİZİK",
               "id": "kubra-kosmene",
               "name": "Kübra Kösmene",
-              "title": "FEN LISELERI VE İL MERKEZLERI SORUMLUSU",
-              "university": "İSTANBUL ÜNİVERSİTESİ"
+              "title": "UZMAN YARDIMCISI",
+              "university": "İSTANBUL ÜNİVERSİTESİ",
+              "hireDate": "4/21/25",
+              "seniority": "0 yıl 8 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1CalS7SCgIdj5gbIKoo8nRQ6eLJBTRYoi/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -486,8 +579,11 @@
               "department": "MATEMATİK BÖLÜMÜ",
               "id": "zehra-tozal",
               "name": "Zehra Tozal",
-              "title": "KEŞIF KAMPÜSÜ SORUMLUSU",
-              "university": "İSTANBUL ÜNİVERSİTESİ"
+              "title": "UZMAN (U2)",
+              "university": "İSTANBUL ÜNİVERSİTESİ",
+              "hireDate": "6/12/23",
+              "seniority": "2 yıl 7 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1RuZ366d9lM3pWJ-DHh3F8NcAb59UjAL8/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -506,15 +602,21 @@
               "department": "FEN BİLİMLERİ ÖĞRETMENLİĞİ",
               "id": "kubra-sari",
               "name": "Kübra Sarı",
-              "title": "BILIM TÜRKIYE SORUMLUSU",
-              "university": "İSTANBUL ÜNİVERSİTESİ"
+              "title": "UZMAN (U2)",
+              "university": "İSTANBUL ÜNİVERSİTESİ",
+              "hireDate": "4/4/23",
+              "seniority": "2 yıl 9 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1aBOGV-bvxV1_EWqBbPx8JQfeHvjlejJG/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLER ÖĞRETMENİ",
               "id": "gokhan-caylak",
               "name": "Gökhan Çaylak",
-              "title": "BILIM TÜRKIYE SORUMLUSU",
-              "university": "SAKARYA ÜNİVERSİTESİ"
+              "title": "KIDEMLİ UZMAN",
+              "university": "SAKARYA ÜNİVERSİTESİ",
+              "hireDate": "12/12/22",
+              "seniority": "3 yıl 1 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/16v-9hV_rRf0jeZuCHmx1Bb-RFTbIs2_G/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -533,8 +635,11 @@
               "department": "FEN BİLGİSİ EĞİTİMİ",
               "id": "fatma-ruveyda-bas",
               "name": "Fatma Ruveyda Baş",
-              "title": "AR-GE BIRIMI SORUMLUSU",
-              "university": "HACETTEPE ÜNİVERSİTESİ"
+              "title": "UZMAN (U2)",
+              "university": "HACETTEPE ÜNİVERSİTESİ",
+              "hireDate": "5/9/22",
+              "seniority": "3 yıl 8 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1Aa_qbUqJF2n4ADrjjx_b20Ym8oHn41Y6/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "oksana-gulinay",
@@ -557,13 +662,16 @@
       "coordinator": {
         "department": "MALİYE",
         "name": "Serkan Uzun",
-        "title": "MUHASEBE SORUMLUSU",
-        "university": "ANADOLU ÜNİVERSİTESİ"
+        "title": "ALAN UZMANI (AU1)",
+        "university": "ANADOLU ÜNİVERSİTESİ",
+        "hireDate": "4/22/19",
+        "seniority": "6 yıl 8 ay",
+        "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1vvMXMtCzbmbsITZMPrhrehAJhiRyx3xD/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
       },
       "description": "Mali işler ve muhasebe",
       "hasDetailPage": true,
       "id": "muhasebe",
-      "parent": "t3-vakfi-koordinatorlukleri",
+      "parent": "yonetime-bagli-birimler",
       "position": {
         "x": 5750,
         "y": 1150
@@ -583,8 +691,11 @@
               "department": "MALİYE",
               "id": "muhlis-semiz",
               "name": "Muhlis Semiz",
-              "title": "MUHASEBE SORUMLUSU",
-              "university": "ULUDAĞ ÜNİVERSİTESİ"
+              "title": "UZMAN (U1)",
+              "university": "ULUDAĞ ÜNİVERSİTESİ",
+              "hireDate": "6/5/23",
+              "seniority": "2 yıl 7 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1aiYYzAzLuXGIH3PmxvjA14x8O4zUJlfq/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -621,27 +732,52 @@
             {
               "id": "huseyin-ocak",
               "name": "Hüseyin Ocak",
-              "title": "Bilişim Teknolojileri"
+              "title": "UZMAN (U2)",
+              "university": "YOZGAT BOZOK ÜNİVERSİTESİ",
+              "department": "ELEKTRİK-ELEKTRONİK MÜHENDİSLİĞİ",
+              "hireDate": "2/1/22",
+              "seniority": "3 yıl 11 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1P-tBaFzhIRL3kbEpai2tD6nt80Q8ccQX/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "hakan-sandikci",
               "name": "Hakan Sandıkçı",
-              "title": "Bilişim Teknolojileri"
+              "title": "UZMAN YARDIMCISI",
+              "university": "MARMARA ÜNİVERSİTESİ",
+              "department": "BİLGİSAYAR MÜHENDİSLİĞİ",
+              "hireDate": "12/23/24",
+              "seniority": "1 yıl 0 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/19u3RsAVV6-WMSFhEMSTH5QvntSQlJ1JX/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "busra-koseoglu-daggez",
               "name": "Büşra Köseoğlu Dağgez",
-              "title": "Bilişim Teknolojileri"
+              "title": "UZMAN (U1)",
+              "university": "MARMARA ÜNİVERSİTESİ",
+              "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ ÖĞRETMENLİĞİ",
+              "hireDate": "8/14/23",
+              "seniority": "2 yıl 5 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1UoB6JpNIaLjAwarVASULg8GAFbvdLd_p/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "merve-camadan",
               "name": "Merve Camadan",
-              "title": "Bilişim Teknolojileri"
+              "title": "UZMAN (U1)",
+              "university": "MARMARA ÜNİVERSİTESİ",
+              "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ ÖĞRETMENLİĞİ",
+              "hireDate": "12/18/23",
+              "seniority": "2 yıl 0 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1EfJVB_79wOOyeQrOgV_PTnY8fYYW6vn_/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "furkan-ayri",
               "name": "Furkan Ayrı",
-              "title": "Bilişim Teknolojileri"
+              "title": "UZMAN YARDIMCISI",
+              "university": "BİRUNİ ÜNİVERSİTESİ (DEVAM)",
+              "department": "BİLGİSAYAR MÜHENDİSLİĞİ",
+              "hireDate": "9/1/25",
+              "seniority": "0 yıl 4 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1mjyG2fv1K6Kg5_ro8IIWfn3QcvTsFKQN/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -659,8 +795,10 @@
       "coordinator": {
         "department": "BİLGİSAYAR MÜHENDİSLİĞİ",
         "name": "Gizem Karabacak",
-        "title": "TEKNOFEST YARIŞMALAR KOORDINATÖRÜ",
-        "university": "ABANT İZZET BAYSAL ÜNİVERSİTESİ"
+        "title": "KOORDİNATÖR",
+        "university": "ABANT İZZET BAYSAL ÜNİVERSİTESİ",
+        "hireDate": "8/26/19",
+        "seniority": "6 yıl 4 ay"
       },
       "deputies": [
         {
@@ -673,8 +811,11 @@
             "Yarışmacı iletişimi ve destek yönetimi",
             "Raporlama ve süreç izleme"
           ],
-          "title": "KOORDINATÖR YARDIMCISI",
-          "university": "ABDULLAH GÜL ÜNİVERSİTESİ"
+          "title": "KOORDİNATÖR YARDIMCISI",
+          "university": "ABDULLAH GÜL ÜNİVERSİTESİ",
+          "hireDate": "2/1/22",
+          "seniority": "3 yıl 11 ay",
+          "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1KOPHQKPlpwp3E3k_Z4HRbSHLlc6Tv4X8/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
         }
       ],
       "description": "Teknoloji yarışmaları yönetimi",
@@ -700,15 +841,21 @@
               "department": "ENDÜSTRİYEL TASARIM MÜHENDİSLİĞİ",
               "id": "sumeyye-turkoglu",
               "name": "Sümeyye Türkoğlu",
-              "title": "YARIŞMALAR OPERASYON BIRIMI SORUMLUSU",
-              "university": "GAZİ ÜNİVERSİTESİ"
+              "title": "UZMAN (U2)",
+              "university": "GAZİ ÜNİVERSİTESİ",
+              "hireDate": "2/17/22",
+              "seniority": "3 yıl 10 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/13HftApFq_reL7T4TK89LhA3FXjZF__TQ/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "department": "ENDÜSTRİ MÜHENDİSLİĞİ",
               "id": "emine-aslantepe",
               "name": "Emine Aslantepe",
-              "title": "YARIŞMALAR OPERASYON BIRIMI SORUMLUSU",
-              "university": "BEYKENT ÜNİVERSİTESİ"
+              "title": "UZMAN (U2)",
+              "university": "BEYKENT ÜNİVERSİTESİ",
+              "hireDate": "10/10/22",
+              "seniority": "3 yıl 3 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1Lw7rcSI1vs-9J58gGA7eEouTjRnCZlsi/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "seyval-celik",
@@ -719,36 +866,51 @@
               "department": "ENDÜSTRİ MÜHENDİSİ",
               "id": "elifnur-sahin",
               "name": "Elifnur Şahin",
-              "title": "YARIŞMALAR OPERASYON BIRIMI SORUMLUSU",
-              "university": "19 MAYIS ÜNİVERSİTESİ"
+              "title": "UZMAN (U1)",
+              "university": "19 MAYIS ÜNİVERSİTESİ",
+              "hireDate": "1/15/24",
+              "seniority": "3 yıl 11 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1X-hqVZe0cqb-jdB46LTi4xTs5_5y6qDS/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "department": "UÇAK MÜHENDİSLİĞİ",
               "id": "mustafa-bora-ozaydin",
               "name": "Mustafa Bora Özaydın",
-              "title": "YARIŞMALAR OPERASYON BIRIMI SORUMLUSU",
-              "university": "ERCİYES ÜNİVERSİTESİ"
+              "title": "UZMAN (U1)",
+              "university": "ERCİYES ÜNİVERSİTESİ",
+              "hireDate": "1/2/24",
+              "seniority": "2 yıl 0 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1H06FlPwfIXhTh7lpyJAx2LbXUbmBM9_I/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "department": "METALURJİ VE MALZEME MÜHENDİSLİĞİ",
               "id": "tayyib-ekmel-demet",
               "name": "Tayyib Ekmel Demet",
-              "title": "YARIŞMALAR OPERASYON BIRIMI SORUMLUSU",
-              "university": "BİLECİK ŞEY EDEBALİ ÜNİVERSİTESİ"
+              "title": "UZMAN YARDIMCISI",
+              "university": "BİLECİK ŞEY EDEBALİ ÜNİVERSİTESİ",
+              "hireDate": "11/18/24",
+              "seniority": "1 yıl 1 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1Xd6Z4a7TIp8X-0eS_zZEETx6TByA03B5/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "department": "ENDÜSTRİ MÜHENDİSLİĞİ",
               "id": "ahmet-safa-cetin",
               "name": "Ahmet Safa Çetin",
-              "title": "YARIŞMALAR OPERASYON BIRIMI SORUMLUSU",
-              "university": "HACETTEPE ÜNİVERSİTESİ"
+              "title": "UZMAN YARDIMCISI",
+              "university": "HACETTEPE ÜNİVERSİTESİ",
+              "hireDate": "4/7/25",
+              "seniority": "0 yıl 9 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1JKP1d4Bv9WrhMCA74p0ndz3Ey_nL-4Ic/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "department": "BİLGİSAYAR MÜHENDİSLİĞİ",
               "id": "irem-ercel",
               "name": "İrem Erçel",
-              "title": "YARIŞMALAR OPERASYON BIRIMI SORUMLUSU",
-              "university": "FATİH SULTAN MEHMET VAKIF ÜNİVERSİTESİ"
+              "title": "UZMAN YARDIMCISI",
+              "university": "FATİH SULTAN MEHMET VAKIF ÜNİVERSİTESİ",
+              "hireDate": "9/17/24",
+              "seniority": "1 yıl 3 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1l2ZOy_oYL4H_0qHx7HiCO7Q7kI8UD92T/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -766,8 +928,11 @@
       "coordinator": {
         "department": "FEN BİLGİSİ ÖĞRETMENLİĞİ",
         "name": "Banu Aras",
-        "title": "DENEYAP KOORDINATÖRÜ",
-        "university": "AFYON KOCATEPE"
+        "title": "KOORDİNATÖR",
+        "university": "AFYON KOCATEPE",
+        "hireDate": "8/15/22",
+        "seniority": "3 yıl 4 ay",
+        "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1LVksVg3RwpRs7macrOvUktI8L3bUNNPf/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
       },
       "deputies": [
         {
@@ -780,8 +945,11 @@
             "Eğitim dönemi operasyonlarının yürütülmesi",
             "Süreç iyileştirme çalışmaları"
           ],
-          "title": "KOORDINATÖR YARDIMCISI",
-          "university": "GAZİ ÜNİVERSİTESİ"
+          "title": "KOORDİNATÖR YARDIMCISI",
+          "university": "GAZİ ÜNİVERSİTESİ",
+          "hireDate": "2/3/25",
+          "seniority": "0 yıl 11 ay",
+          "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1gDL6MbSMMDuUg5QBNTB6xstMgTfb4XhO/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
         },
         {
           "department": "Çalışma Ekonomisi ve Endüstri İlişkileri",
@@ -793,8 +961,11 @@
             "Saha ve eğitim iletişim koordinasyonu",
             "Marka görünürlüğü ve içerik takibi"
           ],
-          "title": "KOORDINATÖR YARDIMCISI",
-          "university": "İSTANBUL ÜNİVERSİTESİ"
+          "title": "KOORDİNATÖR YARDIMCISI",
+          "university": "İSTANBUL ÜNİVERSİTESİ",
+          "hireDate": "8/15/22",
+          "seniority": "3 yıl 4 ay",
+          "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1j8YrlCWydEWpio1uP4RI0qdjRtJUWFF6/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
         }
       ],
       "description": "DENEYAP Teknoloji Atölyeleri yönetimi",
@@ -820,8 +991,11 @@
               "department": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLER ÖĞRETMENİ",
               "id": "kevser-yoruk",
               "name": "Kevser Yörük",
-              "title": "EĞITIM PROGRAMLARI KOMISYONU SORUMLUSU",
-              "university": "ULUDAĞ ÜNİVERSİTESİ"
+              "title": "UZMAN (U2)",
+              "university": "ULUDAĞ ÜNİVERSİTESİ",
+              "hireDate": "4/1/22",
+              "seniority": "3 yıl 9 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1is52OxEwe-5Oazdc_jz_VqWUmBkcVR23/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -840,8 +1014,11 @@
               "department": "KİMYA",
               "id": "kubra-kutbey",
               "name": "Kübra Kutbey",
-              "title": "EĞITMEN, MENTOR VE REHBERLIK KOMISYONU SORUMLUSU",
-              "university": "ULUDAĞ ÜNİVERSİTESİ"
+              "title": "UZMAN (U1)",
+              "university": "ULUDAĞ ÜNİVERSİTESİ",
+              "hireDate": "2/1/24",
+              "seniority": "1 yıl 11 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1qo8dL4vv_fnKo089IzhWJoaRjh9iyuPa/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -860,15 +1037,21 @@
               "department": "TÜRK DİLİ VE EDEBİYATI",
               "id": "sumeyra-demir",
               "name": "Sümeyra Demir",
-              "title": "EĞITMEN KOMISYONU SORUMLUSU",
-              "university": "PAMUKKALE ÜNİVERSİTESİ"
+              "title": "KIDEMLİ UZMAN",
+              "university": "PAMUKKALE ÜNİVERSİTESİ",
+              "hireDate": "4/3/23",
+              "seniority": "2 yıl 9 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1BS7A4NnwZHqRnAxP0Jz0k3whv-N72nkV/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "department": "PSİKOLOJİK DANIŞMANLIK VE REHBERLİK",
               "id": "aysenur-yavuz",
               "name": "Aysenur Yavuz",
-              "title": "EĞITMEN KOMISYONU SORUMLUSU",
-              "university": "İSTANBUL MEDENİYET ÜNİVERSİTESİ"
+              "title": "UZMAN YARDIMCISI",
+              "university": "İSTANBUL MEDENİYET ÜNİVERSİTESİ",
+              "hireDate": "9/9/24",
+              "seniority": "1 yıl 4 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1yOKHAm-ja5fObUmKMxAK7L0yuMwLYoS2/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -887,15 +1070,21 @@
               "department": "SOSYAL HİZMET",
               "id": "muhammed-enes-kiraz",
               "name": "Muhammed Enes Kiraz",
-              "title": "SAHA İZLEME KOMISYONU SORUMLUSU",
-              "university": "MANİSA CELAL BAYAR ÜNİVERSİTESİ"
+              "title": "UZMAN (U2)",
+              "university": "MANİSA CELAL BAYAR ÜNİVERSİTESİ",
+              "hireDate": "8/21/23",
+              "seniority": "2 yıl 4 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/14k_Fg98OPazSjkP1GdsMQFuuiW5a3DlB/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "department": "ENDÜSTRİ MÜHENDİSLİĞİ",
               "id": "hulusi-mirac-abali",
               "name": "Hulusi Miraç Abalı",
-              "title": "SAHA İZLEME KOMISYONU SORUMLUSU",
-              "university": "İSTANBUL MEDENİYET ÜNİVERSİTESİ"
+              "title": "UZMAN YARDIMCISI",
+              "university": "İSTANBUL MEDENİYET ÜNİVERSİTESİ",
+              "hireDate": "11/13/24",
+              "seniority": "1 yıl 2 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1iN6eXwaKNTXT8XDvbS1TBBc6gtVvO2jl/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -929,11 +1118,14 @@
           "id": "ogrenci-komisyonu",
           "people": [
             {
-              "department": "YOK",
+              "department": "BİLGİSAYAR ÖĞRETMENLİĞİ",
               "id": "yusuf-sakar",
               "name": "Yusuf Sakar",
-              "title": "ÖĞRENCI KOMISYONU SORUMLUSU",
-              "university": "BURSA CUMHURİYET ANADOLU LİSESİ"
+              "title": "UZMAN YARDIMCISI",
+              "university": "BURSA CUMHURİYET ANADOLU LİSESİ",
+              "hireDate": "12/11/23",
+              "seniority": "2 yıl 1 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/18-41jEyY1oriTY9RHNhqiDoaHB27XQeq/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -949,10 +1141,13 @@
     },
     {
       "coordinator": {
-        "department": "YÜKSEK LİSANS:EĞİTİM BİLİMLERİ - FEN EĞİTİMİ\r\n DOKTORA: STEM",
+        "department": "YÜKSEK LİSANS:EĞİTİM BİLİMLERİ - FEN EĞİTİMİ\r\nDOKTORA: STEM",
         "name": "Mehmet Burak Aygen",
-        "title": "PROJE SORUMLUSU",
-        "university": "FIRAT ÜNİVERSİTESİ"
+        "title": "KIDEMLİ UZMAN / PROJE SORUMLUSU",
+        "university": "FIRAT ÜNİVERSİTESİ",
+        "hireDate": "2/7/22",
+        "seniority": "3 yıl 11 ay",
+        "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1mAbiDGe8rvb4F5unU_eJBGcIm49QBtMR/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
       },
       "description": "DENEYAP Kart üretim ve dağıtım",
       "hasDetailPage": true,
@@ -976,12 +1171,22 @@
             {
               "id": "mehmet-akif-erdem",
               "name": "Mehmet Akif Erdem",
-              "title": "Ürün ve Teknik Geliştirme"
+              "title": "UZMAN YARDIMCISI",
+              "university": "FATİH SULTAN MEHMET VAKIF ÜNİVERSİTESİ",
+              "department": "ELEKTRİK ELEKTRONİK MÜHENDİSLİĞİ",
+              "hireDate": "8/13/25",
+              "seniority": "0 yıl 5 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1Cx72GS1eKdugC8Vpj2Xp9NX1bfj-Cw2W/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "nazmi-aras",
               "name": "Nazmi Aras",
-              "title": "Ürün ve Teknik Geliştirme"
+              "title": "UZMAN YARDIMCISI",
+              "university": "KARADENİZ TEKNİK ÜNİVERSİTESİ",
+              "department": "ELEKTRİK - ELEKTRONİK MÜHENDİSLİĞİ",
+              "hireDate": "12/16/24",
+              "seniority": "1 yıl 0 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/10Mg3oLuNDXmPXmPmobKrK_fumIEA665s/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -999,12 +1204,22 @@
             {
               "id": "bayram-er",
               "name": "Bayram Er",
-              "title": "Ürün Operasyonları ve Paydaş Yönetimi"
+              "title": "UZMAN YARDIMCISI",
+              "university": "AÇIKÖĞRETİM LİSESİ",
+              "department": "ELEKTRİK-ELEKTRONİK MÜHENDİSLİĞİ",
+              "hireDate": "8/14/23",
+              "seniority": "2 yıl 5 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1lqBJxSuQO0VHBqmsTEPoHKx4FWEiJKQ0/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "gamze-tuzane",
               "name": "Gamze Tuzane",
-              "title": "Ürün Operasyonları ve Paydaş Yönetimi"
+              "title": "UZMAN (U1)",
+              "university": "NİĞDE ÖMER HALİSDEMİR ÜNİVERSİTESİ",
+              "department": "MEKATRONİK MÜHENDİSLİĞİ",
+              "hireDate": "8/23/23",
+              "seniority": "2 yıl 4 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1YBSP0knMHkAE-SY_kFnLpVkvEp-bJHnE/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -1037,7 +1252,11 @@
     {
       "coordinator": {
         "name": "Büşra Çiftçioğlu",
-        "title": "TEKNOFEST SATIŞ PAZARLAMA KOORDINATÖRÜ"
+        "title": "KOORDİNATÖR",
+        "university": "SAMSUN ONDOKUZ MAYIS ÜNİVERSİTESİ",
+        "department": "Bilgisayar ve Öğretim Teknolojileri Eğitimi",
+        "hireDate": "8/15/22",
+        "seniority": "3 yıl 4 ay"
       },
       "description": "Pazarlama ve sponsorluk yönetimi",
       "hasDetailPage": true,
@@ -1062,8 +1281,11 @@
               "department": "KUYUMCULUK VE TAKI TASARIMI",
               "id": "tugce-alemdar",
               "name": "Tuğçe Alemdar",
-              "title": "SATIŞ VE PAZARLAMA OPERASYON BIRIMI SORUMLUSU",
-              "university": "İSTANBUL AYDIN ÜNİVERSİTESİ"
+              "title": "UZMAN YARDIMCISI",
+              "university": "İSTANBUL AYDIN ÜNİVERSİTESİ",
+              "hireDate": "2/27/24",
+              "seniority": "1 yıl 10 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1w-CNuA4UvcH8GogEuF9dh19uQOsD421C/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -1081,8 +1303,11 @@
       "coordinator": {
         "department": "FEN BİLGİSİ",
         "name": "Abdülkadir Baygül",
-        "title": "TEKNOFEST FUAR KOORDINATÖRÜ",
-        "university": "SİVAS CUMHURİYET ÜNİVERSİTESİ"
+        "title": "KOORDİNATÖR",
+        "university": "SİVAS CUMHURİYET ÜNİVERSİTESİ",
+        "hireDate": "4/3/23",
+        "seniority": "2 yıl 9 ay",
+        "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1dv3RdE4XEqupE26uX8BzI0lHKI5r-qzc/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
       },
       "description": "Fuar alanı ve sergi yönetimi",
       "hasDetailPage": true,
@@ -1107,15 +1332,21 @@
               "department": "DİŞ PROTEZ TEKNOLOJİSİ",
               "id": "mustafa-findikci",
               "name": "Mustafa Fındıkcı",
-              "title": "FUAR OPERASYON BIRIMI SORUMLUSU",
-              "university": "BİLKENT ÜNİVERSİTESİ"
+              "title": "UZMAN (U2)",
+              "university": "BEYKENT ÜNİVERSİTESİ",
+              "hireDate": "8/22/22",
+              "seniority": "3 yıl 4 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1JIkjf4gE-LaLopfd5pvlqYOm1BdoP6t5/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "department": "TIBBİ GÖRÜNTÜLEME TEKNİKLERİ",
               "id": "onur-durus",
               "name": "Onur Duruş",
-              "title": "FUAR OPERASYON BIRIMI SORUMLUSU",
-              "university": "AREL ÜNİVERSİTESİ"
+              "title": "UZMAN (U2)",
+              "university": "AREL ÜNİVERSİTESİ",
+              "hireDate": "8/20/24",
+              "seniority": "1 yıl 4 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1sb9r05tLJfLye9hmppLFXZNM06R8zLtg/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -1133,8 +1364,10 @@
       "coordinator": {
         "department": "MAKİNA MÜHENDİSLİĞİ",
         "name": "Nurkan Karabulut",
-        "title": "TEKNOFEST OPERASYON KOORDINATÖRÜ",
-        "university": "DÜZCE ÜNİVERSİTESİ"
+        "title": "KOORDİNATÖR",
+        "university": "DÜZCE ÜNİVERSİTESİ",
+        "hireDate": "9/1/22",
+        "seniority": "3 yıl 4 ay"
       },
       "description": "Etkinlik operasyonları yönetimi",
       "hasDetailPage": true,
@@ -1159,12 +1392,21 @@
               "department": "YOK",
               "id": "ceyhun-kilinc",
               "name": "Ceyhun Kılınç",
-              "title": "OPERASYON BIRIMI SORUMLUSU",
-              "university": "YOK"
+              "title": "0",
+              "university": "YOK",
+              "hireDate": "5/1/17",
+              "seniority": "8 yıl 8 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1KRd56MK-o0-lBhiAVgAVFVtNv31VxESi/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "id-1768320547627-1-o83ymkw08",
-              "name": "Yunus Çiftçioğlu"
+              "name": "Yunus Çiftçioğlu",
+              "university": "SAKARYA ÜNİVERSİTESİ",
+              "department": "İNŞAAT MÜHENDİSLİĞİ",
+              "title": "KOORDİNATÖR YARDIMCISI",
+              "hireDate": "5/9/22",
+              "seniority": "3 yıl 8 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1LMH8b8QZlRr-eB3xws7XWh2K4S2L60dt/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -1182,8 +1424,11 @@
       "coordinator": {
         "department": "MALİYE",
         "name": "Mustafa Toy",
-        "title": "İDARI İŞLER KOORDINATÖRÜ",
-        "university": "AYDIN ADNAN MENDERES ÜNİVERSİTESİ"
+        "title": "KOORDİNATÖR",
+        "university": "AYDIN ADNAN MENDERES ÜNİVERSİTESİ",
+        "hireDate": "1/27/20",
+        "seniority": "7 yıl 11 ay",
+        "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1uq68YECZcV9f-oMiz7g4px26jWu6LfUi/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
       },
       "description": "İdari işler ve genel hizmetler",
       "hasDetailPage": true,
@@ -1207,32 +1452,61 @@
             {
               "id": "nihat-kagit",
               "name": "Nihat Kağıt",
-              "title": "Atölye ve Teknik Destek"
+              "title": "BAŞ DESTEK GÖREVLİSİ",
+              "university": "YOK",
+              "department": "YOK",
+              "hireDate": "4/11/23",
+              "seniority": "2 yıl 9 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1fqIIj2Jg3r4HaUeS9cCQ0cMdC1n2dQzZ/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "yusuf-kirik",
               "name": "Yusuf Kirik",
-              "title": "Atölye ve Teknik Destek"
+              "title": "KIDEMLİ DESTEK GÖREVLİSİ",
+              "university": "KARTAL ŞEHİT ÖĞRETMEN HÜSREYİN AĞIRMAN MESLEK LİSESİ",
+              "department": "ELEKTRONİK",
+              "hireDate": "3/21/22",
+              "seniority": "3 yıl 9 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1ZH-w_YDKqnKjyixozTPBZl_gJYbFCOBl/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "abdulkadir-ayar",
               "name": "Abdülkadir Ayar",
-              "title": "Atölye ve Teknik Destek"
+              "title": "DENEYAP SORUMLUSU",
+              "university": "KARABÜK ÜNİVERSİTESİ",
+              "department": "ULAŞTIRMA MÜHENDİSLİĞİ",
+              "hireDate": "9/1/23",
+              "seniority": "2 yıl 4 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1FdbjI7IehZ_sKPYVqJGxO4v0GPOzeDES/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "muhammet-karagol",
               "name": "Muhammet Karagöl",
-              "title": "Atölye ve Teknik Destek"
+              "title": "DENEYAP SORUMLUSU",
+              "university": "GAZİOSMANPAŞA ÜNİVERSİTESİ",
+              "department": "İŞLETME",
+              "hireDate": "2/26/24",
+              "seniority": "1 yıl 10 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1Wcs1CFCPHQdj1DYd_ZpadAc3RSP1kZfs/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "omur-sayili",
               "name": "Ömür Sayılı",
-              "title": "Atölye ve Teknik Destek"
+              "title": "DENEYAP SORUMLUSU",
+              "university": "ERCİYES ÜNİVERSİTESİ",
+              "department": "ASTONOMİ ve UZAY BİLİMLERİ",
+              "hireDate": "8/15/22",
+              "seniority": "3 yıl 4 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1M_SZO7iEwi1sKgi3j66CGuoVjyOjSqs5/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "onur-kucukdogan",
               "name": "Onur Küçükdoğan",
-              "title": "Atölye ve Teknik Destek"
+              "title": "KIDEMLİ UZMAN",
+              "university": "GEBZE TEKNİK ÜNİVERSİTESİ",
+              "department": "ULUSLARARASI İLİŞKİLER",
+              "hireDate": "9/30/24",
+              "seniority": "1 yıl 3 ay"
             }
           ],
           "responsibilities": [
@@ -1250,27 +1524,52 @@
             {
               "id": "mustafa-yildiz",
               "name": "Mustafa Yıldız",
-              "title": "Tedarik ve Lojistik Operasyonları"
+              "title": "BAŞ DESTEK GÖREVLİSİ",
+              "university": "ANADOLU ÜNİVERSİTESİ",
+              "department": "MUHASEBE VE VERGİ UYGULAMALARI",
+              "hireDate": "7/18/22",
+              "seniority": "3 yıl 5 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1EpF0p1Z9cPmHX99dP2MjNb_FY451Uuzn/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "soner-yeniay",
               "name": "Soner Yeniay",
-              "title": "Tedarik ve Lojistik Operasyonları"
+              "title": "BAŞ DESTEK GÖREVLİSİ",
+              "university": "YOK",
+              "department": "YOK",
+              "hireDate": "2/1/22",
+              "seniority": "3 yıl 11 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1tUi1d8O5jsH23O3E3YwcbmN0jfmEIE-T/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "eyup-akcakaya",
               "name": "Eyüp Akçakaya",
-              "title": "Tedarik ve Lojistik Operasyonları"
+              "title": "DESTEK GÖREVLİSİ (DG2)",
+              "university": "AÇIK ÖĞRETİM",
+              "department": "YOK",
+              "hireDate": "3/9/22",
+              "seniority": "3 yıl 10 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1ASD4DgOfqymuAkdC5D2V8SFxuk5nhy5L/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "omer-ercel",
               "name": "Ömer Erçel",
-              "title": "Tedarik ve Lojistik Operasyonları"
+              "title": "DESTEK GÖREVLİSİ (DG1)",
+              "university": "AÇIK ÖĞRETİM",
+              "department": "YOK",
+              "hireDate": "4/3/23",
+              "seniority": "2 yıl 9 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1u8uW9kj4fsi0Ul578loOYJ3Tgqeg8xlW/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "yakup-kara",
               "name": "Yakup Kara",
-              "title": "Tedarik ve Lojistik Operasyonları"
+              "title": "KIDEMLİ DESTEK GÖREVLİSİ",
+              "university": "İNÖNÜ ENDÜSTRİ MESLEK LİSESİ",
+              "department": "YOK",
+              "hireDate": "10/24/22",
+              "seniority": "3 yıl 2 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1P_RRu0jqmFD0g9P9ByfDw9RJcKAspj6I/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -1288,22 +1587,42 @@
             {
               "id": "rukiye-hortum",
               "name": "Rukiye Hortum",
-              "title": "Temizlik Operasyonları"
+              "title": "KIDEMLİ DESTEK GÖREVLİSİ",
+              "university": "AÇIK ÖĞRETİM ORTAOKUL",
+              "department": "YOK",
+              "hireDate": "5/9/22",
+              "seniority": "3 yıl 8 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/10jsJrwb9rr_6VBjedHLbHuDF_TIijoaf/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "fatma-emeksiz",
               "name": "Fatma Emeksiz",
-              "title": "Temizlik Operasyonları"
+              "title": "KIDEMLİ DESTEK GÖREVLİSİ",
+              "university": "AÇIKÖĞRETİM LİSE",
+              "department": "YOK",
+              "hireDate": "6/5/23",
+              "seniority": "2 yıl 7 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1A46DY7jsomUHg3jjI5PiqjN-VmTAHw-j/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "dondu-over",
               "name": "Döndü Över",
-              "title": "Temizlik Operasyonları"
+              "title": "KIDEMLİ DESTEK GÖREVLİSİ",
+              "university": "YOK",
+              "department": "YOK",
+              "hireDate": "6/24/24",
+              "seniority": "1 yıl 6 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1-6yA8-0UxscidXZ2mVhm4Q5k5tT0Jok_/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "aysun-kul",
               "name": "Aysun Kul",
-              "title": "Temizlik Operasyonları"
+              "title": "İDARİ İŞLER DESTEK PERSONELİ",
+              "university": "YOK",
+              "department": "YOK",
+              "hireDate": "6/23/25",
+              "seniority": "0 yıl 6 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/17162PWyL0BznkQWyZgKYPzCMkwLRBJrg/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "esma-saracoglu",
@@ -1313,17 +1632,32 @@
             {
               "id": "kezban-er",
               "name": "Kezban Er",
-              "title": "Temizlik Operasyonları"
+              "title": "KIDEMLİ DESTEK GÖREVLİSİ",
+              "university": "ATAŞEHİR HALK EĞİTİM MERKEZİ",
+              "department": "YOK",
+              "hireDate": "10/16/23",
+              "seniority": "2 yıl 2 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1SIWTYY2-YlCrcVsNLuStGcGjB0lfiEnH/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "havva-yavuz",
               "name": "Havva Yavuz",
-              "title": "Temizlik Operasyonları"
+              "title": "KIDEMLİ DESTEK GÖREVLİSİ",
+              "university": "AÇIK ÖĞRETİM LİSESİ",
+              "department": "YOK",
+              "hireDate": "7/12/17",
+              "seniority": "8 yıl 6 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1iGoUddfNwX3cAcjB4pkHhPDqJB-aH7fA/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "erol-orcan",
               "name": "Erol Orcan",
-              "title": "Temizlik Operasyonları"
+              "title": "KIDEMLİ DESTEK GÖREVLİSİ",
+              "university": "YAHYA KEMAL BEYATLI İLKÖĞRETİM OKULU",
+              "department": "YOK",
+              "hireDate": "11/4/24",
+              "seniority": "1 yıl 2 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1Px6w5AOmSeSjyDQ9bnMDZ2J0YnBDuxzj/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -1341,22 +1675,41 @@
             {
               "id": "hilal-celik",
               "name": "Hilal Çelik",
-              "title": "Çağrı Merkezi ve Sekreterya Birimi"
+              "title": "KIDEMLİ DESTEK GÖREVLİSİ",
+              "university": "SOSYAL BİLİMLERİ LİSESİ",
+              "department": "YOK",
+              "hireDate": "2/17/21",
+              "seniority": "4 yıl 10 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/15573IxSl6g3YDT1PyzAFEwDTNzEidoR9/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "osman-ozdemir",
               "name": "Osman Özdemir",
-              "title": "Çağrı Merkezi ve Sekreterya Birimi"
+              "title": "DESTEK GÖREVLİSİ (DG1)",
+              "university": "AÇIKÖĞRETİM LİSE",
+              "department": "YOK",
+              "hireDate": "4/3/23",
+              "seniority": "2 yıl 9 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1bYMgPNnqG9MyaHOekSbkj5CWmCpDammD/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "id": "busra-akbas",
               "name": "Büşra Akbaş",
-              "title": "Çağrı Merkezi ve Sekreterya Birimi"
+              "title": "DESTEK GÖREVLİSİ (DG1)",
+              "university": "ATATÜRK ÜNİVERSİTESİ AÇIKÖĞRETİM FAKÜLTESİ",
+              "department": "SİVİL HAVA ULAŞTIRMA İŞLETMECİLİĞİ",
+              "hireDate": "1/17/23",
+              "seniority": "4 yıl 11 ay"
             },
             {
               "id": "bahar-kilic",
               "name": "Bahar Kılıç",
-              "title": "Çağrı Merkezi ve Sekreterya Birimi"
+              "title": "KIDEMLİ UZMAN",
+              "university": "ORDU ÜNİVERSİTESİ",
+              "department": "KAMU YÖNETİMİ",
+              "hireDate": "7/17/17",
+              "seniority": "8 yıl 5 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1kYjdWKGElHFem7k-A6kzmIpGp994esj8/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -1374,8 +1727,11 @@
       "coordinator": {
         "department": "ASTRONOMİ VE UZAY BİLİMLERİ",
         "name": "Büşra Coşkun",
-        "title": "KURUMSAL İLETIŞIM KOORDINATÖRÜ",
-        "university": "İSTANBUL ÜNİVERSİTESİ"
+        "title": "KOORDİNATÖR",
+        "university": "İSTANBUL ÜNİVERSİTESİ",
+        "hireDate": "2/4/20",
+        "seniority": "5 yıl 11 ay",
+        "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1Ebwo-sIBPZISxM9PwZlM3SVc1lodZ7rc/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
       },
       "deputies": [
         {
@@ -1388,8 +1744,11 @@
             "Proje ve kaynak yönetimi",
             "Raporlama ve süreç iyileştirme"
           ],
-          "title": "KOORDINATÖR YARDIMCISI",
-          "university": "MARMARA ÜNİVERSİTESİ"
+          "title": "KOORDİNATÖR YARDIMCISI",
+          "university": "MARMARA ÜNİVERSİTESİ",
+          "hireDate": "6/7/21",
+          "seniority": "4 yıl 7 ay",
+          "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/17RzTEC9ktrH3ND0nUYaVUDaep5jTd7xI/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
         },
         {
           "department": "FEN BİLGİSİ ÖĞRETMENLİĞİ",
@@ -1401,8 +1760,11 @@
             "Proje ve kaynak yönetimi",
             "Raporlama ve süreç iyileştirme"
           ],
-          "title": "KOORDINATÖR YARDIMCISI",
-          "university": "BOĞAZİÇİ ÜNİVERSİTESİ"
+          "title": "KOORDİNATÖR YARDIMCISI",
+          "university": "BOĞAZİÇİ ÜNİVERSİTESİ",
+          "hireDate": "6/7/21",
+          "seniority": "4 yıl 7 ay",
+          "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1Ec21TZHxyxVblkqzkMUknBK7moRNx-ET/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
         }
       ],
       "description": "Kurumsal iletişim ve halkla ilişkiler",
@@ -1427,22 +1789,31 @@
               "department": "SİYASET BİLİMİ VE ULUSLARARASI İLİŞKİLER (İNGİLİZCE)",
               "id": "zahide-sara-yilmaz",
               "name": "Zahide Sara Yılmaz",
-              "title": "İLETIŞIM SORUMLUSU",
-              "university": "ÜSKÜDAR ÜNİVERSİTESİ"
+              "title": "UZMAN (U1)",
+              "university": "ÜSKÜDAR ÜNİVERSİTESİ",
+              "hireDate": "10/16/23",
+              "seniority": "2 yıl 2 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1lSVIZqNnG8JIPhHSIc4-pSR3hffFNw4J/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "department": "SOSYOLOJİ",
               "id": "dilara-findikci",
               "name": "Dilara Fındıkcı",
-              "title": "İLETIŞIM SORUMLUSU",
-              "university": "ÜSKÜDAR ÜNİVERSİTESİ"
+              "title": "UZMAN (U1)",
+              "university": "ÜSKÜDAR ÜNİVERSİTESİ",
+              "hireDate": "9/19/23",
+              "seniority": "2 yıl 3 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1gYagBHJXh8IMSeqOQ5f5k3xEd0SNRVJj/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "department": "MÜTERCİM TERCÜMANLIK İNGİLİZCE",
               "id": "tarkan-murat-korkmaz",
               "name": "Tarkan Murat Korkmaz",
-              "title": "İLETIŞIM SORUMLUSU",
-              "university": "BEYKENT ÜNİVERSİTESİ"
+              "title": "UZMAN (U2)",
+              "university": "BEYKENT ÜNİVERSİTESİ",
+              "hireDate": "8/2/21",
+              "seniority": "4 yıl 5 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1wDl_m2hdWmh0cR2uvSQLE1lLD_ai30wZ/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -1460,8 +1831,11 @@
               "department": "TÜRK DİLİ VE EDEBİYATI",
               "id": "zeynep-hilal-demirci",
               "name": "Zeynep Hilal Demirci",
-              "title": "EDITÖR SORUMLUSU",
-              "university": "GÜNGÖREN İTO KIZ ANADOLU İMAM HATİP LİSESİ"
+              "title": "UZMAN YARDIMCISI",
+              "university": "GÜNGÖREN İTO KIZ ANADOLU İMAM HATİP LİSESİ",
+              "hireDate": "2/19/24",
+              "seniority": "1 yıl 10 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1dwrmxTDgaN6s3p5-Np2DOSPD5_zVeE0w/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -1479,8 +1853,11 @@
               "department": "HALKLA İLİŞKİLER VE TANITIM",
               "id": "nedim-furkan-gonenc",
               "name": "Nedim Furkan Gönenç",
-              "title": "TASARIM SORUMLUSU",
-              "university": "İSTANBUL ÜNİVERSİTESİ"
+              "title": "KIDEMLİ UZMAN / GRAFİK TASARIMCI",
+              "university": "İSTANBUL ÜNİVERSİTESİ",
+              "hireDate": "3/11/24",
+              "seniority": "1 yıl 10 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1Tx9AgrU5-PGXHPz4LX4dqvpx5Clx_VyU/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -1498,8 +1875,11 @@
               "department": "SİYASET BİLİMİ VE KAMU YÖNETİMİ",
               "id": "ismet-selim-sirkeci",
               "name": "İsmet Selim Sirkeci",
-              "title": "SOSYAL MEDYA SORUMLUSU",
-              "university": "BEYKENT ÜNİVERSİTESİ"
+              "title": "KIDEMLİ UZMAN",
+              "university": "BEYKENT ÜNİVERSİTESİ",
+              "hireDate": "12/23/24",
+              "seniority": "1 yıl 0 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/11SsPYk-Efa2Vi3ybKVLmiTfkCEtEm3Xs/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -1517,8 +1897,11 @@
               "department": "GAZETECİLİK",
               "id": "enes-samil-gonenc",
               "name": "Enes Şamil Gönenç",
-              "title": "BASIN SORUMLUSU",
-              "university": "AKDENİZ ÜNİVERSİTESİ"
+              "title": "UZMAN (U2)",
+              "university": "AKDENİZ ÜNİVERSİTESİ",
+              "hireDate": "8/19/24",
+              "seniority": "1 yıl 4 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1aUW4gGh7wZqckCnok8hEGfDqJ8EuUR4Z/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -1536,15 +1919,21 @@
               "department": "YENİ MEDYA VE İLETİŞİM",
               "id": "rumeysa-ersoz",
               "name": "Rümeysa Ersöz",
-              "title": "WEB SITELERI SORUMLUSU",
-              "university": "İSTANBUL MEDİPOL ÜNİVERSİTESİ"
+              "title": "KIDEMLİ UZMAN",
+              "university": "İSTANBUL MEDİPOL ÜNİVERSİTESİ",
+              "hireDate": "2/13/23",
+              "seniority": "2 yıl 11 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1t8nEKr4XfKnCAWplxKksV323kKJ2RYKk/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             },
             {
               "department": "ASTRONOMİ VE ASTROFİZİK BÖLÜMÜ",
               "id": "necip-karaman",
               "name": "Necip Karaman",
-              "title": "WEB SITELERI SORUMLUSU",
-              "university": "ATATÜRK ÜNİVERSİTESİ"
+              "title": "UZMAN (U2)",
+              "university": "ATATÜRK ÜNİVERSİTESİ",
+              "hireDate": "2/1/24",
+              "seniority": "1 yıl 11 ay",
+              "jobDescriptionLink": "https://docs.google.com/spreadsheets/d/1Uka4txXR8M0EmIvO_PTJymfzs68wjDv_/edit?usp=sharing&ouid=113355116848335080907&rtpof=true&sd=true"
             }
           ],
           "responsibilities": [
@@ -1649,6 +2038,723 @@
       },
       "title": "MÜTEVELLI HEYETI BAŞKANI",
       "type": "chairman"
+    }
+  ],
+  "cityPersonnel": [
+    {
+      "city": "ADANA",
+      "ilSorumlusu": {
+        "id": "kubra-i-lknur-ceti-nur-turk",
+        "name": "KÜBRA İLKNUR ÇETİNUR TÜRK",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "ADIYAMAN",
+      "ilSorumlusu": null,
+      "deneyapSorumlusu": {
+        "id": "saadet-benli",
+        "name": "SAADET BENLİ",
+        "title": "Deneyap Sorumlusu"
+      }
+    },
+    {
+      "city": "AFYONKARAHİSAR",
+      "ilSorumlusu": {
+        "id": "mustafa-yalcin",
+        "name": "MUSTAFA YALÇIN",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": {
+        "id": "betul-can",
+        "name": "BETÜL CAN",
+        "title": "Deneyap Sorumlusu"
+      }
+    },
+    {
+      "city": "AĞRI",
+      "ilSorumlusu": {
+        "id": "vedat-aydin-vekaleten",
+        "name": "VEDAT AYDIN (VEKALETEN)",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "AKSARAY",
+      "ilSorumlusu": null,
+      "deneyapSorumlusu": {
+        "id": "aysenur-kayis",
+        "name": "AYŞENUR KAYIŞ",
+        "title": "Deneyap Sorumlusu"
+      }
+    },
+    {
+      "city": "AMASYA",
+      "ilSorumlusu": {
+        "id": "oguzhan-ozdemi-r",
+        "name": "OĞUZHAN ÖZDEMİR",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "ANKARA",
+      "ilSorumlusu": {
+        "id": "mustafa-fati-h-sari",
+        "name": "MUSTAFA FATİH SARI",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": {
+        "id": "aysegul-buyukakkas",
+        "name": "AYŞEGÜL BÜYÜKAKKAŞ",
+        "title": "Deneyap Sorumlusu"
+      }
+    },
+    {
+      "city": "ANTALYA",
+      "ilSorumlusu": {
+        "id": "muhsi-n-mubi-n-pi-si-ri-ci",
+        "name": "MUHSİN MUBİN PİŞİRİCİ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": {
+        "id": "tugce-korkmaz",
+        "name": "TUĞÇE KORKMAZ",
+        "title": "Deneyap Sorumlusu"
+      }
+    },
+    {
+      "city": "ARTVİN",
+      "ilSorumlusu": {
+        "id": "ali-eray-cakir",
+        "name": "ALİ ERAY ÇAKIR",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "AYDIN",
+      "ilSorumlusu": {
+        "id": "yusuf-emre-demi-r",
+        "name": "YUSUF EMRE DEMİR",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": {
+        "id": "busra-kucuk",
+        "name": "BÜŞRA KÜÇÜK",
+        "title": "Deneyap Sorumlusu"
+      }
+    },
+    {
+      "city": "BALIKESİR",
+      "ilSorumlusu": {
+        "id": "hasan-basri-kurt",
+        "name": "HASAN BASRİ KURT",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": {
+        "id": "eli-f-nur-sahi-n",
+        "name": "ELİF NUR ŞAHİN",
+        "title": "Deneyap Sorumlusu"
+      }
+    },
+    {
+      "city": "BARTIN",
+      "ilSorumlusu": {
+        "id": "mert-can-akgul",
+        "name": "MERT CAN AKGÜL",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "BATMAN",
+      "ilSorumlusu": {
+        "id": "hakan-aksoy",
+        "name": "HAKAN AKSOY",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "BAYBURT",
+      "ilSorumlusu": {
+        "id": "i-brahi-m-hali-l-kaya",
+        "name": "İBRAHİM HALİL KAYA",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "BİLECİK",
+      "ilSorumlusu": {
+        "id": "enes-kara",
+        "name": "ENES KARA",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "BİNGÖL",
+      "ilSorumlusu": {
+        "id": "mehmet-ali-kaya",
+        "name": "MEHMET ALİ KAYA",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "BİTLİS",
+      "ilSorumlusu": {
+        "id": "murat-yildirim",
+        "name": "MURAT YILDIRIM",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "BOLU",
+      "ilSorumlusu": {
+        "id": "yasi-n-aktas",
+        "name": "YASİN AKTAŞ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "BURDUR",
+      "ilSorumlusu": {
+        "id": "emre-kilic",
+        "name": "EMRE KILIÇ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "BURSA",
+      "ilSorumlusu": {
+        "id": "mustafa-kemal-akyuz",
+        "name": "MUSTAFA KEMAL AKYÜZ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": {
+        "id": "sena-akpinar",
+        "name": "SENA AKPINAR",
+        "title": "Deneyap Sorumlusu"
+      }
+    },
+    {
+      "city": "ÇANAKKALE",
+      "ilSorumlusu": {
+        "id": "onur-can",
+        "name": "ONUR CAN",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "ÇANKIRI",
+      "ilSorumlusu": {
+        "id": "kerem-demi-r",
+        "name": "KEREM DEMİR",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "ÇORUM",
+      "ilSorumlusu": {
+        "id": "fati-h-kurt",
+        "name": "FATİH KURT",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "DENİZLİ",
+      "ilSorumlusu": {
+        "id": "alperen-yilmaz",
+        "name": "ALPEREN YILMAZ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": {
+        "id": "hi-lal-ozkan",
+        "name": "HİLAL ÖZKAN",
+        "title": "Deneyap Sorumlusu"
+      }
+    },
+    {
+      "city": "DİYARBAKIR",
+      "ilSorumlusu": {
+        "id": "serkan-aydin",
+        "name": "SERKAN AYDIN",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "DÜZCE",
+      "ilSorumlusu": {
+        "id": "enes-kilic",
+        "name": "ENES KILIÇ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "EDİRNE",
+      "ilSorumlusu": {
+        "id": "burak-sen",
+        "name": "BURAK ŞEN",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "ELAZIĞ",
+      "ilSorumlusu": {
+        "id": "ahmet-kaya",
+        "name": "AHMET KAYA",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "ERZİNCAN",
+      "ilSorumlusu": {
+        "id": "oguzhan-korkmaz",
+        "name": "OĞUZHAN KORKMAZ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "ERZURUM",
+      "ilSorumlusu": {
+        "id": "yasi-n-gunes",
+        "name": "YASİN GÜNEŞ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "ESKİŞEHİR",
+      "ilSorumlusu": {
+        "id": "caner-yilmaz",
+        "name": "CANER YILMAZ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "GAZİANTEP",
+      "ilSorumlusu": {
+        "id": "hali-l-i-brahi-m-yildiz",
+        "name": "HALİL İBRAHİM YILDIZ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": {
+        "id": "zeynep-aktas",
+        "name": "ZEYNEP AKTAŞ",
+        "title": "Deneyap Sorumlusu"
+      }
+    },
+    {
+      "city": "GİRESUN",
+      "ilSorumlusu": {
+        "id": "emre-can",
+        "name": "EMRE CAN",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "GÜMÜŞHANE",
+      "ilSorumlusu": {
+        "id": "batuhan-kaya",
+        "name": "BATUHAN KAYA",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "HAKKARİ",
+      "ilSorumlusu": {
+        "id": "ferhat-demi-r",
+        "name": "FERHAT DEMİR",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "HATAY",
+      "ilSorumlusu": {
+        "id": "ali-riza-yilmaz",
+        "name": "ALİ RIZA YILMAZ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "IĞDIR",
+      "ilSorumlusu": {
+        "id": "serkan-aslan",
+        "name": "SERKAN ASLAN",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "ISPARTA",
+      "ilSorumlusu": {
+        "id": "kursat-ozturk",
+        "name": "KÜRŞAT ÖZTÜRK",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "İSTANBUL",
+      "ilSorumlusu": {
+        "id": "mustafa-can",
+        "name": "MUSTAFA CAN",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": {
+        "id": "ece-demi-rel",
+        "name": "ECE DEMİREL",
+        "title": "Deneyap Sorumlusu"
+      }
+    },
+    {
+      "city": "İZMİR",
+      "ilSorumlusu": {
+        "id": "alper-yavuz",
+        "name": "ALPER YAVUZ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": {
+        "id": "meli-sa-kurt",
+        "name": "MELİSA KURT",
+        "title": "Deneyap Sorumlusu"
+      }
+    },
+    {
+      "city": "KAHRAMANMARAŞ",
+      "ilSorumlusu": {
+        "id": "huseyi-n-celi-k",
+        "name": "HÜSEYİN ÇELİK",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "KARABÜK",
+      "ilSorumlusu": {
+        "id": "osman-kaya",
+        "name": "OSMAN KAYA",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "KARAMAN",
+      "ilSorumlusu": {
+        "id": "mert-sahi-n",
+        "name": "MERT ŞAHİN",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "KARS",
+      "ilSorumlusu": {
+        "id": "emre-akyuz",
+        "name": "EMRE AKYÜZ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "KASTAMONU",
+      "ilSorumlusu": {
+        "id": "yunus-emre-cakir",
+        "name": "YUNUS EMRE ÇAKIR",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "KAYSERİ",
+      "ilSorumlusu": {
+        "id": "ali-han-demi-r",
+        "name": "ALİHAN DEMİR",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "KIRIKKALE",
+      "ilSorumlusu": {
+        "id": "serhat-kaya",
+        "name": "SERHAT KAYA",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "KIRKLARELİ",
+      "ilSorumlusu": {
+        "id": "burak-kilic",
+        "name": "BURAK KILIÇ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "KIRŞEHİR",
+      "ilSorumlusu": {
+        "id": "fati-h-aktas",
+        "name": "FATİH AKTAŞ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "KOCAELİ",
+      "ilSorumlusu": {
+        "id": "berkay-yildirim",
+        "name": "BERKAY YILDIRIM",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "KONYA",
+      "ilSorumlusu": {
+        "id": "abdullah-ozcan",
+        "name": "ABDULLAH ÖZCAN",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "KÜTAHYA",
+      "ilSorumlusu": {
+        "id": "yusuf-kaya",
+        "name": "YUSUF KAYA",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "MALATYA",
+      "ilSorumlusu": {
+        "id": "ahmet-emre-demi-r",
+        "name": "AHMET EMRE DEMİR",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "MANİSA",
+      "ilSorumlusu": {
+        "id": "mert-can-kurt",
+        "name": "MERT CAN KURT",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "MARDİN",
+      "ilSorumlusu": {
+        "id": "hasan-ali-kaya",
+        "name": "HASAN ALİ KAYA",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "MERSİN",
+      "ilSorumlusu": {
+        "id": "serkan-yildiz",
+        "name": "SERKAN YILDIZ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "MUĞLA",
+      "ilSorumlusu": {
+        "id": "enes-sahi-n",
+        "name": "ENES ŞAHİN",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "NEVŞEHİR",
+      "ilSorumlusu": {
+        "id": "burak-demi-r",
+        "name": "BURAK DEMİR",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "NİĞDE",
+      "ilSorumlusu": {
+        "id": "kerem-yilmaz",
+        "name": "KEREM YILMAZ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "ORDU",
+      "ilSorumlusu": {
+        "id": "ali-can",
+        "name": "ALİ CAN",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "OSMANİYE",
+      "ilSorumlusu": {
+        "id": "mehmet-kilic",
+        "name": "MEHMET KILIÇ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "RİZE",
+      "ilSorumlusu": {
+        "id": "yasi-n-akyuz",
+        "name": "YASİN AKYÜZ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "SAKARYA",
+      "ilSorumlusu": {
+        "id": "emre-can-kaya",
+        "name": "EMRE CAN KAYA",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "SAMSUN",
+      "ilSorumlusu": {
+        "id": "serkan-demi-r",
+        "name": "SERKAN DEMİR",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "SİVAS",
+      "ilSorumlusu": {
+        "id": "fati-h-yildirim",
+        "name": "FATİH YILDIRIM",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "ŞANLIURFA",
+      "ilSorumlusu": {
+        "id": "hali-l-i-brahi-m-aktas",
+        "name": "HALİL İBRAHİM AKTAŞ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "TEKİRDAĞ",
+      "ilSorumlusu": {
+        "id": "burak-kurt",
+        "name": "BURAK KURT",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "TOKAT",
+      "ilSorumlusu": {
+        "id": "mustafa-sen",
+        "name": "MUSTAFA ŞEN",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "TRABZON",
+      "ilSorumlusu": {
+        "id": "oguzhan-yildiz",
+        "name": "OĞUZHAN YILDIZ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "TUNCELİ",
+      "ilSorumlusu": {
+        "id": "serkan-kaya",
+        "name": "SERKAN KAYA",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "UŞAK",
+      "ilSorumlusu": {
+        "id": "mert-demi-r",
+        "name": "MERT DEMİR",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "VAN",
+      "ilSorumlusu": {
+        "id": "ahmet-yavuz",
+        "name": "AHMET YAVUZ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "YALOVA",
+      "ilSorumlusu": {
+        "id": "caner-aktas",
+        "name": "CANER AKTAŞ",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "YOZGAT",
+      "ilSorumlusu": {
+        "id": "emre-demi-r",
+        "name": "EMRE DEMİR",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
+    },
+    {
+      "city": "ZONGULDAK",
+      "ilSorumlusu": {
+        "id": "alper-can",
+        "name": "ALPER CAN",
+        "title": "İl Sorumlusu"
+      },
+      "deneyapSorumlusu": null
     }
   ]
 }

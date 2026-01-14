@@ -12,6 +12,9 @@ interface Person {
   notes?: string
   cvFileName?: string
   cvData?: string
+  hireDate?: string
+  seniority?: string
+  jobDescriptionLink?: string
 }
 
 interface DetailNodeProps {

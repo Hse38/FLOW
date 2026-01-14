@@ -6,6 +6,25 @@ import { Plus, Edit2, Trash2, X, User, Phone, Mail } from 'lucide-react'
 import { CityPersonnel } from '@/context/OrgDataContext'
 import type { Person } from '@/context/OrgDataContext'
 
+// Şehir isimlerini normalize et (eşleştirme için)
+const normalizeCityName = (cityName: string): string => {
+  return cityName
+    .trim()
+    .toUpperCase()
+    .replace(/İ/g, 'I')
+    .replace(/ı/g, 'I')
+    .replace(/Ğ/g, 'G')
+    .replace(/ğ/g, 'G')
+    .replace(/Ü/g, 'U')
+    .replace(/ü/g, 'U')
+    .replace(/Ş/g, 'S')
+    .replace(/ş/g, 'S')
+    .replace(/Ö/g, 'O')
+    .replace(/ö/g, 'O')
+    .replace(/Ç/g, 'C')
+    .replace(/ç/g, 'C')
+}
+
 interface TurkeyMapNodeProps {
   data: {
     id: string
@@ -47,13 +66,44 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
     // SOLID, FLAT COLORS - NO gradients, NO pastels, NO transparency
     const cityPersonnel = data.cityPersonnel
     if (cityPersonnel && cityPersonnel.length > 0) {
+      // Debug: Şehir isimlerini kontrol et
+      console.log('City Personnel:', cityPersonnel.length, 'şehir')
+      console.log('İlk 5 şehir:', cityPersonnel.slice(0, 5).map(cp => cp.city))
+      
+      let matchedCount = 0
+      let unmatchedCities: string[] = []
+      
       svgElement.querySelectorAll('path').forEach(path => {
         const parent = path.parentNode as SVGElement
         const ilAdi = parent.getAttribute('data-iladi')
         
         if (ilAdi) {
-          const cityName = ilAdi.replace(' (Asya)', '').replace(' (Avrupa)', '')
-          const cityData = cityPersonnel.find(cp => cp.city === cityName)
+          const cityName = ilAdi.replace(' (Asya)', '').replace(' (Avrupa)', '').trim()
+          // Normalize edilmiş eşleştirme - birden fazla yöntem dene
+          const normalizedCityName = normalizeCityName(cityName)
+          let cityData = cityPersonnel.find(cp => normalizeCityName(cp.city) === normalizedCityName)
+          
+          // Eğer bulunamadıysa, alternatif eşleştirme yöntemleri dene
+          if (!cityData) {
+            // Tam eşleşme (case-insensitive)
+            cityData = cityPersonnel.find(cp => 
+              cp.city.toUpperCase().trim() === cityName.toUpperCase().trim()
+            )
+          }
+          
+          if (!cityData) {
+            // Kısmi eşleşme (içeriyor mu?)
+            cityData = cityPersonnel.find(cp => 
+              normalizeCityName(cp.city).includes(normalizedCityName) ||
+              normalizedCityName.includes(normalizeCityName(cp.city))
+            )
+          }
+          
+          if (cityData) {
+            matchedCount++
+          } else {
+            unmatchedCities.push(cityName)
+          }
           
           // CORPORATE COLOR LOGIC:
           // 1. İl ve DENEYAP Sorumlusu Bulunan İller -> KIRMIZI (#dc2626)
@@ -90,6 +140,11 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
           path.setAttribute('stroke-width', strokeWidth)
         }
       })
+      
+      console.log('Eşleşen şehir:', matchedCount)
+      if (unmatchedCities.length > 0 && unmatchedCities.length < 20) {
+        console.log('Eşleşmeyen şehirler (ilk 10):', unmatchedCities.slice(0, 10))
+      }
     }
 
     const handleMouseOver = (event: MouseEvent) => {
@@ -139,8 +194,24 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
             const ilAdi = parent.getAttribute('data-iladi')
             
             if (ilAdi) {
-              const cityName = ilAdi.replace(' (Asya)', '').replace(' (Avrupa)', '')
-              const cityData = data.cityPersonnel?.find(cp => cp.city === cityName)
+              const cityName = ilAdi.replace(' (Asya)', '').replace(' (Avrupa)', '').trim()
+              // Normalize edilmiş eşleştirme - birden fazla yöntem dene
+              const normalizedCityName = normalizeCityName(cityName)
+              let cityData = data.cityPersonnel?.find(cp => normalizeCityName(cp.city) === normalizedCityName)
+              
+              // Eğer bulunamadıysa, alternatif eşleştirme yöntemleri dene
+              if (!cityData) {
+                cityData = data.cityPersonnel?.find(cp => 
+                  cp.city.toUpperCase().trim() === cityName.toUpperCase().trim()
+                )
+              }
+              
+              if (!cityData) {
+                cityData = data.cityPersonnel?.find(cp => 
+                  normalizeCityName(cp.city).includes(normalizedCityName) ||
+                  normalizedCityName.includes(normalizeCityName(cp.city))
+                )
+              }
               
               const hasIlSorumlusu = cityData?.ilSorumlusu ? true : false
               const hasDeneyapSorumlusu = cityData?.deneyapSorumlusu ? true : false
@@ -577,8 +648,24 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
 
       {/* Seçili İl Personel Kartları - Yan Panel */}
       {selectedProvince && data.cityPersonnel && (() => {
-        const cityName = selectedProvince.replace(' (Asya)', '').replace(' (Avrupa)', '')
-        const cityData = data.cityPersonnel.find(cp => cp.city === cityName)
+        const cityName = selectedProvince.replace(' (Asya)', '').replace(' (Avrupa)', '').trim()
+        // Normalize edilmiş eşleştirme - birden fazla yöntem dene
+        const normalizedCityName = normalizeCityName(cityName)
+        let cityData = data.cityPersonnel.find(cp => normalizeCityName(cp.city) === normalizedCityName)
+        
+        // Eğer bulunamadıysa, alternatif eşleştirme yöntemleri dene
+        if (!cityData) {
+          cityData = data.cityPersonnel.find(cp => 
+            cp.city.toUpperCase().trim() === cityName.toUpperCase().trim()
+          )
+        }
+        
+        if (!cityData) {
+          cityData = data.cityPersonnel.find(cp => 
+            normalizeCityName(cp.city).includes(normalizedCityName) ||
+            normalizedCityName.includes(normalizeCityName(cp.city))
+          )
+        }
 
         return (
           <div className="w-96 flex-shrink-0 bg-white rounded-xl shadow-2xl border-2 border-gray-200 p-5 h-fit max-h-[800px] overflow-y-auto sticky top-4">

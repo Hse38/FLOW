@@ -195,7 +195,7 @@ function findPerson(personData, searchKey, searchValue) {
  * Personel bilgilerini güncelle
  */
 function updatePersonInfo(personData) {
-  const { name, email, phone, university, department, cvFilePath, photoFilePath, notes, jobDescription } = personData
+  const { name, email, phone, university, department, title, hireDate, seniority, jobDescriptionLink, cvFilePath, photoFilePath, notes, jobDescription } = personData
   
   if (!name) {
     console.warn('⚠️  İsim bulunamadı, atlanıyor')
@@ -204,7 +204,7 @@ function updatePersonInfo(personData) {
   
   console.log(`\n🔍 "${name}" aranıyor...`)
   
-  // Personi bul
+  // Personi bul (isim değişmeyecek, sadece eşleştirme için kullanılacak)
   const found = findPerson(personData, 'name', name)
   
   if (!found) {
@@ -214,7 +214,7 @@ function updatePersonInfo(personData) {
   
   console.log(`✅ Bulundu: ${found.type} - ${found.path}`)
   
-  // Güncellemeleri yap
+  // Güncellemeleri yap (isim değişmeyecek)
   const updates = {}
   
   if (email) {
@@ -235,6 +235,30 @@ function updatePersonInfo(personData) {
   if (department) {
     found.person.department = department
     updates.department = department
+  }
+  
+  // Ünvan güncellemesi (title varsa)
+  if (title) {
+    found.person.title = title
+    updates.title = title
+  }
+  
+  // İşe giriş tarihi
+  if (hireDate) {
+    found.person.hireDate = hireDate
+    updates.hireDate = hireDate
+  }
+  
+  // Kıdem
+  if (seniority) {
+    found.person.seniority = seniority
+    updates.seniority = seniority
+  }
+  
+  // Görev tanımı linki
+  if (jobDescriptionLink) {
+    found.person.jobDescriptionLink = jobDescriptionLink
+    updates.jobDescriptionLink = jobDescriptionLink
   }
   
   if (notes) {
@@ -380,12 +404,16 @@ function readPersonnelFromExcel(excelPath) {
     const personnel = []
     
     for (const row of data) {
-      // Kolon isimlerini normalize et (Türkçe karakterleri ve farklı isimleri kabul et)
-      const name = row['İsim'] || row['İSİM'] || row['isim'] || row['İsim/Name'] || row['Name'] || row['name'] || ''
+      // TÜMVERİ.xlsx formatı için kolonlar
+      const name = row['ADI-SOYADI'] || row['İsim'] || row['İSİM'] || row['isim'] || row['İsim/Name'] || row['Name'] || row['name'] || ''
       const email = row['Email'] || row['EMAIL'] || row['email'] || row['E-Posta'] || row['E-posta'] || row['e-posta'] || ''
       const phone = row['Telefon'] || row['TELEFON'] || row['telefon'] || row['Phone'] || row['phone'] || row['Tel'] || row['tel'] || ''
-      const university = row['Üniversite'] || row['ÜNİVERSİTE'] || row['üniversite'] || row['University'] || row['university'] || row['Okul'] || row['okul'] || ''
-      const department = row['Bölüm'] || row['BÖLÜM'] || row['bölüm'] || row['Department'] || row['department'] || row['Department'] || ''
+      const university = row['TAMAMLANAN ÜNİVERSİTE'] || row['Üniversite'] || row['ÜNİVERSİTE'] || row['üniversite'] || row['University'] || row['university'] || row['Okul'] || row['okul'] || ''
+      const department = row['TAMAMLANAN BÖLÜM'] || row['Bölüm'] || row['BÖLÜM'] || row['bölüm'] || row['Department'] || row['department'] || ''
+      const title = row['ÜNVANI'] || row['Ünvan'] || row['ÜNVAN'] || row['Title'] || row['title'] || ''
+      const hireDate = row['İŞE GİRİŞ TARİHİ'] || row['İşe Giriş Tarihi'] || row['Hire Date'] || row['hireDate'] || ''
+      const seniority = row['KIDEM'] || row['Kıdem'] || row['Seniority'] || row['seniority'] || ''
+      const jobDescriptionLink = row['GÖREV TANIMI LİNK'] || row['Görev Tanımı Link'] || row['Job Description Link'] || row['jobDescriptionLink'] || ''
       const cvFilePath = row['CV_Dosya_Yolu'] || row['CV Dosya Yolu'] || row['CV Dosyası'] || row['CV'] || row['cv'] || row['CV_File'] || row['cvFile'] || ''
       const photoFilePath = row['Fotoğraf'] || row['FOTOĞRAF'] || row['fotoğraf'] || row['Photo'] || row['photo'] || row['Foto'] || row['foto'] || ''
       const notes = row['Notlar'] || row['NOTLAR'] || row['notlar'] || row['Notes'] || row['notes'] || row['Not'] || row['not'] || ''
@@ -398,6 +426,10 @@ function readPersonnelFromExcel(excelPath) {
           phone: phone ? phone.trim() : '',
           university: university ? university.trim() : '',
           department: department ? department.trim() : '',
+          title: title ? title.trim() : '',
+          hireDate: hireDate ? hireDate.trim() : '',
+          seniority: seniority ? seniority.trim() : '',
+          jobDescriptionLink: jobDescriptionLink ? jobDescriptionLink.trim() : '',
           cvFilePath: cvFilePath ? cvFilePath.trim() : '',
           photoFilePath: photoFilePath ? photoFilePath.trim() : '',
           notes: notes ? notes.trim() : '',
@@ -543,10 +575,18 @@ async function main() {
     process.exit(0)
   }
   
-  const inputFile = args[0]
+  let inputFile = args[0]
+  
+  // Dosya yolu göreliyse tam yol yap (proje kök dizinine göre)
+  if (!path.isAbsolute(inputFile)) {
+    inputFile = path.resolve(__dirname, '..', inputFile)
+  }
+  
+  console.log(`📂 Dosya yolu: ${inputFile}`)
   
   if (!fs.existsSync(inputFile)) {
     console.error(`❌ Dosya bulunamadı: ${inputFile}`)
+    console.error(`   Mevcut dizin: ${process.cwd()}`)
     process.exit(1)
   }
   

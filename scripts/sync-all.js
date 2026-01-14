@@ -28,6 +28,8 @@ async function syncAll() {
     
     console.log('📊 ORG.JSON VERİLERİ:');
     console.log('  - Coordinators:', orgData.coordinators?.length || 0);
+    console.log('  - City Personnel:', orgData.cityPersonnel?.length || 0);
+    console.log('  - Management:', orgData.management?.length || 0);
     
     // Firebase'e yaz
     console.log('\n📤 Firebase\'e yazılıyor...');
@@ -38,7 +40,10 @@ async function syncAll() {
     const snapshot = await get(ref(database, `orgData/${projectId}`));
     if (snapshot.exists()) {
       const fbData = snapshot.val();
-      console.log('✅ Firebase doğrulama: Coordinators:', fbData.coordinators?.length || 0);
+      console.log('\n✅ Firebase doğrulama:');
+      console.log('  - Coordinators:', fbData.coordinators?.length || 0);
+      console.log('  - City Personnel:', fbData.cityPersonnel?.length || 0);
+      console.log('  - Management:', fbData.management?.length || 0);
     }
     
     // localStorage için HTML oluştur
