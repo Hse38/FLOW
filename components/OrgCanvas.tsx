@@ -1224,7 +1224,53 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         
         // Özel durum: Selçuk Bayraktar'dan YÖNETİM KURULU BAŞKANI'na bağlantı sol kenardan çıksın
         const isSelcukToYonetim = exec.parent === 'selcuk-bayraktar' && exec.id === 'elvan-kuzucu'
-        const defaultSourceHandle = isSelcukToYonetim ? 'left-source' : 'bottom-source'
+        
+        // Özel durum: Toplumsal Çalışmalar ve Küre - Selçuk Bayraktar'ın sol kenarından çıksın
+        const isToplumsal = exec.parent === 'selcuk-bayraktar' && exec.id === 'toplumsal-calismalar'
+        const isKure = exec.parent === 'selcuk-bayraktar' && exec.id === 'kure-koordinatorlugu'
+        
+        let defaultSourceHandle = 'bottom-source'
+        let defaultWaypoints: Array<{ x: number; y: number }> = []
+        
+        if (isSelcukToYonetim) {
+          defaultSourceHandle = 'left-source'
+        } else if (isToplumsal || isKure) {
+          // Selçuk Bayraktar'ın sol kenarından çık, aşağı in, sonra yatay çizgi
+          defaultSourceHandle = 'left-source'
+          
+          // Selçuk Bayraktar pozisyonu (org.json'dan)
+          const selcukX = 100
+          const selcukY = 150
+          const selcukNodeWidth = 1000 // ChairmanNode genişliği
+          const selcukNodeHeight = 320 // ChairmanNode yüksekliği
+          
+          // Sol kenarın orta noktasından çık
+          const leftEdgeX = selcukX - (selcukNodeWidth / 2) // Sol kenar
+          const leftEdgeY = selcukY + (selcukNodeHeight / 2) // Orta nokta (y ekseni)
+          
+          // Target pozisyonları
+          const targetX = exec.position?.x || 0
+          const targetY = exec.position?.y || 0
+          
+          // Ortak yatay çizgi seviyesi (Toplumsal Çalışmalar ve Küre'nin ortası)
+          const horizontalY = 400
+          
+          if (isToplumsal) {
+            // Toplumsal Çalışmalar için: sol kenardan çık -> aşağı in -> yatay çizgi (sol) -> aşağı in
+            defaultWaypoints = [
+              { x: leftEdgeX, y: horizontalY }, // Aşağı in (dikey)
+              { x: targetX, y: horizontalY }, // Yatay çizgi (Toplumsal Çalışmalar'ın x pozisyonuna)
+              { x: targetX, y: targetY - 20 } // Aşağı in (target'ın üstüne)
+            ]
+          } else if (isKure) {
+            // Küre için: sol kenardan çık -> aşağı in -> yatay çizgi (sağ) -> aşağı in
+            defaultWaypoints = [
+              { x: leftEdgeX, y: horizontalY }, // Aşağı in (dikey)
+              { x: targetX, y: horizontalY }, // Yatay çizgi (Küre'nin x pozisyonuna)
+              { x: targetX, y: targetY - 20 } // Aşağı in (target'ın üstüne)
+            ]
+          }
+        }
         
         edgeList.push({
           id: `${exec.parent}-${exec.id}`,
@@ -1235,7 +1281,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           targetHandle: customConn?.targetHandle || 'top',
           style: { stroke: '#3b82f6', strokeWidth: 2.5 },
           data: { 
-            waypoints: customConn?.waypoints || [], // PERSISTENT: Load from Firebase
+            waypoints: customConn?.waypoints || defaultWaypoints, // PERSISTENT: Load from Firebase veya default waypoints
             ...customConn?.data 
           },
         })
