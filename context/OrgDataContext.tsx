@@ -1119,6 +1119,46 @@ function cleanDuplicateIds(orgData: OrgData): OrgData {
   return cleaned
 }
 
+// Parent hydration: Production'da bazı kayıtlarda parent alanı eksik gelebiliyor.
+// Edge'lerin oluşması için parent bilgisi kritik. org.json referans alınarak eksik parent'lar doldurulur.
+const PARENT_REF = {
+  executives: new Map<string, string>((orgJsonData.executives || []).map((e: any) => [e.id, e.parent])),
+  coordinators: new Map<string, string>((orgJsonData.coordinators || []).map((c: any) => [c.id, c.parent])),
+  mainCoordinators: new Map<string, string | null>((orgJsonData.mainCoordinators || []).map((m: any) => [m.id, m.parent ?? null])),
+}
+
+function hydrateMissingParents(orgData: OrgData): OrgData {
+  let changed = false
+
+  const executives = (orgData.executives || []).map((exec: any) => {
+    if (!exec?.parent && PARENT_REF.executives.has(exec.id)) {
+      changed = true
+      return { ...exec, parent: PARENT_REF.executives.get(exec.id)! }
+    }
+    return exec
+  })
+
+  const coordinators = (orgData.coordinators || []).map((coord: any) => {
+    if (!coord?.parent && PARENT_REF.coordinators.has(coord.id)) {
+      changed = true
+      return { ...coord, parent: PARENT_REF.coordinators.get(coord.id)! }
+    }
+    return coord
+  })
+
+  const mainCoordinators = (orgData.mainCoordinators || []).map((mc: any) => {
+    // mainCoordinator parent null olabilir; undefined/boş gelirse org.json'dan hydrate et
+    if ((mc?.parent === undefined || mc?.parent === '') && PARENT_REF.mainCoordinators.has(mc.id)) {
+      changed = true
+      return { ...mc, parent: PARENT_REF.mainCoordinators.get(mc.id) ?? null }
+    }
+    return mc
+  })
+
+  if (!changed) return orgData
+  return { ...orgData, executives, coordinators, mainCoordinators }
+}
+
 const initialData = cleanDuplicateIds(initialDataRaw)
 
 export function OrgDataProvider({ children }: { children: ReactNode }) {
@@ -1355,7 +1395,7 @@ export function OrgDataProvider({ children }: { children: ReactNode }) {
         console.log('  - Coordinators:', normalizedVal.coordinators?.length || 0)
         
         // Duplicate ID'leri temizle
-        const cleanedVal = cleanDuplicateIds(normalizedVal)
+        const cleanedVal = hydrateMissingParents(cleanDuplicateIds(normalizedVal))
         
         // Eğer temizleme yapıldıysa Firebase'e kaydet
         if (JSON.stringify(cleanedVal) !== JSON.stringify(normalizedVal)) {
