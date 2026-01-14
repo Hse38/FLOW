@@ -1393,6 +1393,25 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       })
     }
 
+    // Küre için detail edge'i
+    if (expandedKure) {
+      const kureConnKey = 'kure-koordinatorlugu-detail-kure-koordinatorlugu'
+      const kureConn = customConnMap.get(kureConnKey)
+      edgeList.push({
+        id: 'kure-koordinatorlugu-to-detail',
+        source: 'kure-koordinatorlugu',
+        target: 'detail-kure-koordinatorlugu',
+        type: 'manual',
+        sourceHandle: kureConn?.sourceHandle || 'bottom-source',
+        targetHandle: kureConn?.targetHandle || 'top',
+        style: { stroke: '#3b82f6', strokeWidth: 3 },
+        data: { 
+          waypoints: kureConn?.waypoints || [],
+          ...kureConn?.data 
+        },
+      })
+    }
+
     // T3/Teknofest Ortak Koordinatörlükler için Elvan ve Muhammet'e bağlantı
     const t3TeknofestCoord = data.mainCoordinators.find(c => c.id === 't3-teknofest-koordinatorlukleri')
     if (t3TeknofestCoord) {
