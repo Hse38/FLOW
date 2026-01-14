@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { X, Upload, FileText, Save, User, Mail, Phone, StickyNote, GraduationCap, Building2, Briefcase, Image } from 'lucide-react'
+import { X, Upload, FileText, Save, User, Mail, Phone, StickyNote, GraduationCap, Building2, Briefcase, Image, Calendar, Link as LinkIcon } from 'lucide-react'
 import { Person } from '@/context/OrgDataContext'
 import { showToast } from './Toast'
 
@@ -42,8 +42,20 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
       setCvFileName(person.cvFileName || '')
       setCvData(person.cvData || '')
       setPhotoData(person.photoData || '')
+      setYearsOfService(person.yearsOfService || '')
+      setPersonalLink(person.personalLink || '')
     }
   }, [isOpen, person])
+
+  // İsim değiştiğinde otomatik link oluştur (eğer link boşsa veya otomatik oluşturulmuşsa)
+  useEffect(() => {
+    if (name && (!personalLink || personalLink === person.personalLink)) {
+      const autoLink = generatePersonalLink(name)
+      if (autoLink) {
+        setPersonalLink(autoLink)
+      }
+    }
+  }, [name])
 
   if (!isOpen) return null
 
@@ -111,6 +123,8 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
       cvFileName,
       cvData,
       photoData,
+      yearsOfService,
+      personalLink,
     })
     onClose()
   }
@@ -218,6 +232,46 @@ export default function PersonDetailModal({ isOpen, onClose, person, onSave, rea
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
               placeholder="Örn: Yazılım Geliştirici"
             />
+          </div>
+
+          {/* Çalışma Süresi */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              <Calendar className="w-4 h-4 inline mr-1" /> Çalışma Süresi
+            </label>
+            <input
+              type="text"
+              value={yearsOfService}
+              onChange={(e) => setYearsOfService(e.target.value)}
+              disabled={readOnly}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+              placeholder="Örn: 2 yıl, 6 ay, 1 yıl 3 ay"
+            />
+          </div>
+
+          {/* Kişisel Link */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              <LinkIcon className="w-4 h-4 inline mr-1" /> Kişisel Link
+            </label>
+            <input
+              type="text"
+              value={personalLink}
+              onChange={(e) => setPersonalLink(e.target.value)}
+              disabled={readOnly}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+              placeholder="Kişinin linki (otomatik oluşturulur)"
+            />
+            {personalLink && (
+              <a
+                href={personalLink.startsWith('http') ? personalLink : `https://${personalLink}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 text-sm text-indigo-600 hover:text-indigo-800 underline"
+              >
+                Linki Aç
+              </a>
+            )}
           </div>
 
           {/* Email */}

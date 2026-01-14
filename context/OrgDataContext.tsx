@@ -70,6 +70,8 @@ export interface Person {
   university?: string // Üniversite
   department?: string // Bölüm
   jobDescription?: string // İş Kalemleri / Görev Tanımı
+  yearsOfService?: string // Çalışma süresi (örn: "2 yıl", "6 ay")
+  personalLink?: string // Kişisel link (LinkedIn, website, vb.)
 }
 
 export interface SubUnit {
