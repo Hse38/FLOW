@@ -2227,6 +2227,36 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
       const mainCoord = data.mainCoordinators.find(m => m.id === targetId)
       const item = coord || mainCoord
 
+      // Eğer koordinatör node'u ise ve coordinator bilgileri varsa PersonDetailModal aç
+      if (coord && coord.coordinator) {
+        setPersonDetailModal({
+          isOpen: true,
+          person: {
+            id: coord.coordinator.name || coord.id,
+            name: coord.coordinator.name || '',
+            title: coord.coordinator.title || '',
+            color: coord.coordinator.color,
+            university: coord.coordinator.university,
+            department: coord.coordinator.department,
+            hireDate: coord.coordinator.hireDate,
+            seniority: coord.coordinator.seniority,
+            jobDescription: coord.coordinator.jobDescription,
+            jobDescriptionLink: coord.coordinator.jobDescriptionLink,
+            email: coord.coordinator.email,
+            phone: coord.coordinator.phone,
+            notes: coord.coordinator.notes,
+            cvFileName: coord.coordinator.cvFileName,
+            cvData: coord.coordinator.cvData,
+            photoData: coord.coordinator.photoData,
+          },
+          coordinatorId: targetId,
+          type: 'coordinator',
+        })
+        setContextMenu(null)
+        return
+      }
+
+      // Diğer durumlar için eski formModal
       setFormModal({
         isOpen: true,
         type: 'edit',
