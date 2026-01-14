@@ -3751,17 +3751,32 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               updateCityPerson(metadata.city, metadata.role, person.id, updates)
               showToast('Personel bilgileri güncellendi!', 'success')
             } else if (metadata.type === 'coordinator' && metadata.coordinatorId) {
-              // Koordinatör güncelleme - coordinator field'ını güncelle
-              updateCoordinator(metadata.coordinatorId, {
-                coordinator: {
-                  name: updates.name || person.name,
-                  title: updates.title || person.title || 'Koordinatör',
-                  color: updates.color || person.color,
-                }
-              })
-              showToast('Koordinatör bilgileri güncellendi!', 'success')
+              // Koordinatör güncelleme - coordinator field'ını güncelle (TÜM ALANLAR)
+              const coordinator = data.coordinators.find(c => c.id === metadata.coordinatorId)
+              if (coordinator) {
+                updateCoordinator(metadata.coordinatorId, {
+                  coordinator: {
+                    ...coordinator.coordinator,
+                    name: updates.name || coordinator.coordinator?.name || person.name || '',
+                    title: updates.title || coordinator.coordinator?.title || person.title || 'Koordinatör',
+                    color: updates.color || coordinator.coordinator?.color || person.color,
+                    university: updates.university !== undefined ? updates.university : coordinator.coordinator?.university || person.university || '',
+                    department: updates.department !== undefined ? updates.department : coordinator.coordinator?.department || person.department || '',
+                    hireDate: updates.hireDate !== undefined ? updates.hireDate : coordinator.coordinator?.hireDate || person.hireDate || '',
+                    seniority: updates.seniority !== undefined ? updates.seniority : coordinator.coordinator?.seniority || person.seniority || '',
+                    jobDescriptionLink: updates.jobDescriptionLink !== undefined ? updates.jobDescriptionLink : coordinator.coordinator?.jobDescriptionLink || person.jobDescriptionLink || '',
+                    email: updates.email !== undefined ? updates.email : coordinator.coordinator?.email || person.email || '',
+                    phone: updates.phone !== undefined ? updates.phone : coordinator.coordinator?.phone || person.phone || '',
+                    notes: updates.notes !== undefined ? updates.notes : coordinator.coordinator?.notes || person.notes || '',
+                    cvFileName: updates.cvFileName !== undefined ? updates.cvFileName : coordinator.coordinator?.cvFileName || person.cvFileName || '',
+                    cvData: updates.cvData !== undefined ? updates.cvData : coordinator.coordinator?.cvData || person.cvData || '',
+                    photoData: updates.photoData !== undefined ? updates.photoData : coordinator.coordinator?.photoData || person.photoData || '',
+                  }
+                })
+                showToast('Koordinatör bilgileri güncellendi!', 'success')
+              }
             } else if (metadata.type === 'deputy' && metadata.coordinatorId) {
-              // Deputy güncelleme - deputy array'inde güncelle
+              // Deputy güncelleme - deputy array'inde güncelle (TÜM ALANLAR)
               const coordinator = data.coordinators.find(c => c.id === metadata.coordinatorId)
               if (coordinator) {
                 const deputy = coordinator.deputies?.find(d => d.id === person.id)
@@ -3770,9 +3785,20 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                     d.id === person.id
                       ? {
                           ...d,
-                          name: updates.name || d.name,
-                          title: updates.title || d.title || '',
-                          color: updates.color || d.color,
+                          name: updates.name !== undefined ? updates.name : d.name,
+                          title: updates.title !== undefined ? updates.title : d.title || '',
+                          color: updates.color !== undefined ? updates.color : d.color,
+                          university: updates.university !== undefined ? updates.university : d.university || '',
+                          department: updates.department !== undefined ? updates.department : d.department || '',
+                          hireDate: updates.hireDate !== undefined ? updates.hireDate : d.hireDate || '',
+                          seniority: updates.seniority !== undefined ? updates.seniority : d.seniority || '',
+                          jobDescriptionLink: updates.jobDescriptionLink !== undefined ? updates.jobDescriptionLink : d.jobDescriptionLink || '',
+                          email: updates.email !== undefined ? updates.email : d.email || '',
+                          phone: updates.phone !== undefined ? updates.phone : d.phone || '',
+                          notes: updates.notes !== undefined ? updates.notes : d.notes || '',
+                          cvFileName: updates.cvFileName !== undefined ? updates.cvFileName : d.cvFileName || '',
+                          cvData: updates.cvData !== undefined ? updates.cvData : d.cvData || '',
+                          photoData: updates.photoData !== undefined ? updates.photoData : d.photoData || '',
                         }
                       : d
                   )
