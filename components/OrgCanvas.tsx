@@ -37,7 +37,6 @@ import PersonnelPanel from './PersonnelPanel'
 import SubUnitDeputyChangeModal from './SubUnitDeputyChangeModal'
 import SubUnitSelectionModal from './SubUnitSelectionModal'
 import AddPersonSelectionModal from './AddPersonSelectionModal'
-import KureRightPanel from './KureRightPanel'
 import { showToast } from './Toast'
 import { useOrgData, Person, OrgData } from '@/context/OrgDataContext'
 import { toPng, toSvg } from 'html-to-image'
@@ -282,8 +281,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   // Personel Paneli (yan menü)
   const [personnelPanelOpen, setPersonnelPanelOpen] = useState<boolean>(false)
 
-  // Küre Sağ Panel
-  const [kurePanelOpen, setKurePanelOpen] = useState<boolean>(false)
+  // Küre Expand State (diğer koordinatörler gibi altında açılsın)
+  const [expandedKure, setExpandedKure] = useState<boolean>(false)
 
   // Kilitleme durumu - Firebase'den geliyor
   const isLocked = firebaseLocked
@@ -558,9 +557,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           type: exec.type,
           id: exec.id, // ID'yi de geç (renk kontrolü için)
           onClick: () => {
-            // Küre koordinatörlüğüne tıklandığında sağ panel aç
+            // Küre koordinatörlüğüne tıklandığında expand/collapse
             if (exec.id === 'kure-koordinatorlugu') {
-              setKurePanelOpen(true)
+              setExpandedKure(prev => !prev)
             }
           },
         },
@@ -1034,6 +1033,102 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           // If node has saved position, it stays EXACTLY where it was saved - no shifting
         }
       })
+    }
+
+    // KÜRE EXPANSION: Küre node'unun altında detail panel aç
+    if (expandedKure) {
+      const kureNode = nodeList.find(n => n.id === 'kure-koordinatorlugu')
+      if (kureNode) {
+        const kurePosition = kureNode.position
+        const nodeHeight = NODE_SIZE['executive']?.height || 120
+        const detailNodeHeight = NODE_SIZE['detail']?.height || 180
+        const verticalSpacing = 20
+        
+        // Küre personel listesi
+        const kurePersonnel = [
+          { id: 'duygu-sahinler', name: 'Duygu Şahinler' },
+          { id: 'ayse-aslihan-yoran', name: 'Ayşe Aslıhan Yoran' },
+          { id: 'meryem-senturk-coban', name: 'Meryem Şentürk Çoban' },
+          { id: 'burak-enes', name: 'Burak Enes' },
+          { id: 'onur-colak', name: 'Onur Çolak' },
+          { id: 'yusuf-bilal-akkaya', name: 'Yusuf Bilal Akkaya' },
+          { id: 'nazlican-kemer-kaya', name: 'Nazlıcan Kemer Kaya' },
+          { id: 'nurten-yalcin', name: 'Nurten Yalçın' },
+          { id: 'hamza-aktay', name: 'Hamza Aktay' },
+          { id: 'burcu-sandikci', name: 'Burcu Sandıkçı' },
+          { id: 'zozan-demirci', name: 'Zozan Demirci' },
+          { id: 'sadullah-bora-yildirim', name: 'Sadullah Bora Yıldırım' }
+        ]
+        
+        const kureResponsibilities = [
+          'İçerik üretimi ve redaksiyon',
+          'Bilgi doğrulama ve kaynak denetimi',
+          'Yapay zeka içerik kontrolü',
+          'SEO ve yayın standartlarının uygulanması'
+        ]
+        
+        // Küre detail node'unu ekle - node'un altında
+        const kureDetailY = kurePosition.y + nodeHeight + verticalSpacing
+        const kureDetailX = kurePosition.x
+        
+        nodeList.push({
+          id: 'detail-kure-koordinatorlugu',
+          type: 'detail',
+          position: getPosition('detail-kure-koordinatorlugu', { x: kureDetailX, y: kureDetailY }),
+          draggable: !isLocked,
+          data: {
+            label: 'KÜRE',
+            type: 'subunit',
+            people: kurePersonnel,
+            responsibilities: kureResponsibilities,
+            coordinatorId: 'kure-koordinatorlugu',
+            subUnitId: 'kure-subunit',
+            onPersonClick: (person: Person) => {
+              setViewPersonCard({
+                person,
+                coordinatorId: 'kure-koordinatorlugu',
+                subUnitId: 'kure-subunit',
+                coordinatorTitle: 'KÜRE KOORDİNATÖRLÜĞÜ',
+                subUnitTitle: 'KÜRE',
+              })
+            },
+            onPersonContextMenu: (e: React.MouseEvent, person: Person) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setPersonContextMenu({
+                x: e.clientX,
+                y: e.clientY,
+                person,
+                coordinatorId: 'kure-koordinatorlugu',
+                subUnitId: 'kure-subunit',
+                coordinatorTitle: 'KÜRE KOORDİNATÖRLÜĞÜ',
+                subUnitTitle: 'KÜRE',
+              })
+            },
+            onContextMenu: (e: React.MouseEvent) => {
+              e.preventDefault()
+              e.stopPropagation()
+              // Küre için context menu gerekmiyor
+            },
+          },
+        })
+        
+        // Küre detail node'unun altındaki node'ları aşağı kaydır
+        const kureDetailBottomY = kureDetailY + detailNodeHeight
+        nodeList.forEach(node => {
+          if (node.id === 'kure-koordinatorlugu' || node.id === 'detail-kure-koordinatorlugu') return
+          const nodeY = node.position.y
+          if (nodeY > kurePosition.y + nodeHeight) {
+            const savedPosition = getPosition(node.id, node.position)
+            if (!customPositions[node.id] && !localPositions[node.id]) {
+              node.position = {
+                x: savedPosition.x,
+                y: savedPosition.y + detailNodeHeight + verticalSpacing
+              }
+            }
+          }
+        })
+      }
     }
 
     // Duplicate ID kontrolü ve filtreleme - daha güçlü kontrol
@@ -3445,12 +3540,6 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             onCancel={() => setConfirmationModal(null)}
           />
         )}
-
-        {/* Küre Sağ Panel */}
-        <KureRightPanel
-          isOpen={kurePanelOpen}
-          onClose={() => setKurePanelOpen(false)}
-        />
 
         {/* Connection List Modal - Bağlantıları göster/kaldır */}
         {connectionListModal && (
