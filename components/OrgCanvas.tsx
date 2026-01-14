@@ -2879,8 +2879,11 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             {/* Türkiye Haritası Toggle */}
             <button
               onClick={() => {
-                setTurkeyMapOpen(prev => !prev)
-                showToast(turkeyMapOpen ? 'Harita kapatıldı' : 'Harita açıldı', 'info')
+                setTurkeyMapOpen(prev => {
+                  const newValue = !prev
+                  showToast(newValue ? 'Harita açıldı' : 'Harita kapatıldı', 'info')
+                  return newValue
+                })
               }}
               className={`backdrop-blur-sm rounded-lg p-2 shadow-lg border cursor-pointer hover:scale-105 transition-transform ${
                 turkeyMapOpen

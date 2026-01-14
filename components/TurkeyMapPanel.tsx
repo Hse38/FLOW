@@ -229,7 +229,7 @@ export default function TurkeyMapPanel({
   if (!isOpen) return null
 
   return (
-    <div className="w-[500px] h-full bg-white shadow-xl flex flex-col border-r border-gray-200">
+    <div className="w-[500px] h-full bg-white shadow-xl flex flex-col border-r border-gray-200 relative z-50">
       {/* Header */}
       <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
