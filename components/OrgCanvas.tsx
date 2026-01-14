@@ -2876,8 +2876,8 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
               </svg>
             </button> */}
 
-            {/* Türkiye Haritası Toggle */}
-            <button
+            {/* Türkiye Haritası Toggle - ŞİMDİLİK KAPALI */}
+            {/* <button
               onClick={() => {
                 setTurkeyMapOpen(prev => {
                   const newValue = !prev
@@ -2901,10 +2901,10 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                 </svg>
               )}
-            </button>
+            </button> */}
 
-            {/* Klavuz Çizgileri (Snap to Grid) Toggle */}
-            <button
+            {/* Klavuz Çizgileri (Snap to Grid) Toggle - ŞİMDİLİK KAPALI */}
+            {/* <button
               onClick={() => {
                 setSnapToGrid(prev => !prev)
                 showToast(snapToGrid ? 'Klavuz çizgileri kapatıldı' : 'Klavuz çizgileri açıldı', 'info')
@@ -2925,7 +2925,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z" />
                 </svg>
               )}
-            </button>
+            </button> */}
 
             {/* Firebase'e Kaydet butonu - TÜM POZİSYONLARI KAYDET */}
             {!isLocked && (
