@@ -265,10 +265,10 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
           {/* İl İsimleri Tooltip */}
           <div ref={infoRef} className="il-isimleri fixed pointer-events-none z-10" style={{ display: 'none' }}></div>
 
-          {/* CORPORATE STYLE LEGEND */}
-          <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-xl border-2 border-gray-300 p-4 z-20" style={{ minWidth: '280px' }}>
-            <h3 className="text-lg font-bold text-gray-800 mb-3">T3 VAKFI TEMSİLCİ HARİTASI</h3>
-            <div className="space-y-2">
+          {/* CORPORATE STYLE LEGEND - BÜYÜK VE BELİRGİN */}
+          <div className="absolute bottom-6 left-6 bg-white rounded-xl shadow-2xl border-3 border-gray-400 p-6 z-20" style={{ minWidth: '420px', maxWidth: '500px' }}>
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">T3 VAKFI TEŞKİLAT HARİTASI</h3>
+            <div className="space-y-3">
               {(() => {
                 const cityPersonnel = data.cityPersonnel || []
                 let ilSorumlusuCount = 0
@@ -300,21 +300,21 @@ const TurkeyMapNode = memo(({ data }: TurkeyMapNodeProps) => {
                 
                 return (
                   <>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#3b82f6' }}></div>
-                      <span className="text-sm font-medium text-gray-700">{ilSorumlusuCount} İl Sorumlusu Bulunan İller</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm" style={{ backgroundColor: '#3b82f6' }}></div>
+                      <span className="text-base font-semibold text-gray-800">T3 Teknoloji Takımları var</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#dc2626' }}></div>
-                      <span className="text-sm font-medium text-gray-700">{ilVeDeneyapCount} İl ve DENEYAP Sorumlusu Bulunan İller</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm" style={{ backgroundColor: '#dc2626' }}></div>
+                      <span className="text-base font-semibold text-gray-800">Deneyap Teknoloji Atölyesi var</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#1e40af' }}></div>
-                      <span className="text-sm font-medium text-gray-700">{deneyapSorumlusuCount} DENEYAP Sorumlusu Bulunan İller</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm" style={{ backgroundColor: '#1e40af' }}></div>
+                      <span className="text-base font-semibold text-gray-800">İl Sorumlusu ve Deneyap Teknoloji Atölyesi var</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#9ca3af' }}></div>
-                      <span className="text-sm font-medium text-gray-700">{sorumluYokCount} İl Sorumlusu Bulunmayan İller</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full border-2 border-gray-300 shadow-sm" style={{ backgroundColor: '#9ca3af' }}></div>
+                      <span className="text-base font-semibold text-gray-800">T3 Teknoloji Atölyesi yok</span>
                     </div>
                   </>
                 )
