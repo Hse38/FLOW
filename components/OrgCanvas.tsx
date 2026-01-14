@@ -558,9 +558,9 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           type: exec.type,
           id: exec.id, // ID'yi de geç (renk kontrolü için)
           onClick: () => {
-            // Küre koordinatörlüğüne tıklandığında modal aç
+            // Küre koordinatörlüğüne tıklandığında sağ panel aç
             if (exec.id === 'kure-koordinatorlugu') {
-              setKureModalOpen(true)
+              setKurePanelOpen(true)
             }
           },
         },
