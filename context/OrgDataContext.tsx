@@ -99,6 +99,7 @@ export interface Deputy {
   department?: string
   hireDate?: string
   seniority?: string
+  jobDescription?: string
   jobDescriptionLink?: string
   email?: string
   phone?: string
@@ -124,6 +125,7 @@ export interface Coordinator {
     department?: string
     hireDate?: string
     seniority?: string
+    jobDescription?: string
     jobDescriptionLink?: string
     email?: string
     phone?: string
