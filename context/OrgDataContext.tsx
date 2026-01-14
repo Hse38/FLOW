@@ -1001,7 +1001,7 @@ const initialDataLegacy: OrgData = {
     },
     {
       id: "kure-koordinatorlugu",
-      title: "Küre Koordinatörlüğü",
+      title: "KÜRE KOORDINATÖRLÜĞÜ",
       description: "İçerik üretimi, redaksiyon ve yayın standartları yönetimi",
       responsibilities: [
         "İçerik üretimi ve redaksiyon",
@@ -1016,7 +1016,7 @@ const initialDataLegacy: OrgData = {
       subUnits: [
         {
           id: "kure-birimi",
-          title: "Küre",
+          title: "KÜRE",
           people: [
             { id: "kure-1", name: "Duygu Şahinler" },
             { id: "kure-2", name: "Ayşe Aslıhan Yoran" },
@@ -1024,7 +1024,7 @@ const initialDataLegacy: OrgData = {
             { id: "kure-4", name: "Burak Enes" },
             { id: "kure-5", name: "Onur Çolak" },
             { id: "kure-6", name: "Yusuf Bilal Akkaya" },
-            { id: "kure-7", name: "Nazlıcan Kemerkaya" },
+            { id: "kure-7", name: "Nazlıcan Kemer Kaya" },
             { id: "kure-8", name: "Nurten Yalçın" },
             { id: "kure-9", name: "Hamza Aktay" },
             { id: "kure-10", name: "Burcu Sandıkçı" },
@@ -1032,10 +1032,10 @@ const initialDataLegacy: OrgData = {
             { id: "kure-12", name: "Sadullah Bora Yıldırım" }
           ],
           responsibilities: [
-            "İçerik Üretimi ve Redaksiyon",
-            "Bilgi Doğrulama ve Kaynak Denetimi",
-            "Yapay Zeka İçerik Kontrolü",
-            "SEO ve Yayın Standartları"
+            "İçerik üretimi ve redaksiyon",
+            "Bilgi doğrulama ve kaynak denetimi",
+            "Yapay zeka içerik kontrolü",
+            "SEO ve yayın standartlarının uygulanması"
           ],
           description: "Küre birimi içerik üretimi ve yayın standartları"
         }
@@ -1051,13 +1051,13 @@ const initialDataRaw: OrgData = orgJsonData as unknown as OrgData
 if (!initialDataRaw.coordinators?.find((c: Coordinator) => c.id === 'kure-koordinatorlugu')) {
   const kureCoordinator: Coordinator = {
     id: "kure-koordinatorlugu",
-    title: "Küre Koordinatörlüğü",
+    title: "KÜRE KOORDINATÖRLÜĞÜ",
     description: "İçerik üretimi, redaksiyon ve yayın standartları yönetimi",
     responsibilities: [
-      "İçerik Üretimi ve Redaksiyon",
-      "Bilgi Doğrulama ve Kaynak Denetimi",
-      "Yapay Zeka İçerik Kontrolü",
-      "SEO ve Yayın Standartları"
+      "İçerik üretimi ve redaksiyon",
+      "Bilgi doğrulama ve kaynak denetimi",
+      "Yapay zeka içerik kontrolü",
+      "SEO ve yayın standartlarının uygulanması"
     ],
     position: { x: 1350, y: 300 },
     parent: "kure",
@@ -1066,7 +1066,7 @@ if (!initialDataRaw.coordinators?.find((c: Coordinator) => c.id === 'kure-koordi
     subUnits: [
       {
         id: "kure-birimi",
-        title: "Küre",
+        title: "KÜRE",
         people: [
           { id: "kure-1", name: "Duygu Şahinler" },
           { id: "kure-2", name: "Ayşe Aslıhan Yoran" },
