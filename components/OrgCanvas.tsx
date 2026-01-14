@@ -1116,13 +1116,19 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
         // Check if there's a custom connection with specific handles
         const connKey = `${exec.parent}-${exec.id}`
         const customConn = customConnMap.get(connKey)
+        
+        // ÖZEL: Küre ve Toplumsal Çalışmalar - Selçuk'un SOL tarafından çıkacak, aşağı inecek
+        const isKureOrToplumsal = exec.id === 'kure-koordinatorlugu' || exec.id === 'toplumsal-calismalar'
+        const specialSourceHandle = isKureOrToplumsal ? 'left-source' : (customConn?.sourceHandle || 'bottom-source')
+        const specialTargetHandle = isKureOrToplumsal ? 'right' : (customConn?.targetHandle || 'top')
+        
         edgeList.push({
           id: `${exec.parent}-${exec.id}`,
           source: exec.parent,
           target: exec.id,
           type: 'manual', // FULL MANUAL CONTROL: User-defined path
-          sourceHandle: customConn?.sourceHandle || 'bottom-source',
-          targetHandle: customConn?.targetHandle || 'top',
+          sourceHandle: specialSourceHandle,
+          targetHandle: specialTargetHandle,
           style: { stroke: '#3b82f6', strokeWidth: 2.5 },
           data: { 
             waypoints: customConn?.waypoints || [], // PERSISTENT: Load from Firebase
