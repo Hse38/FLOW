@@ -62,10 +62,10 @@ const ChairmanNode = memo(({ data }: ChairmanNodeProps) => {
         id="left-source"
         className="!bg-yellow-500 !w-3 !h-3 !border-2 !border-white"
       />
-      <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 px-12 py-6 rounded-lg shadow-xl border-2 border-yellow-300 w-[610px] h-[310px] text-center transition-all duration-300 hover:shadow-2xl hover:scale-105 flex flex-col items-center justify-center">
-        <div className="text-7xl font-bold tracking-wide leading-relaxed break-words">{data.label}</div>
+      <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 px-16 py-10 rounded-xl shadow-xl border-4 border-yellow-300 w-[800px] h-[380px] text-center transition-all duration-300 hover:shadow-2xl hover:scale-105 flex flex-col items-center justify-center">
+        <div className="text-8xl font-bold tracking-wide leading-tight whitespace-nowrap">{data.label}</div>
         {data.title && (
-          <div className="text-5xl text-yellow-800 mt-2 font-semibold leading-relaxed break-words">{data.title}</div>
+          <div className="text-4xl text-yellow-800 mt-4 font-semibold leading-tight whitespace-nowrap">{data.title}</div>
         )}
       </div>
     </div>
