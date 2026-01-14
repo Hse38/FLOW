@@ -2064,15 +2064,31 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   }, [nodes, edges, setFlowNodes, setFlowEdges])
 
   // viewPersonCard'ı data değiştiğinde güncelle (koordinatör ve deputy için)
+  // Önceki coordinator verilerini takip et (sonsuz döngüyü önlemek için)
+  const prevCoordinatorDataRef = useRef<string>('')
   useEffect(() => {
-    if (!viewPersonCard) return
+    if (!viewPersonCard) {
+      prevCoordinatorDataRef.current = ''
+      return
+    }
     
     const { type, coordinatorId, person } = viewPersonCard
     
+    // Coordinator verilerini stringify et ve değişiklik kontrolü yap
+    const coordinator = data.coordinators.find(c => c.id === coordinatorId)
+    if (!coordinator) return
+    
+    const currentDataKey = type === 'coordinator' 
+      ? JSON.stringify(coordinator.coordinator)
+      : JSON.stringify(coordinator.deputies?.find(d => d.id === person.id || d.name === person.name))
+    
+    // Eğer veri değişmediyse güncelleme yapma (sonsuz döngüyü önle)
+    if (currentDataKey === prevCoordinatorDataRef.current) return
+    prevCoordinatorDataRef.current = currentDataKey
+    
     if (type === 'coordinator') {
       // Koordinatör bilgilerini data'dan oku
-      const coordinator = data.coordinators.find(c => c.id === coordinatorId)
-      if (coordinator && coordinator.coordinator) {
+      if (coordinator.coordinator) {
         const updatedPerson: Person = {
           id: person.id,
           name: coordinator.coordinator.name || person.name,
@@ -2091,12 +2107,14 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
           cvData: coordinator.coordinator.cvData || person.cvData,
           photoData: coordinator.coordinator.photoData || person.photoData,
         }
-        setViewPersonCard(prev => prev ? { ...prev, person: updatedPerson } : null)
+        // Sadece gerçekten değişiklik varsa güncelle
+        if (JSON.stringify(updatedPerson) !== JSON.stringify(person)) {
+          setViewPersonCard(prev => prev ? { ...prev, person: updatedPerson } : null)
+        }
       }
     } else if (type === 'deputy') {
       // Deputy bilgilerini data'dan oku
-      const coordinator = data.coordinators.find(c => c.id === coordinatorId)
-      if (coordinator && coordinator.deputies) {
+      if (coordinator.deputies) {
         const deputy = coordinator.deputies.find(d => d.id === person.id || d.name === person.name)
         if (deputy) {
           const updatedPerson: Person = {
@@ -2117,11 +2135,14 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
             cvData: deputy.cvData || person.cvData,
             photoData: deputy.photoData || person.photoData,
           }
-          setViewPersonCard(prev => prev ? { ...prev, person: updatedPerson } : null)
+          // Sadece gerçekten değişiklik varsa güncelle
+          if (JSON.stringify(updatedPerson) !== JSON.stringify(person)) {
+            setViewPersonCard(prev => prev ? { ...prev, person: updatedPerson } : null)
+          }
         }
       }
     }
-  }, [data.coordinators, viewPersonCard])
+  }, [data.coordinators, viewPersonCard?.coordinatorId, viewPersonCard?.type, viewPersonCard?.person?.id])
 
   // Menüleri kapat
   useEffect(() => {
@@ -3148,30 +3169,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                     }
                   })
                   showToast('Koordinatör bilgileri güncellendi', 'success')
-                  
-                  // viewPersonCard açıksa ve aynı koordinatör ise güncelle
-                  if (viewPersonCard && viewPersonCard.type === 'coordinator' && viewPersonCard.coordinatorId === personDetailModal.coordinatorId) {
-                    setViewPersonCard(prev => prev ? {
-                      ...prev,
-                      person: {
-                        ...prev.person,
-                        name: updates.name !== undefined ? updates.name : prev.person.name,
-                        title: updates.title !== undefined ? updates.title : prev.person.title,
-                        university: updates.university !== undefined ? updates.university : prev.person.university,
-                        department: updates.department !== undefined ? updates.department : prev.person.department,
-                        hireDate: updates.hireDate !== undefined ? updates.hireDate : prev.person.hireDate,
-                        seniority: updates.seniority !== undefined ? updates.seniority : prev.person.seniority,
-                        jobDescription: updates.jobDescription !== undefined ? updates.jobDescription : prev.person.jobDescription,
-                        jobDescriptionLink: updates.jobDescriptionLink !== undefined ? updates.jobDescriptionLink : prev.person.jobDescriptionLink,
-                        email: updates.email !== undefined ? updates.email : prev.person.email,
-                        phone: updates.phone !== undefined ? updates.phone : prev.person.phone,
-                        notes: updates.notes !== undefined ? updates.notes : prev.person.notes,
-                        cvFileName: updates.cvFileName !== undefined ? updates.cvFileName : prev.person.cvFileName,
-                        cvData: updates.cvData !== undefined ? updates.cvData : prev.person.cvData,
-                        photoData: updates.photoData !== undefined ? updates.photoData : prev.person.photoData,
-                      }
-                    } : null)
-                  }
+                  // viewPersonCard useEffect tarafından otomatik güncellenecek
                 }
               } else if (personDetailModal.type === 'deputy' && personDetailModal.deputyId) {
                 // Deputy güncelleme
@@ -3202,30 +3200,7 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
                     deputies: updatedDeputies || []
                   })
                   showToast('Koordinatör yardımcısı bilgileri güncellendi', 'success')
-                  
-                  // viewPersonCard açıksa ve aynı deputy ise güncelle
-                  if (viewPersonCard && viewPersonCard.type === 'deputy' && viewPersonCard.coordinatorId === personDetailModal.coordinatorId && viewPersonCard.person.id === personDetailModal.deputyId) {
-                    setViewPersonCard(prev => prev ? {
-                      ...prev,
-                      person: {
-                        ...prev.person,
-                        name: updates.name !== undefined ? updates.name : prev.person.name,
-                        title: updates.title !== undefined ? updates.title : prev.person.title,
-                        university: updates.university !== undefined ? updates.university : prev.person.university,
-                        department: updates.department !== undefined ? updates.department : prev.person.department,
-                        hireDate: updates.hireDate !== undefined ? updates.hireDate : prev.person.hireDate,
-                        seniority: updates.seniority !== undefined ? updates.seniority : prev.person.seniority,
-                        jobDescription: updates.jobDescription !== undefined ? updates.jobDescription : prev.person.jobDescription,
-                        jobDescriptionLink: updates.jobDescriptionLink !== undefined ? updates.jobDescriptionLink : prev.person.jobDescriptionLink,
-                        email: updates.email !== undefined ? updates.email : prev.person.email,
-                        phone: updates.phone !== undefined ? updates.phone : prev.person.phone,
-                        notes: updates.notes !== undefined ? updates.notes : prev.person.notes,
-                        cvFileName: updates.cvFileName !== undefined ? updates.cvFileName : prev.person.cvFileName,
-                        cvData: updates.cvData !== undefined ? updates.cvData : prev.person.cvData,
-                        photoData: updates.photoData !== undefined ? updates.photoData : prev.person.photoData,
-                      }
-                    } : null)
-                  }
+                  // viewPersonCard useEffect tarafından otomatik güncellenecek
                 }
               } else if (personDetailModal.subUnitId) {
                 // SubUnit personel güncelleme
