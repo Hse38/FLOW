@@ -2501,7 +2501,15 @@ const OrgCanvasInner = ({ onNodeClick, currentProjectId, currentProjectName, isP
   }, [formModal, expandedCoordinator, addDeputy, addSubUnit, addPerson, addResponsibility, updateCoordinator, updatePerson, updateSubUnit, addCityPerson, setShouldAutoLayout, setExpandedCoordinator, showToast])
 
   return (
-    <div className="w-full h-screen flex" style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 50%, #93c5fd 100%)' }}>
+    <div 
+      className="w-full h-screen flex" 
+      style={{ 
+        backgroundImage: 'url(/images/Zemin.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
       {/* Sol Panel - Türkiye Haritası */}
       {turkeyMapOpen && (
         <TurkeyMapPanel
